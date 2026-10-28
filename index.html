@@ -265,6 +265,71 @@ body::before {
 .stamp { font-family: var(--data); font-size: 12px; color: var(--fg-faint); padding-top: 14px; font-variant-numeric: tabular-nums; }
 
 /* ---------- race card ---------- */
+.cover {
+  width: 100%;
+  display: block;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  object-position: center;
+  max-width: 100%;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.row-cover {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.cover-pick { display: flex; gap: 9px; margin-top: 4px; flex-wrap: wrap; }
+.cover-pick button {
+  flex: 1 1 130px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+}
+.cover-pick button.drop { border-color: var(--danger); color: var(--danger); }
+.cover-prev {
+  margin-top: 10px;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  display: block;
+}
+.preset-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+.preset {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 11px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--fg);
+}
+.preset img { width: 64px; height: 34px; object-fit: cover; border-radius: 4px; flex: 0 0 auto; }
+.preset span { flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 500; }
+.preset em {
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass);
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
 .bib {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -622,6 +687,7 @@ body::before {
 
 <div id="toast" role="status" hidden></div>
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
+<input type="file" id="img-in" accept="image/*" hidden>
 
 <div class="sheet-bg" id="confirm" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
@@ -660,6 +726,26 @@ body::before {
     card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.2"/><path d="M2.5 10h19M6 14.5h3.5"/></svg>',
     race: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 2.8 11 8.4M15.4 2.8 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="m12 11.9 1 2.1 2.3.3-1.65 1.6.4 2.3-2.05-1.1-2.05 1.1.4-2.3L8.7 14.3l2.3-.3Z"/></svg>'
   };
+
+  // Events already run, so adding one is a single tap. `cover` points at a
+  // bundled image; a cover added from the photo library is stored as a data
+  // URL inside the encrypted vault instead.
+  var PRESETS = [
+    {
+      key: 'week-2026',
+      label: 'THE WEEK Half Marathon',
+      cover: 'assets/race-week-2026.webp',
+      title: 'THE WEEK Half Marathon 2026',
+      f: { date: '2026-09-27', venue: 'Willingdon Island, Kochi', organiser: 'THE WEEK' }
+    },
+    {
+      key: 'georgian-2026',
+      label: 'Georgian Run',
+      cover: 'assets/race-georgian-2026.webp',
+      title: 'Georgian Run 2026',
+      f: { date: '2026-10-20', venue: 'Vennikulam', organiser: 'Chavara Matrimony' }
+    }
+  ];
 
   // Standard distances, in km, so pace can be worked out from a finish time.
   var DISTANCES = {
@@ -1398,8 +1484,11 @@ body::before {
     }
 
     $('#list').innerHTML = list.map(function (e) {
+      var cov = e.type === 'race' && (e.f || {}).cover;
       return '<button class="row" data-id="' + esc(e.id) + '">' +
-        '<span class="glyph" aria-hidden="true">' + ICON[e.type] + '</span>' +
+        (cov
+          ? '<img class="row-cover" src="' + esc(e.f.cover) + '" alt="">'
+          : '<span class="glyph" aria-hidden="true">' + ICON[e.type] + '</span>') +
         '<span class="row-text"><span class="row-title">' + esc(e.title || 'Untitled') + '</span>' +
         '<span class="row-meta">' + esc(rowMeta(e)) + '</span></span>' +
         '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
@@ -1452,7 +1541,11 @@ body::before {
     if (f.date) stats.push(['Race day', fmtDate(f.date)]);
     if (!p && f.bib) stats.push(['Bib', f.bib]);
 
-    return '<div class="bib"><div class="bib-top">' + head + '</div>' +
+    var cover = f.cover
+      ? '<img class="cover" src="' + esc(f.cover) + '" alt="">'
+      : '';
+
+    return '<div class="bib">' + cover + '<div class="bib-top">' + head + '</div>' +
       (stats.length
         ? '<div class="bib-stats">' + stats.map(function (s) {
             return '<div class="bib-stat"><span class="label">' + esc(s[0]) +
@@ -1599,9 +1692,28 @@ body::before {
       }).join('') + '</div>';
     }
 
+    if (S.isNew && d.type === 'race') {
+      html += '<div class="preset-row">' + PRESETS.map(function (p) {
+        return '<button type="button" class="preset" data-preset="' + esc(p.key) + '">' +
+          '<img src="' + esc(p.cover) + '" alt="">' +
+          '<span>' + esc(p.label) + '</span><em>Use</em></button>';
+      }).join('') + '</div>';
+    }
+
     html += '<div class="field"><label class="label" for="in-title">' + esc(t.titleLabel) + '</label>' +
       '<input class="input" id="in-title" type="text" value="' + esc(d.title) + '" placeholder="' +
       esc(t.titlePh) + '" autocapitalize="words" spellcheck="false"></div>';
+
+    if (d.type === 'race') {
+      var cov = (d.f || {}).cover;
+      html += '<div class="field"><span class="label">Cover photo</span>' +
+        '<div class="cover-pick">' +
+        '<button type="button" data-cover="pick">' + (cov ? 'Change photo' : 'Add a photo') + '</button>' +
+        (cov ? '<button type="button" class="drop" data-cover="clear">Remove</button>' : '') +
+        '</div>' +
+        (cov ? '<img class="cover-prev" src="' + esc(cov) + '" alt="">' : '') +
+        '</div>';
+    }
 
     html += t.fields.map(function (f) {
       var val = (d.f || {})[f.k] || '';
@@ -1677,6 +1789,39 @@ body::before {
       return;
     }
 
+    var pre = ev.target.closest('[data-preset]');
+    if (pre) {
+      collectDraft();
+      var hit = null;
+      for (var i = 0; i < PRESETS.length; i++) {
+        if (PRESETS[i].key === pre.dataset.preset) hit = PRESETS[i];
+      }
+      if (!hit) return;
+      S.draft.title = hit.title;
+      S.draft.f = S.draft.f || {};
+      Object.keys(hit.f).forEach(function (k) { S.draft.f[k] = hit.f[k]; });
+      S.draft.f.cover = hit.cover;
+      renderEdit();
+      toast('Filled in — now add your time');
+      return;
+    }
+
+    var cov = ev.target.closest('[data-cover]');
+    if (cov) {
+      if (cov.dataset.cover === 'clear') {
+        collectDraft();
+        delete S.draft.f.cover;
+        renderEdit();
+      } else {
+        collectDraft();
+        guardSheet();
+        var ii = $('#img-in');
+        ii.value = '';
+        ii.click();
+      }
+      return;
+    }
+
     var peek = ev.target.closest('[data-peek]');
     if (peek) {
       var inp = $('[data-key="' + peek.dataset.peek + '"]', $('#edit-body'));
@@ -1736,6 +1881,49 @@ body::before {
     var syms = $('[data-sym]', panel).checked;
     $('.gen-out', panel).textContent = makePassword(len, syms);
   }
+
+  // Photos are shrunk before they go in. The vault lives in localStorage,
+  // which is small, and a phone photo straight off the camera would fill it.
+  function readCover(file) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var maxW = 900;
+          var w = img.width, h = img.height;
+          if (!w || !h) { rej(new Error('decode')); return; }
+          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          var c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          try { res(c.toDataURL('image/jpeg', 0.78)); }
+          catch (e) { rej(new Error('encode')); }
+        };
+        img.onerror = function () { rej(new Error('decode')); };
+        img.src = String(fr.result);
+      };
+      fr.onerror = function () { rej(new Error('read')); };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  $('#img-in').addEventListener('change', function () {
+    var file = this.files && this.files[0];
+    if (!file || !S.draft) return;
+    readCover(file).then(function (url) {
+      if (url.length > 1400000) {   // ~1 MB of base64
+        toast('That photo is too large even after shrinking');
+        return;
+      }
+      S.draft.f = S.draft.f || {};
+      S.draft.f.cover = url;
+      renderEdit();
+      toast('Cover photo added');
+    }).catch(function () {
+      toast('Could not read that image');
+    });
+  });
 
   function makePassword(len, syms) {
     var lower = 'abcdefghijkmnopqrstuvwxyz';   // no l
@@ -1886,6 +2074,13 @@ body::before {
         TYPES[e.type].fields.forEach(function (fd) {
           if (e.f[fd.k] != null && e.f[fd.k] !== '') f[fd.k] = String(e.f[fd.k]);
         });
+        // A race cover is not a typed field, so carry it across explicitly.
+        // Only same-origin paths and inline data are allowed through.
+        var cv = e.f.cover;
+        if (e.type === 'race' && typeof cv === 'string' && cv.length < 1500000 &&
+            (cv.indexOf('data:image/') === 0 || cv.indexOf('assets/') === 0)) {
+          f.cover = cv;
+        }
       }
       return {
         id: String(e.id),
