@@ -177,7 +177,7 @@ fetch its own reader files. It still can't contact any other host.
 
 ### Ask Claude
 
-**Running → Ask Claude about your running.** A chat with Claude Opus 5.5
+**Running → Ask Claude about your running.** A chat with Claude Sonnet 5.5
 about training, pacing and race day, using your races, personal bests,
 weekly kilometres and recent runs.
 
@@ -195,10 +195,17 @@ output tokens, and streams the reply back. If Claude declines a request, the
 worker has Anthropic retry it on its recommended fallback model
 (`fallbacks: "default"`).
 
-**Cost.** Claude Opus 5.5 is $4 per million input tokens and $20 per million
-output tokens. A typical question costs about 1–3 US cents. The app shows the
-estimate under each answer. Set a monthly spend limit in the Anthropic Console
-as a backstop.
+**Cost.** The worker uses Claude Sonnet 5.5 at low effort ($2 per million
+input tokens, $10 per million output; Claude's thinking counts as output). At
+about ₹97 to the dollar that's roughly ₹1 for a quick question and ₹4–5 for a
+full training plan. One answer can't cost more than about ₹8.5 (8,000 output
+tokens). The app shows a rupee estimate under each answer; your card adds its
+foreign-currency fee and taxes. Credit is prepaid, so set a spend limit in the
+Anthropic Console as a backstop.
+
+To use the most capable model instead, set `MODEL = 'claude-opus-5-5'` in
+`claude-worker/src/index.js` (about twice the cost) and run
+`npx wrangler deploy` again.
 
 #### Setting it up (once, about 10 minutes)
 

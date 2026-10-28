@@ -10,7 +10,11 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 
-const MODEL = 'claude-opus-5-5';
+// Sonnet 5.5: strong enough for training plans at half Opus's price.
+// Change to 'claude-opus-5-5' for the most capable model ($4/$20 per MTok).
+const MODEL = 'claude-sonnet-5-5';
+// Anthropic suggests low effort for chat on Sonnet 5.5: less thinking, lower cost.
+const EFFORT = 'low';
 const MAX_OUTPUT = 8000;   // about 6,000 words: plenty for a plan, and caps one answer's cost
 const MAX_TURNS = 40;
 const MAX_CHARS = 60000;   // chat + runner data, all turns together
@@ -95,12 +99,13 @@ export default {
         const stream = client.beta.messages.stream({
           model: MODEL,
           max_tokens: MAX_OUTPUT,
-          // If Claude Opus 5.5 declines, Anthropic retries on its recommended
-          // model inside the same call. A mid-answer switch continues the
-          // partial text, so nothing already streamed has to be discarded.
+          // If Claude declines, Anthropic retries on its recommended model
+          // inside the same call (for Sonnet 5.5, the "default" form only). A
+          // mid-answer switch continues the partial text, so nothing already
+          // streamed has to be discarded.
           betas: ['server-side-fallback-2026-07-01'],
           fallbacks: 'default',
-          output_config: { effort: 'medium' },
+          output_config: { effort: EFFORT },
           cache_control: { type: 'ephemeral' },   // reuse the prefix across turns of one chat
           system: [
             { type: 'text', text: COACH },

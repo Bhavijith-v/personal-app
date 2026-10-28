@@ -4618,12 +4618,12 @@ select.input {
      screen shows that exact text before you ask. No passwords, numbers or ID
      details are ever included. The chat lives in memory only and is gone
      when the box locks. */
-  var coach = { turns: [], busy: false, abort: null, last: null, setup: false };
+  var coach = { turns: [], busy: false, abort: null, last: null, lastModel: '', setup: false };
   var LOCAL_DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
   function coachReset() {
     if (coach.abort) { try { coach.abort.abort(); } catch (e) {} }
-    coach.turns = []; coach.busy = false; coach.abort = null; coach.last = null; coach.setup = false;
+    coach.turns = []; coach.busy = false; coach.abort = null; coach.last = null; coach.lastModel = ''; coach.setup = false;
     var el = $('#coach-body');
     if (el) el.textContent = '';
   }
@@ -4635,7 +4635,8 @@ select.input {
   function sanitizeClaude(c) {
     if (!c || typeof c !== 'object') return null;
     var url = String(c.url || ''), token = String(c.token || '');
-    return serverUrlOk(url) && token.length >= 8 && token.length <= 200 ? { url: url, token: token } : null;
+    var model = /^claude-[a-z0-9-]{1,40}$/.test(String(c.model || '')) ? String(c.model) : '';
+    return serverUrlOk(url) && token.length >= 8 && token.length <= 200 ? { url: url, token: token, model: model } : null;
   }
 
   function coachContext() {
@@ -4713,19 +4714,31 @@ select.input {
     return out.join('');
   }
 
-  // Claude Opus 5.5 rates, per million tokens: $4 in, $20 out, cache writes
-  // at 1.25x input, cache reads $0.20.
-  function costText(u) {
+  // US dollars per million tokens: [input, output, cache write, cache read].
+  // Thinking is billed as output. The fallback model (Claude Sonnet 5 for
+  // Sonnet 5.5) bills at its own rate, which the reply's model id selects.
+  var CLAUDE_RATES = {
+    'claude-opus-5-5': [4, 20, 5, 0.2],
+    'claude-sonnet-5-5': [2, 10, 2.5, 0.2],
+    'claude-sonnet-5': [2, 10, 2.5, 0.2],
+    'claude-haiku-5-5': [0.1, 0.5, 0.125, 0.01]
+  };
+  var CLAUDE_NAMES = { 'claude-opus-5-5': 'Claude Opus 5.5', 'claude-sonnet-5-5': 'Claude Sonnet 5.5', 'claude-haiku-5-5': 'Claude Haiku 5.5' };
+  var INR_PER_USD = 97;   // approximate; the bill is in dollars plus your card's fees
+  function costText(u, model) {
     if (!u) return '';
-    var usd = ((u.input || 0) * 4 + (u.cacheWrite || 0) * 5 + (u.cacheRead || 0) * 0.2 + (u.output || 0) * 20) / 1e6;
-    return 'about $' + (usd < 0.01 ? usd.toFixed(4) : usd.toFixed(2));
+    var r = CLAUDE_RATES[model] || CLAUDE_RATES['claude-sonnet-5-5'];
+    var usd = ((u.input || 0) * r[0] + (u.output || 0) * r[1] + (u.cacheWrite || 0) * r[2] + (u.cacheRead || 0) * r[3]) / 1e6;
+    var inr = usd * INR_PER_USD;
+    return 'about ₹' + (inr < 1 ? inr.toFixed(2) : inr.toFixed(1));
   }
   function coachMeta() {
-    var u = coach.last;
+    var u = coach.last, conf = claudeConf();
+    var name = CLAUDE_NAMES[(conf && conf.model) || ''] || 'Claude';
     return u
       ? 'Last answer: ' + ((u.input || 0) + (u.cacheRead || 0) + (u.cacheWrite || 0)).toLocaleString('en-IN') + ' tokens in, ' +
-        (u.output || 0).toLocaleString('en-IN') + ' out, ' + costText(u)
-      : 'Claude Opus 5.5, through your own server';
+        (u.output || 0).toLocaleString('en-IN') + ' out, ' + costText(u, coach.lastModel)
+      : name + ', through your own server';
   }
 
   function turnHtml(t) {
@@ -4823,6 +4836,7 @@ select.input {
       else if (ev.t === 'done') {
         ended = true;
         coach.last = ev.usage || null;
+        coach.lastModel = ev.model || '';
         if (ev.stop === 'refusal') fail('Claude declined to answer this one. Try asking it a different way.');
         else if (ev.stop === 'max_tokens') live.note = 'This answer hit the length limit and stopped early.';
       } else if (ev.t === 'error') { ended = true; fail(ev.v); }
@@ -4888,7 +4902,7 @@ select.input {
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (j) {
         if (!res.ok) throw new Error(j.error || 'The server answered with error ' + res.status + '.');
-        S.data.claude = { url: url, token: token };
+        S.data.claude = { url: url, token: token, model: String(j.model || '') };
         return persist();
       });
     }).then(function () {
@@ -4933,7 +4947,7 @@ select.input {
   $('#btn-coach-back').addEventListener('click', function () { show('run'); });
   $('#btn-coach-new').addEventListener('click', function () {
     if (coach.abort) coach.abort.abort();
-    coach.turns = []; coach.last = null; coach.busy = false; coach.abort = null;
+    coach.turns = []; coach.last = null; coach.lastModel = ''; coach.busy = false; coach.abort = null;
     renderCoach();
   });
 
