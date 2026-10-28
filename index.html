@@ -284,6 +284,29 @@ body::before {
   border: 1px solid var(--line);
   background: var(--surface-2);
 }
+.cover-lib { display: flex; gap: 8px; margin-bottom: 9px; flex-wrap: wrap; }
+.cover-lib button {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--fg-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+.cover-lib button.on { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); font-weight: 600; }
+.cover-lib img { width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 3px; display: block; }
+.cover-lib span {
+  font-size: 11.5px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .cover-pick { display: flex; gap: 9px; margin-top: 4px; flex-wrap: wrap; }
 .cover-pick button {
   flex: 1 1 130px;
@@ -1707,8 +1730,14 @@ body::before {
     if (d.type === 'race') {
       var cov = (d.f || {}).cover;
       html += '<div class="field"><span class="label">Cover photo</span>' +
+        '<div class="cover-lib">' + PRESETS.map(function (p) {
+          return '<button type="button" data-coverset="' + esc(p.cover) + '"' +
+            (cov === p.cover ? ' class="on"' : '') + '>' +
+            '<img src="' + esc(p.cover) + '" alt="">' +
+            '<span>' + esc(p.label) + '</span></button>';
+        }).join('') + '</div>' +
         '<div class="cover-pick">' +
-        '<button type="button" data-cover="pick">' + (cov ? 'Change photo' : 'Add a photo') + '</button>' +
+        '<button type="button" data-cover="pick">' + (cov ? 'Use a different photo' : 'Choose from my photos') + '</button>' +
         (cov ? '<button type="button" class="drop" data-cover="clear">Remove</button>' : '') +
         '</div>' +
         (cov ? '<img class="cover-prev" src="' + esc(cov) + '" alt="">' : '') +
@@ -1803,6 +1832,17 @@ body::before {
       S.draft.f.cover = hit.cover;
       renderEdit();
       toast('Filled in — now add your time');
+      return;
+    }
+
+    var setc = ev.target.closest('[data-coverset]');
+    if (setc) {
+      collectDraft();
+      S.draft.f = S.draft.f || {};
+      var want = setc.dataset.coverset;
+      if (S.draft.f.cover === want) delete S.draft.f.cover;   // tap again to unset
+      else S.draft.f.cover = want;
+      renderEdit();
       return;
     }
 
