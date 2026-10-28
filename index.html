@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <title>Deposit Box</title>
 <meta name="description" content="A private, offline, passphrase-encrypted vault for logins, bank accounts and cards.">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -598,6 +598,33 @@ select.input {
 .run-empty { padding: 28px 10px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
+/* ---------- document scan ---------- */
+.scan { margin-bottom: 20px; }
+.scan-go { gap: 9px; }
+.scan-go svg { width: 19px; height: 19px; display: block; }
+.scan.busy, .scan.review { padding: 14px; border: 1px solid var(--brass); border-radius: var(--r-md); background: var(--surface); }
+.scan-status { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--fg-dim); }
+.scan-status b { font-family: var(--data); font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
+.scan-track { height: 4px; border-radius: 2px; background: var(--surface-3); margin-top: 10px; overflow: hidden; }
+.scan-track i { display: block; height: 100%; background: var(--brass); transition: width .25s; }
+@media (prefers-reduced-motion: reduce) { .scan-track i { transition: none; } }
+.scan-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.scan-head b { font-size: 16px; font-weight: 600; }
+.scan-hint { margin: 6px 0 10px; }
+.scan-list { display: flex; flex-direction: column; border: 1px solid var(--line-soft); border-radius: var(--r-sm); overflow: hidden; }
+.scan-row {
+  display: flex; align-items: center; gap: 11px; padding: 10px 11px; min-width: 0;
+  border-bottom: 1px solid var(--line-soft); background: var(--surface); cursor: pointer;
+}
+.scan-list .scan-row:last-child { border-bottom: none; }
+.scan-row input { flex: 0 0 auto; width: 20px; height: 20px; accent-color: var(--brass); }
+.scan-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.scan-text .label { display: block; }
+.scan-val { font-family: var(--data); font-size: 14px; overflow-wrap: anywhere; }
+.scan-text small { font-size: 11.5px; color: var(--warn); }
+.scan-photo { margin-top: 8px; border: 1px solid var(--line-soft); border-radius: var(--r-sm); }
+.scan-photo .scan-val { font-family: var(--ui); }
+
 /* ---------- 2FA code ---------- */
 .otp {
   border: 1px solid var(--brass);
@@ -1028,6 +1055,7 @@ select.input {
 <div id="toast" role="status" hidden></div>
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*" hidden>
+<input type="file" id="scan-in" accept="image/*" hidden>
 
 <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Card photo">
   <img id="lightbox-img" alt="">
@@ -1632,6 +1660,7 @@ select.input {
     if (view === 'health') renderHealth();
     if (view === 'run') renderRun();
     if (view !== 'detail') { stopOtp(); closeLightbox(); }
+    if (view !== 'edit') scanState = null;
     if (view !== 'lock') armIdle();
   }
 
@@ -1649,6 +1678,8 @@ select.input {
 
   function lockNow(msg) {
     stopOtp();
+    scanState = null;
+    stopScanner();
     closeLightbox();
     if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
     S.mk = null;
@@ -2581,6 +2612,7 @@ select.input {
       '<input class="input" id="in-title" type="text" value="' + esc(d.title) + '" placeholder="' +
       esc(t.titlePh) + '" autocapitalize="words" spellcheck="false"></div>';
 
+    if (groupOf(d.type) === 'id') html += '<div id="scan-area"></div>';
     if (groupOf(d.type) === 'id') {
       var sides = t.sides || ['Front', 'Back'];
       html += '<div class="field"><span class="label">Photos of your card</span><div class="docshots">' +
@@ -2656,6 +2688,7 @@ select.input {
       '<textarea class="input" id="in-notes" autocapitalize="sentences">' + esc(d.notes || '') + '</textarea></div>';
 
     $('#edit-body').innerHTML = html;
+    if (groupOf(d.type) === 'id') renderScan();
   }
 
   function collectDraft() {
@@ -2704,6 +2737,9 @@ select.input {
 
     var docb = ev.target.closest('[data-doc]');
     if (docb) { switchType(docb.dataset.doc); return; }
+
+    var sc = ev.target.closest('[data-scan]');
+    if (sc) { scanAction(sc.dataset.scan); return; }
 
     var shot = ev.target.closest('[data-shot]');
     if (shot) {
@@ -3868,6 +3904,651 @@ select.input {
       };
     });
   }
+
+  /* ============ scan: parsers ============
+     Pure functions from recognised text (or a QR payload) to entry fields.
+     Each result carries how sure we are: 'qr' (read from the card's own QR
+     code), 'check' (passed a check digit or strict format) or 'read' (plain
+     OCR, which the user should look at). */
+  var OCR_DIGIT = { O: '0', o: '0', D: '0', Q: '0', I: '1', l: '1', '|': '1', i: '1', S: '5', s: '5', B: '8', Z: '2', z: '2', G: '6', b: '6', T: '7', g: '9' };
+  var OCR_ALPHA = { '0': 'O', '1': 'I', '5': 'S', '8': 'B', '2': 'Z', '6': 'G', '4': 'A', '7': 'T' };
+  function asDigits(sv) { return String(sv).replace(/./g, function (c) { return OCR_DIGIT[c] || c; }); }
+  function asAlpha(sv) { return String(sv).replace(/./g, function (c) { return OCR_ALPHA[c] || c; }); }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function dmy(d, m, y) {
+    d = +d; m = +m; y = +y;
+    if (!(d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100)) return null;
+    var t = new Date(y, m - 1, d);
+    return t.getMonth() === m - 1 ? y + '-' + pad2(m) + '-' + pad2(d) : null;
+  }
+  var DATE_SRC = '([0-3OoIl]?[0-9OoIlSB])\\s*[\\/\\-.]\\s*([01OoIl]?[0-9OoIlSB])\\s*[\\/\\-.]\\s*((?:19|20)[0-9OoIlSB]{2})';
+  function allDates(text) {
+    var re = new RegExp(DATE_SRC, 'g'), out = [], m;
+    while ((m = re.exec(text))) {
+      var ymd = dmy(asDigits(m[1]), asDigits(m[2]), asDigits(m[3]));
+      if (ymd) out.push({ ymd: ymd, at: m.index });
+    }
+    return out;
+  }
+  function dateAfter(text, labelSrc) {
+    var m = new RegExp('(?:' + labelSrc + ')[^0-9OoIl]{0,24}' + DATE_SRC, 'i').exec(text);
+    return m ? dmy(asDigits(m[1]), asDigits(m[2]), asDigits(m[3])) : null;
+  }
+  function lines(text) {
+    return String(text).split(/\r?\n/).map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  }
+  var NOT_A_NAME = /(govern|india|income|tax|depart|authority|identif|election|commission|card|permanent|account|number|signature|male|female|dob|birth|address|father|mother|husband|year|unique|vid|enrol|issue|valid|licen|transport|blood|union|republic|passport|nationality|elector|sex|gender|holder|name|family|category)/i;
+  function nameLike(x) {
+    if (/[0-9]/.test(x)) return '';   // names never hold digits; codes and dates do
+    var t = String(x).replace(/[^A-Za-z .']/g, '').replace(/\s+/g, ' ').trim();
+    var words = t.split(' ').filter(function (w) { return w.length > 0; });
+    if (t.length < 3 || t.length > 40 || words.length < 1 || words.length > 5) return '';
+    if (NOT_A_NAME.test(t)) return '';
+    if (!/[A-Za-z]{2}/.test(t)) return '';
+    // A lone lowercase letter at the start is OCR noise from the Hindi or
+    // Malayalam beside it. Trailing initials ("Bhavijith V") are real.
+    return words.filter(function (w, i) { return !(i === 0 && w.length === 1 && w === w.toLowerCase()); }).join(' ');
+  }
+  function titleCase(x) {
+    return String(x).toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
+  }
+  function valueAfter(text, labelSrc) {
+    var m = new RegExp('(?:' + labelSrc + ')\\s*[:\\-.]?\\s*([A-Za-z][A-Za-z .\']{2,40})', 'i').exec(text);
+    return m ? nameLike(m[1].split(/\s{2,}|\n/)[0]) : '';
+  }
+  function genderIn(text) {
+    var m = /\b(female|male|transgender)\b/i.exec(text);
+    if (m) return titleCase(m[1]);
+    m = /(?:sex|gender)\s*[:\/\-]?\s*([MFT])\b/i.exec(text);
+    return m ? { M: 'Male', F: 'Female', T: 'Transgender' }[m[1].toUpperCase()] : '';
+  }
+  function put(out, k, v, how) { if (v && !out[k]) out[k] = { v: v, how: how }; }
+
+  function scanAadhaarText(text) {
+    var out = {}, flat = text.replace(/\n/g, ' ');
+    var re = /([0-9OoIlSBZG]{4})[ \-]?([0-9OoIlSBZG]{4})[ \-]?([0-9OoIlSBZG]{4})(?![0-9])/g, m;
+    while ((m = re.exec(flat))) {
+      var n = asDigits(m[1] + m[2] + m[3]);
+      if (aadhaarOk(n)) { put(out, 'number', n, 'check'); break; }
+    }
+    m = /VID\s*[:.]?\s*((?:[0-9OoIlSBZG]{4}\s?){4})/i.exec(flat);
+    if (m) { var vid = asDigits(m[1]).replace(/\D/g, ''); if (vid.length === 16) put(out, 'vid', vid, 'read'); }
+    var dob = dateAfter(text, 'D\\.?O\\.?B|Date of Birth|Birth') || (allDates(text)[0] || {}).ymd;
+    put(out, 'dob', dob, 'read');
+    put(out, 'gender', genderIn(text), 'read');
+    var L = lines(text), dobAt = -1;
+    L.forEach(function (x, i) { if (dobAt < 0 && /(DOB|Birth|Year of)/i.test(x)) dobAt = i; });
+    for (var i = dobAt - 1; i >= 0 && i >= dobAt - 3; i--) {
+      var nm = nameLike(L[i]);
+      if (nm) { put(out, 'name', titleCase(nm), 'read'); break; }
+    }
+    m = /Address\s*[:\-]?\s*([\s\S]{10,220}?\b[1-9][0-9]{5}\b)/i.exec(text);
+    if (m) put(out, 'address', m[1].replace(/\s+/g, ' ').replace(/^[,\s]+/, '').trim(), 'read');
+    return out;
+  }
+
+  // Fix OCR letter/digit swaps before upper-casing: a lowercase l read for 1
+  // must still be seen as l, not turned into L first.
+  function tokens(text) { return String(text).split(/[^A-Za-z0-9|]+/); }
+
+  function scanPanText(text) {
+    var out = {}, toks = tokens(text);
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i];
+      if (t.length !== 10) continue;
+      var p = asAlpha(t.slice(0, 5)).toUpperCase() + asDigits(t.slice(5, 9)) + asAlpha(t.slice(9)).toUpperCase();
+      if (/^[A-Z]{3}[ABCFGHJLPT][A-Z][0-9]{4}[A-Z]$/.test(p)) { put(out, 'number', p, 'check'); break; }
+    }
+    put(out, 'dob', dateAfter(text, 'Date of Birth|DOB|Birth') || (allDates(text)[0] || {}).ymd, 'read');
+    var L = lines(text);
+    for (var j = 0; j < L.length; j++) {
+      if (/father/i.test(L[j])) {
+        var f = nameLike(L[j].replace(/.*father'?s?\s*name\s*[:\-]?/i, '')) || nameLike(L[j + 1] || '');
+        put(out, 'father', titleCase(f), 'read');
+      } else if (/\bname\b/i.test(L[j])) {   // the label can follow Hindi read as junk
+        var n = nameLike(L[j].replace(/.*\bname\b\s*[:\-]?/i, '')) || nameLike(L[j + 1] || '');
+        put(out, 'name', titleCase(n), 'read');
+      }
+    }
+    if (!out.name) {   // older cards: name, then father's name, under the header
+      var start = -1;
+      L.forEach(function (x, k) { if (start < 0 && /(INCOME|GOVT|GOVERNMENT)/i.test(x)) start = k; });
+      var picks = L.slice(start + 1).map(nameLike).filter(Boolean);
+      if (picks[0]) put(out, 'name', titleCase(picks[0]), 'read');
+      if (picks[1]) put(out, 'father', titleCase(picks[1]), 'read');
+    }
+    return out;
+  }
+
+  function scanVoterText(text) {
+    var out = {}, toks = tokens(text);
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i];
+      if (t.length !== 10) continue;
+      var e = asAlpha(t.slice(0, 3)).toUpperCase() + asDigits(t.slice(3));
+      if (/^[A-Z]{3}[0-9]{7}$/.test(e)) { put(out, 'number', e, 'check'); break; }
+    }
+    put(out, 'relation', titleCase(valueAfter(text, "(?:Father|Husband|Mother)'?s?\\s*Name")), 'read');
+    var m = /(?:Elector'?s?\s*)?Name\s*[:\-]\s*([A-Za-z][A-Za-z .]{2,40})/i.exec(text.replace(/(?:Father|Husband|Mother)'?s?\s*Name\s*[:\-][^\n]*/ig, ''));
+    if (m) put(out, 'name', titleCase(nameLike(m[1].split('\n')[0])), 'read');
+    put(out, 'gender', genderIn(text), 'read');
+    put(out, 'dob', dateAfter(text, 'Date of Birth|DOB|Birth'), 'read');
+    return out;
+  }
+
+  // Machine-readable zone: two 44-character lines at the foot of the photo
+  // page, with check digits on the number and both dates (ICAO 9303).
+  function mrzDigit(sv) {
+    var w = [7, 3, 1], sum = 0;
+    for (var i = 0; i < sv.length; i++) {
+      var c = sv[i], v = c === '<' ? 0 : /[0-9]/.test(c) ? +c : c.charCodeAt(0) - 55;
+      sum += v * w[i % 3];
+    }
+    return String(sum % 10);
+  }
+  function scanMrz(text) {
+    var L = String(text).toUpperCase().replace(/[«‹]/g, '<<').split(/\r?\n/)
+      .map(function (x) { return x.replace(/\s+/g, '').replace(/[^A-Z0-9<]/g, ''); })
+      .filter(function (x) { return x.length >= 30; });
+    for (var i = 0; i < L.length - 1; i++) {
+      if (L[i][0] !== 'P' || L[i + 1].length < 40) continue;
+      var l1 = (L[i] + new Array(45).join('<')).slice(0, 44);
+      var l2 = (L[i + 1] + new Array(45).join('<')).slice(0, 44);
+      var num = asAlpha(l2[0]) + asDigits(l2.slice(1, 8)) + l2.slice(8, 9);
+      var dob = asDigits(l2.slice(13, 19)), exp = asDigits(l2.slice(21, 27));
+      var c1 = asDigits(l2[9]), c2 = asDigits(l2[19]), c3 = asDigits(l2[27]);
+      // OCR often reads the < filler as K. Long K runs are filler; if no <<
+      // separator survived, the first KK is taken as the surname break.
+      var nm = l1.slice(5).replace(/K{3,}/g, function (r) { return new Array(r.length + 1).join('<'); }).replace(/<+$/, '');
+      if (nm.indexOf('<<') < 0 && nm.indexOf('KK') > 0) nm = nm.replace('KK', '<<');
+      var names = nm.split('<<');
+      var out = {};
+      var yy = new Date().getFullYear() % 100;
+      var by = +dob.slice(0, 2), bdate = dmy(dob.slice(4, 6), dob.slice(2, 4), (by > yy ? 1900 : 2000) + by);
+      var edate = dmy(exp.slice(4, 6), exp.slice(2, 4), 2000 + +exp.slice(0, 2));
+      var numOk = mrzDigit(num) === c1, dobOk = mrzDigit(dob) === c2, expOk = mrzDigit(exp) === c3;
+      if (!numOk && !dobOk && !expOk) continue;   // not a real MRZ
+      put(out, 'number', num.replace(/</g, ''), numOk ? 'check' : 'read');
+      put(out, 'dob', bdate, dobOk ? 'check' : 'read');
+      put(out, 'expiry', edate, expOk ? 'check' : 'read');
+      if (names[0]) put(out, 'surname', titleCase(names[0].replace(/</g, ' ').trim()), 'read');
+      if (names[1]) put(out, 'given', titleCase(names[1].replace(/</g, ' ').trim()), 'read');
+      return out;
+    }
+    return {};
+  }
+  function levenshtein(a, b) {
+    a = String(a); b = String(b);
+    var prev = [], cur, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i];
+      for (j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  // MRZ names: '<' became spaces; drop OCR filler (single letters, runs
+  // like LLLL, anything with digits) left where the < padding was.
+  function mrzNameClean(sv) {
+    return String(sv || '').split(/\s+/).filter(function (w) {
+      if (w.length < 2 || /[0-9]/.test(w)) return false;
+      var n = {}, top = 0, low = w.toLowerCase();
+      for (var i = 0; i < low.length; i++) { n[low[i]] = (n[low[i]] || 0) + 1; top = Math.max(top, n[low[i]]); }
+      return !(low.length >= 4 && top / low.length >= 0.7);   // "LLLLLLLK" is filler
+    }).join(' ');
+  }
+  // Reconcile the printed name with the code-line name. They usually agree;
+  // when OCR garbles one, the code line (fixed font, capitals only) is the
+  // better guess as long as the two are within two edits of each other.
+  function pickName(visual, coded) {
+    coded = mrzNameClean(coded);
+    if (!visual) return coded;
+    if (!coded) return visual;
+    var V = visual.toUpperCase(), C = coded.toUpperCase();
+    if (V === C) return visual;
+    var head = C.slice(0, V.length);
+    return levenshtein(head, V) <= 2 ? titleCase(head) : visual;
+  }
+
+  function scanPassportText(text, mrzText) {
+    var mrz = scanMrz(mrzText || '');
+    var fromPage = scanMrz(text);
+    Object.keys(fromPage).forEach(function (k) { if (!mrz[k]) mrz[k] = fromPage[k]; });
+
+    // The printed fields, read by their labels.
+    var vis = {}, L0 = lines(text);
+    L0.forEach(function (x, i) {
+      if (/surname/i.test(x)) put(vis, 'surname', titleCase(nameLike(x.replace(/.*surname\s*[:\-]?/i, '')) || nameLike(L0[i + 1] || '')), 'read');
+      if (/given\s*name/i.test(x)) put(vis, 'given', titleCase(nameLike(x.replace(/.*given\s*names?\s*(\(s\))?\s*[:\-]?/i, '')) || nameLike(L0[i + 1] || '')), 'read');
+    });
+    put(vis, 'dob', dateAfter(text, 'Date of Birth'), 'read');
+    put(vis, 'expiry', dateAfter(text, 'Date of Expiry|Expiry'), 'read');
+    var pm = /Passport\s*No\.?\s*[:\-]?\s*([A-Za-z][0-9OoIlSB]{7})\b/.exec(text);
+    if (pm) put(vis, 'number', asAlpha(pm[1][0]).toUpperCase() + asDigits(pm[1].slice(1)), 'read');
+
+    // A code-line value that passed its check digit beats everything;
+    // an unverified one loses to the printed value.
+    var out = {};
+    ['number', 'dob', 'expiry'].forEach(function (k) {
+      if (mrz[k] && mrz[k].how === 'check') out[k] = mrz[k];
+      else if (vis[k]) out[k] = vis[k];
+      else if (mrz[k]) out[k] = mrz[k];
+    });
+    ['surname', 'given'].forEach(function (k) {
+      var chosen = pickName(vis[k] && vis[k].v, mrz[k] && mrz[k].v);
+      if (chosen) out[k] = { v: chosen, how: 'read' };
+    });
+    // Indian passports run 10 years less a day (5 for minors): that pins the issue date.
+    if (out.expiry) {
+      var ex = out.expiry.v;
+      allDates(text).forEach(function (d) {
+        var gap = (new Date(ex) - new Date(d.ymd)) / 86400000;
+        if (!out.issued && ((gap > 3640 && gap < 3660) || (gap > 1820 && gap < 1832))) put(out, 'issued', d.ymd, 'read');
+      });
+    }
+    var m = /File\s*No\.?\s*[:\-]?\s*([A-Z0-9]{8,16})/i.exec(text);
+    if (m) put(out, 'file', m[1].toUpperCase(), 'read');
+    var L = lines(text);
+    L.forEach(function (x, i) {
+      if (/Place of Birth/i.test(x)) put(out, 'pob', titleCase(nameLike(x.replace(/.*Place of Birth\s*[:\-]?/i, '')) || nameLike(L[i + 1] || '')), 'read');
+      if (/Place of Issue/i.test(x)) put(out, 'poi', titleCase(nameLike(x.replace(/.*Place of Issue\s*[:\-]?/i, '')) || nameLike(L[i + 1] || '')), 'read');
+    });
+    return out;
+  }
+
+  function scanDlText(text) {
+    var out = {}, flat = text.toUpperCase().replace(/\n/g, ' ');
+    var m = /\b([A-Za-z]{2})[\s\-]?([0-9OoIlSB]{2})[\s\-\/]{0,2}((?:19|20)[0-9OoIlSB]{2})[\s\-\/]{0,2}([0-9OoIlSB]{5,7})\b/.exec(text.replace(/\n/g, ' '));
+    if (m) {
+      var serial = asDigits(m[4]);
+      while (serial.length < 7) serial = '0' + serial;
+      put(out, 'number', asAlpha(m[1]).toUpperCase() + asDigits(m[2]) + ' ' + asDigits(m[3]) + serial, 'read');
+    }
+    put(out, 'name', titleCase(valueAfter(text, 'Name')), 'read');
+    put(out, 'dob', dateAfter(text, 'D\\.?O\\.?B|Date of Birth|Birth'), 'read');
+    m = /(?:Blood\s*Group|\bBG)\s*[:\-]?\s*(AB|A|B|O)\s*(\+|-|POS|NEG|\+?VE|-VE)/i.exec(text);
+    if (m) put(out, 'blood', m[1].toUpperCase() + (/^(\+|POS|\+?VE)$/i.test(m[2]) ? '+' : '-'), 'read');
+    put(out, 'expiry', dateAfter(text, 'Valid\\s*Till|Valid\\s*Up\\s*to|Validity\\s*\\(?\\s*NT\\s*\\)?|Valid'), 'read');
+    put(out, 'issued', dateAfter(text, 'Date of Issue|Issued?\\s*On|D\\.?O\\.?I|Issue Date'), 'read');
+    var cls = flat.match(/\b(MCWG|MCWOG|LMV-NT|LMV-TR|LMV|HMV|HGMV|HPMV|HTV|MGV|TRANS|INVCRG|ERIKSHAW|3W-NT|3W-T)\b/g);
+    if (cls) put(out, 'classes', cls.filter(function (c, i) { return cls.indexOf(c) === i; }).join(', '), 'read');
+    return out;
+  }
+
+  function scanRationText(text) {
+    var out = {}, m = /\b(\d{10})\b/.exec(asDigits(text.replace(/[A-Za-z]{3,}/g, ' ')));
+    if (m) put(out, 'number', m[1], 'read');
+    var kinds = { AAY: 'Yellow (AAY)', PHH: 'Pink (PHH)', NPS: 'Blue (NPS)', NPNS: 'White (NPNS)' };
+    m = /\b(NPNS|NPS|PHH|AAY)\b/.exec(text.toUpperCase());
+    if (m) put(out, 'cardtype', kinds[m[1]], 'read');
+    else {
+      m = /\b(yellow|pink|blue|white)\b/i.exec(text);
+      if (m) put(out, 'cardtype', { yellow: 'Yellow (AAY)', pink: 'Pink (PHH)', blue: 'Blue (NPS)', white: 'White (NPNS)' }[m[1].toLowerCase()], 'read');
+    }
+    // Longest label first, so "Name of Head of Family:" isn't cut at "Head".
+    put(out, 'head', titleCase(valueAfter(text, 'Name of (?:the )?Head of (?:the )?Family|Head of (?:the )?Family|Name of (?:the )?Head|Card\\s*holder')), 'read');
+    return out;
+  }
+
+  function scanAbhaText(text) {
+    var out = {}, m = /\b(\d{2})[\s\-]?(\d{4})[\s\-]?(\d{4})[\s\-]?(\d{4})\b/.exec(asDigits(text.replace(/@\S+/g, ' ')));
+    if (m) put(out, 'number', m[1] + m[2] + m[3] + m[4], 'read');
+    m = /\b([a-z0-9._]{3,})@(abdm|sbx)\b/i.exec(text);
+    if (m) put(out, 'address', m[1].toLowerCase() + '@' + m[2].toLowerCase(), 'read');
+    put(out, 'name', titleCase(valueAfter(text, 'Name')), 'read');
+    put(out, 'dob', dateAfter(text, 'Date of Birth|DOB|Birth'), 'read');
+    put(out, 'gender', genderIn(text), 'read');
+    return out;
+  }
+
+  // Aadhaar QR. Old cards hold XML; newer ones a "Secure QR": a decimal
+  // number that is a gzip stream of fields separated by byte 255, with the
+  // first four digits of the reference ID being the Aadhaar's last four.
+  function decodeAadhaarXml(xml) {
+    var doc = new DOMParser().parseFromString(xml, 'text/xml');
+    var el = doc.getElementsByTagName('PrintLetterBarcodeData')[0];
+    if (!el) return null;
+    var a = function (k) { return (el.getAttribute(k) || '').trim(); };
+    var out = {};
+    if (aadhaarOk(a('uid'))) put(out, 'number', a('uid'), 'qr');
+    put(out, 'name', a('name'), 'qr');
+    put(out, 'gender', { M: 'Male', F: 'Female', T: 'Transgender' }[a('gender').toUpperCase()] || '', 'qr');
+    var d = a('dob'), m = /^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/.exec(d), m2 = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+    put(out, 'dob', m ? dmy(m[1], m[2], m[3]) : m2 ? dmy(m2[3], m2[2], m2[1]) : null, 'qr');
+    var addr = ['house', 'street', 'lm', 'loc', 'vtc', 'po', 'subdist', 'dist', 'state', 'pc'].map(a)
+      .filter(function (x, i, all) { return x && all.indexOf(x) === i; }).join(', ');
+    put(out, 'address', addr, 'qr');
+    return out;
+  }
+  function secureQrFields(bytes) {
+    var parts = [], cur = [];
+    for (var i = 0; i < bytes.length && parts.length < 20; i++) {
+      if (bytes[i] === 255) { parts.push(cur); cur = []; } else cur.push(bytes[i]);
+    }
+    var txt = parts.map(function (p) { return String.fromCharCode.apply(null, p); });
+    var off = /^V\d$/.test(txt[0]) ? 1 : 0;
+    var g = function (n) { return (txt[off + n] || '').trim(); };
+    var out = {};
+    var ref = g(1);
+    if (/^\d{4}/.test(ref)) out._last4 = ref.slice(0, 4);
+    put(out, 'name', g(2), 'qr');
+    var m = /^(\d{2})[\-\/](\d{2})[\-\/](\d{4})$/.exec(g(3));
+    put(out, 'dob', m ? dmy(m[1], m[2], m[3]) : null, 'qr');
+    put(out, 'gender', { M: 'Male', F: 'Female', T: 'Transgender' }[g(4).toUpperCase()] || '', 'qr');
+    // careof(5) district(6) landmark(7) house(8) location(9) pincode(10)
+    // postoffice(11) state(12) street(13) subdistrict(14) vtc(15)
+    // Locality, village and post office are often the same place: say it once.
+    var addr = [g(8), g(13), g(7), g(9), g(15), g(11), g(14), g(6), g(12), g(10)]
+      .filter(function (x, i, all) { return x && all.indexOf(x) === i; }).join(', ');
+    put(out, 'address', addr, 'qr');
+    return out;
+  }
+  function decimalToBytes(dec) {
+    var hex = BigInt(dec).toString(16);
+    if (hex.length % 2) hex = '0' + hex;
+    var out = new Uint8Array(hex.length / 2);
+    for (var i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+    return out;
+  }
+  /* ============ scan: end parsers ============ */
+
+  var SCANNERS = {
+    id_aadhaar: scanAadhaarText, id_pan: scanPanText, id_voter: scanVoterText,
+    id_dl: scanDlText, id_ration: scanRationText, id_abha: scanAbhaText
+  };
+
+  /* ============ scan: engine ============
+     Everything below runs on the phone. The OCR engine (Tesseract, compiled
+     to WebAssembly) and its English model are this app's own files under
+     lib/ocr; they load the first time you scan and are cached after that.
+     The photo and the recognised text never leave the device and are not
+     stored: only the fields you choose to fill end up in the vault. */
+  var scanState = null, ocrWorker = null, ocrBoot = null, ocrNote = null;
+
+  function loadScriptOnce(src) {
+    return new Promise(function (res, rej) {
+      if (document.querySelector('script[data-src="' + src + '"]')) { res(); return; }
+      var el = document.createElement('script');
+      el.src = src; el.dataset.src = src;
+      el.onload = function () { res(); };
+      el.onerror = function () { rej(new Error('load ' + src)); };
+      document.head.appendChild(el);
+    });
+  }
+  function abs(p) { return new URL(p, location.href).href.replace(/\/$/, ''); }
+  function ocrReady() {
+    if (!ocrBoot) {
+      ocrBoot = Promise.all([loadScriptOnce('lib/ocr/tesseract.min.js'), loadScriptOnce('lib/ocr/jsQR.js')])
+        .then(function () {
+          return window.Tesseract.createWorker('eng', 1, {
+            workerPath: abs('lib/ocr/worker.min.js'),
+            corePath: abs('lib/ocr/'),
+            langPath: abs('lib/ocr/lang'),
+            workerBlobURL: false,
+            gzip: true,
+            logger: function (m) { if (ocrNote) ocrNote(m); }
+          });
+        })
+        // Phone photos carry no DPI; tell Tesseract to treat them as 300.
+        .then(function (w) { return w.setParameters({ user_defined_dpi: '300' }).then(function () { return w; }); })
+        .then(function (w) { ocrWorker = w; return w; })
+        .catch(function (e) { ocrBoot = null; throw e; });
+    }
+    return ocrBoot;
+  }
+  function stopScanner() {
+    if (ocrWorker) { try { ocrWorker.terminate(); } catch (e) {} }
+    ocrWorker = null; ocrBoot = null;
+  }
+
+  // Read as a data: URL, not a blob: URL. The page's img-src policy allows
+  // data: only, which keeps a stray image from loading off anything else.
+  function fileToCanvas(file, maxSide) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var sc = Math.min(1, maxSide / Math.max(img.width, img.height));
+          var c = document.createElement('canvas');
+          c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          res(c);
+        };
+        img.onerror = function () { rej(new Error('decode')); };
+        img.src = String(fr.result);
+      };
+      fr.onerror = function () { rej(new Error('read')); };
+      fr.readAsDataURL(file);
+    });
+  }
+  function readQr(canvas) {
+    if (!window.jsQR) return null;
+    var tries = [1, 0.6];
+    for (var i = 0; i < tries.length; i++) {
+      var c = canvas;
+      if (tries[i] !== 1) {
+        c = document.createElement('canvas');
+        c.width = Math.round(canvas.width * tries[i]); c.height = Math.round(canvas.height * tries[i]);
+        c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height);
+      }
+      var data = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+      var hit = window.jsQR(data.data, c.width, c.height, { inversionAttempts: 'attemptBoth' });
+      if (hit && hit.data) return hit.data;
+    }
+    return null;
+  }
+  function gunzip(bytes) {
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(stream).arrayBuffer().then(function (b) { return new Uint8Array(b); });
+  }
+  function aadhaarFromQr(payload) {
+    if (!payload) return Promise.resolve(null);
+    if (/PrintLetterBarcodeData/.test(payload)) return Promise.resolve(decodeAadhaarXml(payload));
+    if (/^\d{200,}$/.test(payload) && window.DecompressionStream) {
+      return gunzip(decimalToBytes(payload)).then(secureQrFields).catch(function () { return null; });
+    }
+    return Promise.resolve(null);
+  }
+
+  function scanFile(file) {
+    var type = S.draft && S.draft.type;
+    if (!type) return;
+    scanState = { busy: true, status: 'Getting the reader ready…', pct: 0, file: file };
+    renderScan();
+    ocrNote = function (m) {
+      if (!scanState || !scanState.busy) return;
+      var words = {
+        'loading tesseract core': 'Loading the reader (first time only)',
+        'loading language traineddata': 'Loading the English model (first time only)',
+        'initializing api': 'Starting the reader',
+        'recognizing text': 'Reading the card'
+      };
+      scanState.status = (words[m.status] || 'Working') + '…';
+      scanState.pct = Math.round((m.progress || 0) * 100);
+      renderScan();
+    };
+    var canvas;
+    fileToCanvas(file, 1800).then(function (c) {
+      canvas = c;
+      return ocrReady();
+    }).then(function (worker) {
+      var qrText = type === 'id_aadhaar' ? readQr(canvas) : null;
+      return aadhaarFromQr(qrText).then(function (fromQr) {
+        return worker.recognize(canvas).then(function (r) {
+          var text = (r && r.data && r.data.text) || '';
+          if (type !== 'id_passport') return { text: text, mrz: '', qr: fromQr };
+          // Second pass on the foot of the page, restricted to MRZ characters.
+          return worker.setParameters({ tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<', tessedit_pageseg_mode: '6' })
+            .then(function () {
+              var h = canvas.height;
+              return worker.recognize(canvas, { rectangle: { left: 0, top: Math.round(h * 0.68), width: canvas.width, height: Math.round(h * 0.32) } });
+            })
+            .then(function (r2) {
+              // Back to tesseract.js's own default (6, one block), not Tesseract's 3.
+              return worker.setParameters({ tessedit_char_whitelist: '', tessedit_pageseg_mode: '6' })
+                .then(function () { return { text: text, mrz: (r2 && r2.data && r2.data.text) || '', qr: fromQr }; });
+            });
+        });
+      });
+    }).then(function (res) {
+      if (!scanState) return;
+      var found;
+      if (type === 'id_passport') found = scanPassportText(res.text, res.mrz);
+      else if (type === 'id_other') found = res.text.trim() ? { _notes: { v: res.text.trim().slice(0, 1500), how: 'read' } } : {};
+      else found = (SCANNERS[type] || function () { return {}; })(res.text);
+      if (res.qr) {
+        var last4 = res.qr._last4;
+        delete res.qr._last4;
+        Object.keys(res.qr).forEach(function (k) { found[k] = res.qr[k]; });
+        if (last4 && found.number && found.number.v.slice(-4) === last4) found.number.how = 'qr';
+      }
+      matchKnown(found);
+      scanState = { busy: false, found: found, file: file, keepPhoto: !(S.draft.f || {}).img1, qr: !!res.qr };
+      renderScan();
+    }).catch(function (e) {
+      if (!scanState) return;
+      var offline = !navigator.onLine || /load|fetch|network|Failed/i.test(String(e && e.message));
+      scanState = { busy: false, error: offline
+        ? 'The reader downloads once (about 7 MB) the first time you scan. Connect to the internet and try again; after that it works offline.'
+        : 'Could not read that photo. Try again with the card flat, filling the frame, and no glare.' };
+      renderScan();
+    });
+  }
+
+  var HOW = { qr: 'From QR', check: 'Verified', known: 'Matches vault', read: 'Check this' };
+
+  // Names are where OCR slips most ("IJ" read as "UJ"). If a scanned name
+  // is within two letters of one already in the vault (your Aadhaar, say),
+  // it's almost certainly that name. Runs locally against your own entries.
+  function knownNames() {
+    var set = {};
+    entries().forEach(function (e) {
+      var f = e.f || {};
+      ['name', 'father', 'given', 'surname', 'head', 'relation', 'holder', 'nominee'].forEach(function (k) {
+        if (!f[k]) return;
+        set[titleCase(f[k])] = 1;
+        String(f[k]).split(/\s+/).forEach(function (w) { if (w.length >= 3) set[titleCase(w)] = 1; });
+      });
+    });
+    return Object.keys(set);
+  }
+  function matchKnown(found) {
+    var known = knownNames();
+    if (!known.length) return;
+    ['name', 'father', 'given', 'surname', 'head', 'relation'].forEach(function (k) {
+      var f = found[k];
+      if (!f || f.how === 'qr') return;
+      var best = null, bd = 99;
+      known.forEach(function (kn) {
+        if (Math.abs(kn.length - f.v.length) > 2) return;
+        var d = levenshtein(kn.toLowerCase(), f.v.toLowerCase());
+        if (d < bd) { bd = d; best = kn; }
+      });
+      if (best && bd <= 2 && bd <= f.v.length * 0.25) { f.v = best; f.how = 'known'; }
+    });
+  }
+  function renderScan() {
+    var el = $('#scan-area');
+    if (!el || !S.draft) return;
+    var st = scanState, t = TYPES[S.draft.type];
+    if (!st) {
+      el.innerHTML = '<div class="scan">' +
+        '<button type="button" class="btn ghost scan-go" data-scan="pick">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M3.5 8V5.5a2 2 0 0 1 2-2H8M16 3.5h2.5a2 2 0 0 1 2 2V8M20.5 16v2.5a2 2 0 0 1-2 2H16M8 20.5H5.5a2 2 0 0 1-2-2V16M7 12h10"/></svg>' +
+        esc(S.draft.type === 'id_other' ? 'Scan the document'
+          : 'Scan your ' + (/^(Aadhaar|PAN|ABHA)/.test(t.name) ? t.name : t.name.charAt(0).toLowerCase() + t.name.slice(1))) + '</button>' +
+        '<p class="hint">Reads the card on this phone and fills the fields for you to check. Nothing is uploaded.' +
+        (S.draft.type === 'id_aadhaar' ? ' On newer Aadhaar cards, include the QR code for exact details.' : '') +
+        (S.draft.type === 'id_passport' ? ' Photograph the photo page, including the two code lines at the bottom.' : '') + '</p></div>';
+      return;
+    }
+    if (st.busy) {
+      el.innerHTML = '<div class="scan busy"><div class="scan-status"><span>' + esc(st.status) + '</span><b>' + st.pct + '%</b></div>' +
+        '<div class="scan-track"><i style="width:' + st.pct + '%"></i></div>' +
+        '<button type="button" class="link-row" data-scan="cancel">Cancel</button></div>';
+      return;
+    }
+    if (st.error) {
+      el.innerHTML = '<div class="scan"><p class="err">' + esc(st.error) + '</p>' +
+        '<button type="button" class="btn ghost" data-scan="pick">Try another photo</button></div>';
+      return;
+    }
+    var keys = Object.keys(st.found);
+    if (!keys.length) {
+      el.innerHTML = '<div class="scan"><p class="err">Nothing readable found. Hold the phone straight over the card, fill the frame, and avoid glare.</p>' +
+        '<button type="button" class="btn ghost" data-scan="pick">Try another photo</button>' +
+        '<button type="button" class="link-row" data-scan="cancel">Close</button></div>';
+      return;
+    }
+    var have = S.draft.f || {};
+    el.innerHTML = '<div class="scan review"><div class="scan-head"><b>Found ' + keys.length + ' ' + (keys.length === 1 ? 'detail' : 'details') + '</b>' +
+      (st.qr ? '<span class="pill ok">QR read</span>' : '') + '</div>' +
+      '<p class="hint scan-hint">Tick what to fill in. Anything marked <b>Check this</b> came from reading the print, so compare it with the card.</p>' +
+      '<div class="scan-list">' + keys.map(function (k) {
+        var f = st.found[k];
+        var fd = k === '_notes' ? { l: 'Notes', k: '_notes' } : fieldDef(S.draft.type, k);
+        if (!fd) return '';
+        var shown = fd.date ? fmtDate(f.v) : fd.group4 || fd.abha ? shownValue(f.v, fd) : f.v;
+        var clash = k !== '_notes' && have[k] && have[k] !== f.v;
+        return '<label class="scan-row"><input type="checkbox" data-scankey="' + esc(k) + '"' + (clash ? '' : ' checked') + '>' +
+          '<span class="scan-text"><span class="label">' + esc(fd.l) + '</span><span class="scan-val">' + esc(shown) + '</span>' +
+          (clash ? '<small>Replaces what you typed</small>' : '') + '</span>' +
+          '<span class="pill ' + (f.how === 'read' ? 'warn' : 'ok') + '">' + esc(HOW[f.how]) + '</span></label>';
+      }).join('') + '</div>' +
+      (st.keepPhoto ? '<label class="scan-row scan-photo"><input type="checkbox" data-scanphoto checked>' +
+        '<span class="scan-text"><span class="scan-val">Also keep this photo as the ' + esc(((t.sides || ['front'])[0]).toLowerCase()) + '</span></span></label>' : '') +
+      '<div class="bk-acts"><button type="button" class="btn ghost" data-scan="cancel">Discard</button>' +
+      '<button type="button" class="btn" data-scan="fill">Fill these in</button></div></div>';
+  }
+
+  function scanAction(what) {
+    if (what === 'pick') {
+      collectDraft();
+      guardSheet();
+      var si = $('#scan-in');
+      si.value = '';
+      si.click();
+      return;
+    }
+    if (what === 'cancel') { scanState = null; renderScan(); return; }
+    if (what === 'fill' && scanState && scanState.found) {
+      collectDraft();
+      var st = scanState, n = 0;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-scankey]'), function (box) {
+        if (!box.checked) return;
+        var k = box.dataset.scankey, f = st.found[k];
+        if (!f) return;
+        if (k === '_notes') S.draft.notes = (S.draft.notes ? S.draft.notes + '\n\n' : '') + f.v;
+        else S.draft.f[k] = f.v;
+        n++;
+      });
+      if (!S.draft.title) {
+        var who = S.draft.f.name || [S.draft.f.given, S.draft.f.surname].filter(Boolean).join(' ') || S.draft.f.head;
+        S.draft.title = TYPES[S.draft.type].name + (who ? ' — ' + who : '');
+      }
+      var keep = document.querySelector('[data-scanphoto]');
+      var finish = function () {
+        scanState = null;
+        renderEdit();
+        toast(n ? 'Filled ' + n + ' ' + (n === 1 ? 'field' : 'fields') + ' — check them before saving' : 'Nothing filled');
+      };
+      if (keep && keep.checked && st.file) {
+        readCover(st.file, { maxSide: 1400, limit: 700000 })
+          .then(function (url) { if (url.length < 1400000) S.draft.f.img1 = url; })
+          .catch(function () {})
+          .then(finish);
+      } else finish();
+    }
+  }
+  $('#scan-in').addEventListener('change', function () {
+    var file = this.files && this.files[0];
+    if (file) scanFile(file);
+  });
 
   /* ============ confirm sheet ============ */
   var confirmResolve = null;

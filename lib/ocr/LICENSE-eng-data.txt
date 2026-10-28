@@ -1,0 +1,1 @@
+eng.traineddata: Apache-2.0 (tesseract-ocr/tessdata_best), packaged by @tesseract.js-data/eng (MIT)

@@ -146,6 +146,35 @@ Below it, three tiles:
   and year, and a 12-week chart. Tap a week to see its total. Runs are stored
   encrypted and travel with backups.
 
+### Scanning a document
+
+In any ID document, tap **Scan your Aadhaar** (or PAN, passport…), take or
+pick a photo, and the app fills in the fields. Then **you** tick what to keep.
+
+**It all happens on the phone.** The reader is Tesseract OCR compiled to
+WebAssembly, plus jsQR for QR codes, all vendored in `lib/ocr/` (Apache-2.0 /
+MIT licences included). The photo and the recognised text are never uploaded
+and never stored. Only the fields you tick go into the vault. The first scan
+downloads about 7 MB (the reader and its English model) from this site; after
+that it works offline.
+
+How each document is read:
+
+| Document | How |
+| --- | --- |
+| Aadhaar | **The QR code first**: old cards hold XML; newer "Secure QR" codes are decoded (gzip, fields split by byte 255) for exact name, DOB, gender and address. The number comes from the print, is checked with its Verhoeff digit, and is confirmed against the QR's last four digits. |
+| Passport | The two code lines at the foot of the photo page (ICAO 9303), read in a second pass limited to code-line characters. Number, birth and expiry dates carry check digits. If a check fails, the printed value wins. The issue date is worked out from the 10-year validity. |
+| PAN | Format check, including the 4th-letter holder type |
+| Voter ID, licence, ration card, ABHA | Labelled fields and formats (Kerala ration colours, licence vehicle classes, blood group) |
+
+Every value carries a label: **From QR**, **Verified** (passed a check
+digit or strict format), **Matches vault** (a name within two letters of one
+already in your vault, the usual way OCR slips), or **Check this** (plain
+reading, so compare it with the card).
+
+The page's security policy now allows `connect-src 'self'`, so the app can
+fetch its own reader files. It still can't contact any other host.
+
 ### Trading accounts and 2FA codes
 
 The **Trading account** type holds a broker login: client ID, password, Kite
