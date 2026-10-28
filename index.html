@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <title>Deposit Box</title>
 <meta name="description" content="A private, offline, passphrase-encrypted vault for logins, bank accounts and cards.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Deposit Box">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#15171a" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
 <meta name="format-detection" content="telephone=no">
@@ -102,7 +102,7 @@ body {
 [hidden] { display: none !important; }
 img { max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 4px; }
 ::selection { background: var(--brass-soft); }
 
@@ -139,7 +139,14 @@ button { cursor: pointer; }
 .input:focus { border-color: var(--brass); outline: none; }
 .input.mono { font-family: var(--data); letter-spacing: 0.02em; }
 textarea.input { resize: vertical; min-height: 88px; line-height: 1.55; }
-select.input { appearance: none; }
+select.input {
+  appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%2380888f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+}
 
 .meter { display: flex; gap: 4px; margin-top: 2px; }
 .meter i { height: 3px; flex: 1; border-radius: 2px; background: var(--surface-3); transition: background 0.2s; }
@@ -169,13 +176,12 @@ select.input { appearance: none; }
 .err { color: var(--danger); font-size: 13.5px; min-height: 1.3em; margin: 2px 0 10px; font-weight: 500; }
 
 /* ---------- header ---------- */
-body::before {
-  content: ""; position: fixed; inset: 0 0 auto;
-  height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 10;
-}
+/* The bar pads itself by the top inset and sticks to 0, so its own background
+   fills the status-bar strip and no content sits under the Dynamic Island. */
 .topbar {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  position: sticky; top: 0; z-index: 10;
   background: var(--bg); border-bottom: 1px solid var(--line-soft);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 .topbar-in { display: flex; align-items: center; gap: 10px; padding-block: 13px; min-height: 56px; }
 .topbar h1 {
@@ -183,13 +189,14 @@ body::before {
   flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .icon-btn {
-  flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center;
+  flex: 0 0 auto; width: 40px; height: 40px; display: grid; place-items: center;
   background: transparent; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--fg-dim);
 }
 .icon-btn svg { width: 17px; height: 17px; display: block; }
 .icon-btn.accent { color: var(--brass); border-color: var(--brass); }
 .txt-btn {
-  flex: 0 0 auto; background: transparent; border: none; padding: 6px 2px;
+  flex: 0 0 auto; background: transparent; border: none; padding: 0 6px;
+  min-height: 40px; min-width: 44px;
   color: var(--brass); font-weight: 600; font-size: 14.5px;
 }
 
@@ -204,7 +211,8 @@ body::before {
 .tab[aria-selected="true"] { background: var(--brass-soft); border-color: var(--brass); color: var(--brass); font-weight: 600; }
 .tab .n { font-family: var(--data); font-size: 12px; opacity: 0.75; margin-left: 4px; }
 
-.list { display: flex; flex-direction: column; gap: 8px; padding-block: 12px 40px; }
+.list { display: flex; flex-direction: column; gap: 8px;
+  padding-block: 12px calc(40px + env(safe-area-inset-bottom, 0px)); }
 .row {
   display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
   padding: 13px 14px; background: var(--surface);
@@ -218,9 +226,9 @@ body::before {
 }
 .glyph svg { width: 16px; height: 16px; display: block; }
 .row-text { flex: 1 1 auto; min-width: 0; }
-.row-title { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-title { display: block; font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-meta {
-  font-size: 12.5px; color: var(--fg-faint); font-family: var(--data);
+  display: block; font-size: 12.5px; color: var(--fg-faint); font-family: var(--data);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;
 }
 .chev { flex: 0 0 auto; color: var(--fg-faint); }
@@ -251,7 +259,7 @@ body::before {
 .val.note { white-space: pre-wrap; font-family: var(--ui); font-size: 14.5px; color: var(--fg-dim); }
 .frow-acts { flex: 0 0 auto; display: flex; gap: 6px; }
 .mini {
-  width: 32px; height: 32px; display: grid; place-items: center;
+  width: 38px; height: 38px; display: grid; place-items: center;
   border: 1px solid var(--line); border-radius: var(--r-sm); background: transparent; color: var(--fg-dim);
 }
 .mini svg { width: 15px; height: 15px; display: block; }
@@ -341,8 +349,23 @@ body::before {
   background: var(--surface);
   color: var(--fg);
 }
-.preset img { width: 64px; height: 34px; object-fit: cover; border-radius: 4px; flex: 0 0 auto; }
-.preset span { flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 500; }
+.preset img,
+.preset .glyph { width: 64px; height: 34px; object-fit: cover; border-radius: 4px; flex: 0 0 auto; }
+.preset span { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.preset span b {
+  font-size: 14px; font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.preset span small {
+  font-family: var(--data); font-size: 11.5px; color: var(--fg-faint);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.preset-head {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--fg-faint); margin: 4px 0 -2px;
+}
+.bib.soon { border-color: var(--brass); }
+.bib-link { margin: -6px 0 18px; text-decoration: none; }
 .preset em {
   font-style: normal;
   font-size: 11px;
@@ -396,13 +419,12 @@ body::before {
 .bib-stat .label { display: block; margin-bottom: 3px; }
 .bib-stat b {
   font-family: var(--data);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- editor ---------- */
@@ -476,7 +498,7 @@ body::before {
 .bk-acts { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
 .bk-acts .btn { flex: 1 1 130px; padding: 12px 14px; font-size: 14.5px; }
 .bk-dump {
-  width: 100%; min-height: 150px; font-family: var(--data); font-size: 11.5px;
+  width: 100%; min-height: 150px; font-family: var(--data); font-size: 16px;
   line-height: 1.45; word-break: break-all; margin-top: 14px;
 }
 
@@ -755,23 +777,65 @@ body::before {
   // URL inside the encrypted vault instead.
   var PRESETS = [
     {
+      key: 'peekay-2026',
+      label: 'Peekay Steel Coastal Marathon',
+      sub: '1 Nov 2026 · Kozhikode',
+      title: 'Peekay Steel Coastal Marathon 2026',
+      notes: '21K, 10K and 3K. Online registration was reported closed on 24 Oct 2026.',
+      f: {
+        date: '2026-11-01', start: '04:30', status: 'Planning to run',
+        venue: 'Kozhikode Beach, near Calicut Lighthouse',
+        organiser: 'Manorama Quickerala & PK Steels',
+        link: 'https://www.quickerala.com/events/peekay-steel-coastal-marathon/159'
+      }
+    },
+    {
+      key: 'navy-2026',
+      label: 'SBI Kochi Navy Half Marathon',
+      sub: '13 Dec 2026 · Kochi',
+      title: 'SBI Kochi Navy Half Marathon 2026',
+      notes: 'Flag-off (provisional): half marathon 04:30, 10K 05:30, 5K 07:15. Early-bird price ends 31 Oct 2026.',
+      f: {
+        date: '2026-12-13', start: '04:30', status: 'Planning to run',
+        venue: 'Grand Hyatt Convention Centre to Bolgatty Palace, Kochi',
+        organiser: 'Southern Naval Command',
+        link: 'https://www.kochinavymarathon.com/'
+      }
+    },
+    {
+      key: 'peringode-2027',
+      label: 'Peringode Heritage Marathon',
+      sub: '24 Jan 2027 · Peringode',
+      title: 'Peringode Heritage Marathon 2027',
+      notes: '21.1K, 10K, 5K and a 3K family run. Registration form: reg.myraceindia.com/form/PHM27',
+      f: {
+        date: '2027-01-24', status: 'Planning to run',
+        venue: 'Peringode HSS Ground',
+        organiser: 'Runners Peringode',
+        link: 'https://peringodeheritagemarathon.com/'
+      }
+    },
+    {
       key: 'week-2026',
       label: 'THE WEEK Half Marathon',
+      sub: '27 Sept 2026 · Kochi',
       cover: 'assets/race-week-2026.webp',
       title: 'THE WEEK Half Marathon 2026',
-      f: { date: '2026-09-27', venue: 'Willingdon Island, Kochi', organiser: 'THE WEEK' }
+      f: { date: '2026-09-27', venue: 'Willingdon Island, Kochi', organiser: 'THE WEEK', status: 'Ran it' }
     },
     {
       key: 'georgian-2026',
       label: 'Georgian Run',
+      sub: '20 Oct 2026 · Vennikulam',
       cover: 'assets/race-georgian-2026.webp',
       title: 'Georgian Run 2026',
-      f: { date: '2026-10-20', venue: 'Vennikulam', organiser: 'Chavara Matrimony' }
+      f: { date: '2026-10-20', venue: 'Vennikulam', organiser: 'Chavara Matrimony', status: 'Ran it' }
     }
   ];
 
   // Standard distances, in km, so pace can be worked out from a finish time.
   var DISTANCES = {
+    '3K': 3,
     '5K': 5,
     '10K': 10,
     'Half marathon (21.1K)': 21.0975,
@@ -818,12 +882,15 @@ body::before {
       name: 'Race', titleLabel: 'Event', titlePh: 'THE WEEK Half Marathon 2026',
       fields: [
         { k: 'date', l: 'Race day', date: true },
-        { k: 'distance', l: 'Distance', opts: ['5K', '10K', 'Half marathon (21.1K)', 'Marathon (42.2K)', 'Other'] },
+        { k: 'start', l: 'Flag-off time', mono: true, ph: '04:30' },
+        { k: 'distance', l: 'Distance', opts: ['3K', '5K', '10K', 'Half marathon (21.1K)', 'Marathon (42.2K)', 'Other'] },
+        { k: 'status', l: 'Status', opts: ['Planning to run', 'Registered', 'Ran it', 'Skipped'] },
         { k: 'time', l: 'Finish time', mono: true, ph: '2:14:36', time: true },
         { k: 'bib', l: 'Bib number', mono: true },
         { k: 'place', l: 'Finishing position', mono: true, ph: '142 of 280' },
         { k: 'venue', l: 'Where', ph: 'Willingdon Island, Kochi' },
-        { k: 'organiser', l: 'Organised by', ph: 'THE WEEK' }
+        { k: 'organiser', l: 'Organised by', ph: 'THE WEEK' },
+        { k: 'link', l: 'Website or registration page', ph: 'https://…' }
       ]
     }
   };
@@ -1240,6 +1307,32 @@ body::before {
       km: km
     };
   }
+  // Whole days from today to a YYYY-MM-DD race day; negative once it's past.
+  function daysUntil(ymd) {
+    var m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    var day = new Date(+m[1], +m[2] - 1, +m[3]);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((day - today) / 86400000);
+  }
+  function isUpcoming(e) {
+    var f = e.f || {};
+    var d = daysUntil(f.date);
+    return d !== null && d >= 0 && !f.time && f.status !== 'Ran it' && f.status !== 'Skipped';
+  }
+  function countdown(d) {
+    if (d === 0) return 'Today';
+    if (d === 1) return 'Tomorrow';
+    return 'In ' + d + ' days';
+  }
+  // Only plain web links may become a tappable href. Anything else, such as a
+  // javascript: URL in an edited or imported entry, is shown as text only.
+  function safeLink(v) {
+    var s = String(v || '').trim();
+    return /^https?:\/\/[^\s"'<>]+$/i.test(s) ? s : '';
+  }
+
   function fmtDate(ymd) {
     var m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!m) return String(ymd || '');
@@ -1473,7 +1566,12 @@ body::before {
       return [net, t4].filter(Boolean).join('  ');
     }
     if (e.type === 'race') {
-      return [f.time, f.distance, f.date ? fmtDate(f.date) : ''].filter(Boolean).join('  ·  ');
+      if (isUpcoming(e)) {
+        return [countdown(daysUntil(f.date)), fmtDate(f.date), f.status === 'Registered' ? 'Registered' : '']
+          .filter(Boolean).join('  ·  ');
+      }
+      var short = String(f.distance || '').replace(/^.*\((.+)\)$/, '$1');   // "Half marathon (21.1K)" -> "21.1K"
+      return [f.time, short, f.date ? fmtDate(f.date) : ''].filter(Boolean).join('  ·  ');
     }
     return '';
   }
@@ -1490,7 +1588,17 @@ body::before {
     }).join('');
 
     var list = entries().filter(function (e) { return S.filter === 'all' || e.type === S.filter; });
-    list.sort(function (a, b) { return String(a.title || '').localeCompare(String(b.title || ''), 'en'); });
+    if (S.filter === 'race') {
+      // Races read as a calendar: what's next first, then most recent results.
+      list.sort(function (a, b) {
+        var ua = isUpcoming(a), ub = isUpcoming(b);
+        if (ua !== ub) return ua ? -1 : 1;
+        var da = String((a.f || {}).date || ''), db = String((b.f || {}).date || '');
+        return ua ? da.localeCompare(db) : db.localeCompare(da);
+      });
+    } else {
+      list.sort(function (a, b) { return String(a.title || '').localeCompare(String(b.title || ''), 'en'); });
+    }
 
     var hasAny = c.all > 0;
     $('#empty').hidden = hasAny;
@@ -1551,9 +1659,11 @@ body::before {
   function raceCard(e) {
     var f = e.f || {};
     var p = paceOf(e);
-    var head = f.time
-      ? '<span class="bib-time">' + esc(f.time) + '</span>'
-      : '<span class="bib-time none">No finish time yet</span>';
+    var soon = isUpcoming(e);
+    var head;
+    if (f.time) head = '<span class="bib-time">' + esc(f.time) + '</span>';
+    else if (soon) head = '<span class="bib-time">' + esc(countdown(daysUntil(f.date))) + '</span>';
+    else head = '<span class="bib-time none">No finish time yet</span>';
     if (f.distance) head += '<span class="bib-dist">' + esc(f.distance) + '</span>';
 
     var stats = [];
@@ -1562,20 +1672,29 @@ body::before {
       stats.push(['Speed', p.speed + ' km/h']);
     }
     if (f.date) stats.push(['Race day', fmtDate(f.date)]);
-    if (!p && f.bib) stats.push(['Bib', f.bib]);
+    if (soon && f.start) stats.push(['Flag-off', f.start]);
+    if (soon && f.status) stats.push(['Status', f.status]);
+    stats = stats.slice(0, 3);   // three columns fit at phone width
 
     var cover = f.cover
       ? '<img class="cover" src="' + esc(f.cover) + '" alt="">'
       : '';
 
-    return '<div class="bib">' + cover + '<div class="bib-top">' + head + '</div>' +
+    var link = safeLink(f.link);
+    var go = link
+      ? '<a class="btn ghost bib-link" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">' +
+        (soon ? 'Open race website' : 'Race website') + '</a>'
+      : '';
+
+    return '<div class="bib' + (soon ? ' soon' : '') + '">' + cover +
+      '<div class="bib-top">' + head + '</div>' +
       (stats.length
         ? '<div class="bib-stats">' + stats.map(function (s) {
             return '<div class="bib-stat"><span class="label">' + esc(s[0]) +
               '</span><b>' + esc(s[1]) + '</b></div>';
           }).join('') + '</div>'
         : '') +
-      '</div>';
+      '</div>' + go;
   }
 
   function renderDetail() {
@@ -1593,9 +1712,16 @@ body::before {
 
     if (e.type === 'race') html += raceCard(e);
 
-    var rows = t.fields.filter(function (f) { return (e.f || {})[f.k]; }).map(function (f) {
+    var inHero = {};
+    if (e.type === 'race') {
+      inHero = { date: 1, distance: 1, time: 1 };
+      if (isUpcoming(e)) { inHero.start = 1; inHero.status = 1; }
+    }
+    var rows = t.fields.filter(function (f) {
+      return (e.f || {})[f.k] && !inHero[f.k];
+    }).map(function (f) {
       var raw = e.f[f.k];
-      var visible = f.secret ? maskOf(raw, f) : shownValue(raw, f);
+      var visible = f.secret ? maskOf(raw, f) : f.date ? fmtDate(raw) : shownValue(raw, f);
       var cls = 'val' + (f.mono || f.card ? '' : ' plain') + (f.secret ? ' masked' : '');
       var acts = '';
       if (f.secret) {
@@ -1604,7 +1730,8 @@ body::before {
           'stroke-linejoin="round"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/>' +
           '<circle cx="12" cy="12" r="3"/></svg></button>';
       }
-      acts += '<button class="mini" data-copy="' + esc(f.k) + '" aria-label="Copy ' + esc(f.l) + '">' +
+      var copyable = e.type !== 'race' || f.k === 'bib' || f.k === 'link';
+      if (copyable) acts += '<button class="mini" data-copy="' + esc(f.k) + '" aria-label="Copy ' + esc(f.l) + '">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
         'stroke-linejoin="round"><rect x="9" y="9" width="11.5" height="11.5" rx="2"/>' +
         '<path d="M6.5 15H5a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 5 3.5h8.5A1.5 1.5 0 0 1 15 5v1.5"/></svg></button>';
@@ -1716,11 +1843,20 @@ body::before {
     }
 
     if (S.isNew && d.type === 'race') {
-      html += '<div class="preset-row">' + PRESETS.map(function (p) {
+      var presetBtn = function (p) {
         return '<button type="button" class="preset" data-preset="' + esc(p.key) + '">' +
-          '<img src="' + esc(p.cover) + '" alt="">' +
-          '<span>' + esc(p.label) + '</span><em>Use</em></button>';
-      }).join('') + '</div>';
+          (p.cover
+            ? '<img src="' + esc(p.cover) + '" alt="">'
+            : '<span class="glyph" aria-hidden="true">' + ICON.race + '</span>') +
+          '<span><b>' + esc(p.label) + '</b><small>' + esc(p.sub || '') + '</small></span>' +
+          '<em>Use</em></button>';
+      };
+      var ahead = PRESETS.filter(function (p) { var n = daysUntil(p.f.date); return n !== null && n >= 0; });
+      var done = PRESETS.filter(function (p) { var n = daysUntil(p.f.date); return n === null || n < 0; });
+      html += '<div class="preset-row">' +
+        (ahead.length ? '<div class="preset-head">Coming up</div>' + ahead.map(presetBtn).join('') : '') +
+        (done.length ? '<div class="preset-head">Already run</div>' + done.map(presetBtn).join('') : '') +
+        '</div>';
     }
 
     html += '<div class="field"><label class="label" for="in-title">' + esc(t.titleLabel) + '</label>' +
@@ -1730,7 +1866,7 @@ body::before {
     if (d.type === 'race') {
       var cov = (d.f || {}).cover;
       html += '<div class="field"><span class="label">Cover photo</span>' +
-        '<div class="cover-lib">' + PRESETS.map(function (p) {
+        '<div class="cover-lib">' + PRESETS.filter(function (p) { return p.cover; }).map(function (p) {
           return '<button type="button" data-coverset="' + esc(p.cover) + '"' +
             (cov === p.cover ? ' class="on"' : '') + '>' +
             '<img src="' + esc(p.cover) + '" alt="">' +
@@ -1829,9 +1965,11 @@ body::before {
       S.draft.title = hit.title;
       S.draft.f = S.draft.f || {};
       Object.keys(hit.f).forEach(function (k) { S.draft.f[k] = hit.f[k]; });
-      S.draft.f.cover = hit.cover;
+      if (hit.cover) S.draft.f.cover = hit.cover;
+      if (hit.notes && !S.draft.notes) S.draft.notes = hit.notes;
       renderEdit();
-      toast('Filled in — now add your time');
+      var ahead = daysUntil(hit.f.date);
+      toast(ahead !== null && ahead >= 0 ? 'Added — pick your distance' : 'Filled in — now add your time');
       return;
     }
 
