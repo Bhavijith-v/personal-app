@@ -411,6 +411,13 @@ body::before {
       </div>
 
       <p class="err" id="lock-err" role="alert"></p>
+      <button class="btn" id="btn-face-unlock" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px">
+          <path d="M3.5 8.5v-3a2 2 0 0 1 2-2h3M15.5 3.5h3a2 2 0 0 1 2 2v3M20.5 15.5v3a2 2 0 0 1-2 2h-3M8.5 20.5h-3a2 2 0 0 1-2-2v-3"/>
+          <path d="M8.75 9.5v1.75M15.25 9.5v1.75M12 9.75v3.5h-1.1M9.25 15.75c1.6 1.2 3.9 1.2 5.5 0"/>
+        </svg>
+        Unlock with Face ID
+      </button>
       <button class="btn" id="lock-action">Unlock</button>
       <button class="link-row" id="btn-restore-start">Restore from a backup file</button>
       <button class="link-row" id="btn-restore-cancel" hidden>Cancel</button>
@@ -429,10 +436,10 @@ body::before {
     <header class="topbar">
       <div class="topbar-in col gutter">
         <h1>Deposit Box</h1>
-        <button class="icon-btn" id="btn-backup" aria-label="Backups">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3.5 7.5h17v12a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5Z"/>
-            <path d="M2.5 4.5h19v3h-19z"/><path d="M9.75 12h4.5"/>
+        <button class="icon-btn" id="btn-backup" aria-label="Settings and backups">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3.1"/>
+            <path d="M19.1 14.5a1.6 1.6 0 0 0 .32 1.76l.06.06a1.9 1.9 0 1 1-2.7 2.7l-.05-.06a1.6 1.6 0 0 0-1.77-.32 1.6 1.6 0 0 0-.97 1.46v.17a1.9 1.9 0 1 1-3.8 0v-.09a1.6 1.6 0 0 0-1.05-1.46 1.6 1.6 0 0 0-1.76.32l-.06.06a1.9 1.9 0 1 1-2.7-2.7l.06-.06a1.6 1.6 0 0 0 .32-1.76 1.6 1.6 0 0 0-1.46-.98h-.17a1.9 1.9 0 1 1 0-3.8h.09a1.6 1.6 0 0 0 1.46-1.05 1.6 1.6 0 0 0-.32-1.76l-.06-.06a1.9 1.9 0 1 1 2.7-2.7l.06.06a1.6 1.6 0 0 0 1.76.32h.08a1.6 1.6 0 0 0 .97-1.46v-.17a1.9 1.9 0 1 1 3.8 0v.09a1.6 1.6 0 0 0 .97 1.46 1.6 1.6 0 0 0 1.77-.32l.05-.06a1.9 1.9 0 1 1 2.7 2.7l-.06.06a1.6 1.6 0 0 0-.32 1.76v.08a1.6 1.6 0 0 0 1.46.97h.17a1.9 1.9 0 1 1 0 3.8h-.09a1.6 1.6 0 0 0-1.46.97Z"/>
           </svg>
         </button>
         <button class="icon-btn" id="btn-lock" aria-label="Lock now">
@@ -493,10 +500,20 @@ body::before {
             <path d="M14.5 5.5 8 12l6.5 6.5"/>
           </svg>
         </button>
-        <h1>Backups</h1>
+        <h1>Settings</h1>
       </div>
     </header>
     <div class="col gutter bk-body">
+
+      <div class="bk-sect" id="face-sect" hidden>
+        <h2>Face ID</h2>
+        <p id="face-desc">Open the box with your face instead of typing. Your passphrase keeps working either way — Face ID never replaces it.</p>
+        <button class="btn" id="btn-face-on">Turn on Face ID</button>
+        <button class="btn ghost" id="btn-face-off" hidden>Turn off Face ID</button>
+        <p class="err" id="face-err" role="alert"></p>
+      </div>
+
+      <div class="bk-rule" id="face-rule" hidden></div>
 
       <div class="bk-sect">
         <h2>Save a backup</h2>
@@ -722,23 +739,136 @@ body::before {
       });
   }
 
-  // Re-wraps an existing PBKDF2 vault under Argon2id. Nothing is written until
-  // the new ciphertext exists, and state only moves after the write succeeds,
-  // so a failure anywhere leaves the old vault exactly as it was.
-  function upgradeKdf(pass) {
-    var oldKey = S.key, oldRec = S.rec;
+  /* --- master key wrapping ---
+     The vault is sealed with a random master key. That key is then wrapped
+     once per unlock method: by the passphrase (always) and, optionally, by a
+     secret Face ID hands back. Adding or removing Face ID re-wraps the key and
+     never touches the vault itself, so no unlock method can lock you out of
+     another one. */
+  function wrapKey(raw, kek) {
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, kek, raw)
+      .then(function (ct) { return { iv: b64(iv), ct: b64(ct) }; });
+  }
+  function unwrapKey(wrap, kek) {
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64(wrap.iv) }, kek, ub64(wrap.ct))
+      .then(function (buf) { return new Uint8Array(buf); });
+  }
+  function useMasterKey(raw) {
+    S.mk = raw;
+    return importAes(raw).then(function (k) { S.key = k; return k; });
+  }
+  function passKdfOf(rec) {
+    return rec.v === 2 ? rec.wraps.pass.kdf : rec.kdf;
+  }
+  function normalizeData(d) {
+    return d && d.entries ? d : { v: 1, entries: [] };
+  }
+
+  // Moves any older record onto the v2 wrapped-key layout. Atomic: nothing is
+  // written until the new ciphertext exists, and in-memory state only moves
+  // after the write succeeds.
+  function migrateToV2(pass) {
     var kdf = newKdf();
-    return deriveFromKdf(pass, kdf).then(function (key) {
-      return seal(S.data, key).then(function (sealed) {
-        var rec = { v: 1, kdf: kdf, iv: sealed.iv, ct: sealed.ct };
-        if (!writeRec(rec)) throw new Error('write-failed');
-        S.key = key;
-        S.rec = rec;
-        toast('Encryption upgraded to Argon2id');
+    return deriveFromKdf(pass, kdf).then(function (kek) {
+      var raw = crypto.getRandomValues(new Uint8Array(32));
+      return wrapKey(raw, kek).then(function (w) {
+        return importAes(raw).then(function (k) {
+          return seal(S.data, k).then(function (sealed) {
+            var rec = {
+              v: 2,
+              wraps: { pass: { kdf: kdf, iv: w.iv, ct: w.ct } },
+              iv: sealed.iv, ct: sealed.ct
+            };
+            if (!writeRec(rec)) return false;
+            S.mk = raw; S.key = k; S.rec = rec;
+            return true;
+          });
+        });
       });
-    }).catch(function () {
-      S.key = oldKey;
-      S.rec = oldRec;
+    });
+  }
+
+  /* --- Face ID, via a passkey's PRF secret ---
+     WebAuthn's PRF extension hands the page a stable 32-byte secret after a
+     successful Face ID check. That secret never leaves the device and is not
+     the passkey's signing key. We stretch it with HKDF and use the result to
+     wrap the master key. Safari only returns PRF values from get(), not
+     create(), so enrolment does both. */
+  function faceSupported() {
+    return !!(window.PublicKeyCredential && navigator.credentials &&
+      navigator.credentials.create && navigator.credentials.get);
+  }
+
+  function prfKek(secret) {
+    return crypto.subtle.importKey('raw', secret, 'HKDF', false, ['deriveKey'])
+      .then(function (base) {
+        return crypto.subtle.deriveKey(
+          {
+            name: 'HKDF', hash: 'SHA-256',
+            salt: new Uint8Array(0),
+            info: enc.encode('deposit-box/face-wrap/v1')
+          },
+          base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+        );
+      });
+  }
+
+  function faceEvaluate(credId, prfSalt) {
+    return navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials: [{ type: 'public-key', id: credId }],
+        userVerification: 'required',
+        timeout: 60000,
+        extensions: { prf: { eval: { first: prfSalt } } }
+      }
+    }).then(function (assertion) {
+      var ext = assertion && assertion.getClientExtensionResults();
+      var out = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+      if (!out) throw new Error('prf-missing');
+      return new Uint8Array(out);
+    });
+  }
+
+  function faceEnroll() {
+    if (!S.mk) return Promise.reject(new Error('locked'));
+    var prfSalt = crypto.getRandomValues(new Uint8Array(32));
+    guardSheet();
+    return navigator.credentials.create({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Deposit Box' },
+        user: {
+          id: crypto.getRandomValues(new Uint8Array(16)),
+          name: 'Deposit Box',
+          displayName: 'Deposit Box'
+        },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          residentKey: 'required',
+          userVerification: 'required'
+        },
+        timeout: 60000,
+        attestation: 'none',
+        extensions: { prf: {} }
+      }
+    }).then(function (cred) {
+      var ext = cred && cred.getClientExtensionResults();
+      if (!ext || !ext.prf || ext.prf.enabled === false) throw new Error('prf-unsupported');
+      var credId = new Uint8Array(cred.rawId);
+      guardSheet();
+      return faceEvaluate(credId, prfSalt).then(function (secret) {
+        return prfKek(secret).then(function (kek) {
+          return wrapKey(S.mk, kek).then(function (w) {
+            S.rec.wraps.face = {
+              credId: b64(credId), prfSalt: b64(prfSalt), iv: w.iv, ct: w.ct
+            };
+            return persist();
+          });
+        });
+      });
     });
   }
   function seal(data, key) {
@@ -754,14 +884,15 @@ body::before {
   }
 
   /* ============ state ============ */
-  var S = { key: null, rec: null, data: null, view: 'lock', id: null, filter: 'all', draft: null, isNew: false };
+  var S = { key: null, mk: null, rec: null, data: null, view: 'lock', id: null, filter: 'all', draft: null, isNew: false };
   var attempts = 0, idleTimer = null, hideTimer = null, clipTimer = null, toastTimer = null;
   var sheetOpen = false, sheetTimer = null;
 
   function persist() {
     return seal(S.data, S.key).then(function (sealed) {
       // Keep whatever scheme this vault was built with, PBKDF2 or Argon2id.
-      var rec = { v: 1, kdf: S.rec.kdf, iv: sealed.iv, ct: sealed.ct };
+      // Carry the wraps across untouched; only the vault ciphertext changes.
+      var rec = { v: 2, wraps: S.rec.wraps, iv: sealed.iv, ct: sealed.ct };
       if (!writeRec(rec)) { toast('Could not save — device storage is full or blocked'); return false; }
       S.rec = rec;
       return true;
@@ -799,6 +930,8 @@ body::before {
     idleTimer = setTimeout(function () { lockNow('Locked after 3 minutes idle'); }, IDLE_MS);
   }
   function lockNow(msg) {
+    if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
+    S.mk = null;
     S.key = null; S.data = null; S.id = null; S.draft = null; S.isNew = false; S.filter = 'all';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -922,6 +1055,8 @@ body::before {
     $('#storage-notice').hidden = storageOK;
     $('#btn-restore-start').hidden = mode === 'restore';
     $('#btn-restore-cancel').hidden = mode !== 'restore';
+    $('#btn-face-unlock').hidden = !(mode === 'unlock' && S.rec &&
+      S.rec.wraps && S.rec.wraps.face && faceSupported());
 
     if (mode === 'setup') {
       $('#lock-title').textContent = 'Set up your box';
@@ -998,11 +1133,15 @@ body::before {
     lockBusy(true, 'Building the box…');
     paint().then(function () {
       var kdf = newKdf();
-      return deriveFromKdf(p1, kdf).then(function (key) {
-        S.key = key;
-        S.data = { v: 1, entries: [] };
-        S.rec = { v: 1, kdf: kdf, iv: '', ct: '' };
-        return persist();
+      return deriveFromKdf(p1, kdf).then(function (kek) {
+        var raw = crypto.getRandomValues(new Uint8Array(32));
+        return wrapKey(raw, kek).then(function (w) {
+          return useMasterKey(raw).then(function () {
+            S.data = { v: 1, entries: [] };
+            S.rec = { v: 2, wraps: { pass: { kdf: kdf, iv: w.iv, ct: w.ct } }, iv: '', ct: '' };
+            return persist();
+          });
+        });
       });
     }).then(function (ok) {
       lockBusy(false);
@@ -1026,23 +1165,63 @@ body::before {
     paint().then(function () {
       return attempts > 0 ? sleep(Math.min(attempts * 600, 5000)) : null;
     }).then(function () {
-      return deriveFromKdf(p, S.rec.kdf);
-    }).then(function (key) {
-      return unseal(S.rec, key).then(function (data) {
-        S.key = key;
-        S.data = data && data.entries ? data : { v: 1, entries: [] };
-        attempts = 0;
-        $('#pass-unlock').value = '';
-        lockBusy(false);
-        show('vault');
-        // Quietly move older PBKDF2 boxes onto Argon2id after a good unlock.
-        if (S.rec.kdf.name !== 'argon2id') upgradeKdf(p);
+      return deriveFromKdf(p, passKdfOf(S.rec));
+    }).then(function (kek) {
+      if (S.rec.v === 2) {
+        return unwrapKey(S.rec.wraps.pass, kek)
+          .then(useMasterKey)
+          .then(function () { return unseal(S.rec, S.key); })
+          .then(function (data) { S.data = normalizeData(data); });
+      }
+      // Older single-key record: the derived key opens the vault directly.
+      // Move it onto the wrapped-key layout before anything can be saved.
+      return unseal(S.rec, kek).then(function (data) {
+        S.data = normalizeData(data);
+        return migrateToV2(p).then(function (ok) {
+          if (!ok) throw new Error('migrate-failed');
+        });
       });
-    }).catch(function () {
-      attempts++;
+    }).then(function () {
+      attempts = 0;
+      $('#pass-unlock').value = '';
       lockBusy(false);
+      show('vault');
+    }).catch(function (err) {
+      lockBusy(false);
+      S.key = null; S.mk = null; S.data = null;
+      if (err && err.message === 'migrate-failed') {
+        lockErr('Your passphrase was right, but the box could not be saved. Free up storage and try again.');
+        return;
+      }
+      attempts++;
       lockErr(attempts >= 3 ? 'Wrong passphrase. (' + attempts + ' failed attempts)' : 'Wrong passphrase.');
     });
+  }
+
+  function doFaceUnlock() {
+    var f = S.rec && S.rec.wraps && S.rec.wraps.face;
+    if (!f) return;
+    lockErr('');
+    lockBusy(true, 'Waiting for Face ID…');
+    faceEvaluate(ub64(f.credId), ub64(f.prfSalt))
+      .then(prfKek)
+      .then(function (kek) { return unwrapKey(f, kek); })
+      .then(useMasterKey)
+      .then(function () { return unseal(S.rec, S.key); })
+      .then(function (data) {
+        S.data = normalizeData(data);
+        attempts = 0;
+        lockBusy(false);
+        show('vault');
+      })
+      .catch(function (err) {
+        lockBusy(false);
+        S.key = null; S.mk = null; S.data = null;
+        var name = err && err.name;
+        lockErr(name === 'NotAllowedError' || name === 'AbortError'
+          ? 'Face ID was cancelled. You can still use your passphrase.'
+          : 'Face ID did not work. Use your passphrase.');
+      });
   }
 
   $('#lock-action').addEventListener('click', function () {
@@ -1052,6 +1231,7 @@ body::before {
   });
   $('#pass-unlock').addEventListener('keydown', function (e) { if (e.key === 'Enter') doUnlock(); });
   $('#pass-restore').addEventListener('keydown', function (e) { if (e.key === 'Enter') doRestore(); });
+  $('#btn-face-unlock').addEventListener('click', doFaceUnlock);
   $('#pass-confirm').addEventListener('keydown', function (e) { if (e.key === 'Enter') doSetup(); });
   $('#pass-new').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#pass-confirm').focus(); });
 
@@ -1504,11 +1684,13 @@ body::before {
   function buildBackup() {
     return {
       format: FORMAT,
-      v: 1,
+      v: 2,
       app: 'Deposit Box',
       exported: new Date().toISOString(),
       entries: entries().length,
-      kdf: S.rec.kdf,
+      // Only the passphrase wrap travels. A Face ID wrap is useless off this
+      // device, and leaving it out keeps a backup restorable anywhere.
+      wrap: S.rec.wraps.pass,
       iv: S.rec.iv,
       ct: S.rec.ct
     };
@@ -1517,8 +1699,32 @@ body::before {
   function parseBackup(text) {
     var p = JSON.parse(text);
     if (!p || p.format !== FORMAT) throw new Error('wrong format');
-    if (!p.kdf || !p.kdf.salt || !p.kdf.iter || !p.iv || !p.ct) throw new Error('incomplete');
+    if (!p.iv || !p.ct) throw new Error('incomplete');
+    if (p.wrap) {
+      if (!p.wrap.kdf || !p.wrap.kdf.salt || !p.wrap.iv || !p.wrap.ct) throw new Error('incomplete');
+    } else if (!p.kdf || !p.kdf.salt) {
+      throw new Error('incomplete');
+    }
     return p;
+  }
+
+  // Opens either backup generation: v2 wraps a master key, v1 derived the
+  // vault key straight from the passphrase.
+  function openBackup(p, pass) {
+    if (p.wrap) {
+      return deriveFromKdf(pass, p.wrap.kdf)
+        .then(function (kek) { return unwrapKey(p.wrap, kek); })
+        .then(function (raw) {
+          return importAes(raw).then(function (k) {
+            return unseal({ iv: p.iv, ct: p.ct }, k)
+              .then(function (d) { return { data: d, raw: raw, wrap: p.wrap }; });
+          });
+        });
+    }
+    return deriveFromKdf(pass, p.kdf).then(function (key) {
+      return unseal({ iv: p.iv, ct: p.ct }, key)
+        .then(function (d) { return { data: d, raw: null, wrap: null }; });
+    });
   }
 
   // Anything coming out of a file is treated as untrusted shape, even though
@@ -1599,13 +1805,73 @@ body::before {
       '  ·  ' + n + ' ' + plural(n) + ' in the box';
   }
 
+  function renderFaceSection() {
+    var supported = faceSupported();
+    $('#face-sect').hidden = !supported;
+    $('#face-rule').hidden = !supported;
+    if (!supported) return;
+    var on = !!(S.rec && S.rec.wraps && S.rec.wraps.face);
+    $('#btn-face-on').hidden = on;
+    $('#btn-face-off').hidden = !on;
+    $('#face-err').textContent = '';
+    $('#face-desc').textContent = on
+      ? 'Face ID is on. Your passphrase still works and is the only way back in if the passkey is ever lost.'
+      : 'Open the box with your face instead of typing. Your passphrase keeps working either way — Face ID never replaces it.';
+  }
+
   function renderBackup() {
     updateBkStatus();
+    renderFaceSection();
     $('#bk-import-panel').hidden = true;
     $('#bk-dump-wrap').hidden = true;
     $('#bk-dump').value = '';
     pendingBackup = null;
   }
+
+  function faceBusy(on, label) {
+    $('#btn-face-on').disabled = on;
+    $('#btn-face-off').disabled = on;
+    if (on) $('#btn-face-on').textContent = label;
+    else $('#btn-face-on').textContent = 'Turn on Face ID';
+  }
+
+  $('#btn-face-on').addEventListener('click', function () {
+    $('#face-err').textContent = '';
+    faceBusy(true, 'Waiting for Face ID…');
+    faceEnroll().then(function (ok) {
+      faceBusy(false);
+      if (ok === false) { $('#face-err').textContent = 'Could not save. Free up storage and try again.'; return; }
+      renderFaceSection();
+      toast('Face ID is on');
+    }).catch(function (err) {
+      faceBusy(false);
+      var name = err && err.name;
+      if (name === 'NotAllowedError' || name === 'AbortError') {
+        $('#face-err').textContent = 'Cancelled.';
+      } else if (err && err.message === 'prf-unsupported') {
+        $('#face-err').textContent = 'This iPhone will not give the app a key from Face ID. Needs iOS 18.4 or newer, with iCloud Keychain on.';
+      } else if (err && err.message === 'prf-missing') {
+        $('#face-err').textContent = 'Face ID worked but returned no key. Try again, or keep using your passphrase.';
+      } else {
+        $('#face-err').textContent = 'Face ID could not be set up. Your passphrase is unaffected.';
+      }
+    });
+  });
+
+  $('#btn-face-off').addEventListener('click', function () {
+    askConfirm({
+      title: 'Turn off Face ID?',
+      body: 'You will go back to typing your passphrase every time. Nothing in the box changes.',
+      yes: 'Turn off'
+    }).then(function (ok) {
+      if (!ok) return;
+      delete S.rec.wraps.face;
+      persist().then(function () {
+        renderFaceSection();
+        toast('Face ID turned off');
+      });
+    });
+  });
 
   function doExport() {
     var text = JSON.stringify(buildBackup(), null, 2);
@@ -1683,11 +1949,9 @@ body::before {
     setImportBusy(true);
 
     paint().then(function () {
-      return deriveFromKdf(pass, p.kdf);
-    }).then(function (key) {
-      return unseal({ iv: p.iv, ct: p.ct }, key);
-    }).then(function (data) {
-      var incoming = sanitize(data && data.entries);
+      return openBackup(p, pass);
+    }).then(function (r) {
+      var incoming = sanitize(r.data && r.data.entries);
       if (mode === 'replace') {
         return askConfirm({
           title: 'Replace everything?',
@@ -1722,31 +1986,36 @@ body::before {
     lockBusy(true, 'Restoring…');
 
     paint().then(function () {
-      return deriveFromKdf(pass, p.kdf);
-    }).then(function (key) {
-      return unseal({ iv: p.iv, ct: p.ct }, key).then(function (data) {
-        S.key = key;
-        S.data = {
-          v: 1,
-          entries: sanitize(data && data.entries),
-          lastExport: (data && data.lastExport) || null
-        };
-        // Restore under the backup's own scheme, then upgrade if it was old.
-        S.rec = { v: 1, kdf: p.kdf, iv: p.iv, ct: p.ct };
-        return persist();
-      });
+      return openBackup(p, pass);
+    }).then(function (r) {
+      S.data = {
+        v: 1,
+        entries: sanitize(r.data && r.data.entries),
+        lastExport: (r.data && r.data.lastExport) || null
+      };
+      if (r.raw) {
+        return useMasterKey(r.raw).then(function () {
+          S.rec = { v: 2, wraps: { pass: r.wrap }, iv: p.iv, ct: p.ct };
+          return persist();
+        });
+      }
+      // An older backup carries no wrapped key, so build a fresh one.
+      return migrateToV2(pass);
     }).then(function (ok) {
       lockBusy(false);
-      if (!ok) { S.key = null; S.data = null; return lockErr('Could not write to storage.'); }
+      if (!ok) {
+        S.key = null; S.mk = null; S.data = null;
+        return lockErr('Could not write to storage.');
+      }
       var n = entries().length;
       pendingBackup = null;
       lockMode = 'unlock';
       $('#pass-restore').value = '';
       toast('Box restored — ' + n + ' ' + plural(n));
       show('vault');
-      if (S.rec.kdf.name !== 'argon2id') upgradeKdf(pass);
     }).catch(function () {
       lockBusy(false);
+      S.key = null; S.mk = null; S.data = null;
       lockErr('That passphrase does not open this backup.');
     });
   }
