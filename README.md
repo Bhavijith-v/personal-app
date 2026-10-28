@@ -91,6 +91,37 @@ passphrase unlocks.
 - **Backups never contain the Face ID wrap** — a passkey is useless on another
   device — so a backup always restores with the passphrase alone.
 
+### ID documents
+
+**+** → **ID document**, then pick the document. Each has the fields printed on
+the real one:
+
+| Document | Fields |
+| --- | --- |
+| **Aadhaar** | Number, Virtual ID, name, date of birth, gender, linked mobile, address, enrolment ID |
+| **PAN** | PAN, name, father's name, date of birth, whether it's linked to Aadhaar |
+| **Voter ID** | EPIC number, name, relation's name, gender, date of birth, constituency, part and serial number, polling station, address |
+| **Passport** | Number, surname, given names, date and place of birth, issue and expiry dates, place of issue, file number |
+| **Driving licence** | Number, name, date of birth, blood group, vehicle classes, issue date, valid till, issuing RTO |
+| **Ration card** | Number, card colour (Kerala: yellow, pink, blue, white), head of family, members, ARD shop number, taluk office |
+| **ABHA** | 14-digit health ID, ABHA address, name, date of birth, gender, mobile |
+| **Other** | Anything else: birth certificate, SSLC, UAN… |
+
+Checks on save: **Aadhaar numbers are verified with their Verhoeff check
+digit**, so a single mistyped or swapped digit is caught. PAN, passport, VID
+and ABHA formats are checked, and an expiry date before the issue date is
+refused.
+
+Each document shows as a **designed card** at real card proportions, with your
+details, the number masked, and an expiry badge for a passport or licence
+("Expires in 100 days", "Expired"). The design carries **no emblems or official
+logos**, and says it's a personal record, so it can't pass as the real thing.
+
+Add **photos of your real card**, front and back (photo page and address page
+for a passport). They're shrunk to 1400px and stored encrypted in the vault.
+Tap one to show it full screen, at a counter for example. Settings shows how
+much space the vault uses, and warns you before Safari's ~5 MB limit.
+
 ### Trading accounts and 2FA codes
 
 The **Trading account** type holds a broker login: client ID, password, Kite

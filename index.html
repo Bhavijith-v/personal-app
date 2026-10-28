@@ -367,6 +367,132 @@ select.input {
 .bib.soon { border-color: var(--brass); }
 .bib-link { margin: -6px 0 18px; text-decoration: none; }
 
+/* ---------- ID documents ---------- */
+.docpick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 22px; }
+.docpick button {
+  min-width: 0; min-height: 40px; padding: 8px 4px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--fg-dim);
+  font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.docpick button[aria-pressed="true"] { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); font-weight: 600; }
+
+.docshots { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.docshot { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.docshot img, .docshot-empty {
+  width: 100%; aspect-ratio: 85.6 / 54; border-radius: var(--r-sm);
+  border: 1px solid var(--line); object-fit: cover; display: block; background: var(--surface-2);
+}
+.docshot-empty {
+  display: grid; place-items: center; color: var(--fg-faint); font-size: 12.5px;
+  border-style: dashed;
+}
+.docshot-acts { display: flex; gap: 6px; }
+.docshot-acts button {
+  flex: 1 1 0; min-width: 0; min-height: 38px; padding: 6px; font-size: 12.5px; font-weight: 500;
+  border-radius: var(--r-sm); border: 1px solid var(--line); background: transparent; color: var(--fg);
+}
+.docshot-acts button.drop { border-color: var(--danger); color: var(--danger); }
+.hint { font-size: 12.5px; color: var(--fg-faint); margin: 8px 0 0; line-height: 1.45; }
+
+/* The card is a physical object, so it keeps its own colours in both themes. */
+.idc {
+  --c-bg: #fbfaf6; --c-ink: #1d2230; --c-sub: #5a6170; --c-band: linear-gradient(90deg, #f3a33c, #f3a33c 45%, #fbfaf6 45%, #fbfaf6 55%, #2f8a4e 55%);
+  position: relative; overflow: hidden;
+  width: 100%; max-width: 100%; aspect-ratio: 85.6 / 54;
+  border-radius: 14px; background: var(--c-bg); color: var(--c-ink);
+  box-shadow: 0 10px 28px rgba(0,0,0,.28), inset 0 0 0 1px rgba(0,0,0,.06);
+  display: flex; flex-direction: column; padding: 0 16px 8px; margin-bottom: 14px;
+}
+.idc-band { height: 9px; margin: 0 -16px 10px; background: var(--c-band); flex: 0 0 auto; }
+.idc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.idc-head {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--c-sub);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.idc-pill {
+  flex: 0 0 auto; font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+  padding: 3px 8px; border-radius: 999px; background: rgba(47,138,78,.14); color: #23683b;
+}
+.idc-pill.warn { background: rgba(212,140,30,.18); color: #8a5a07; }
+.idc-pill.bad { background: rgba(200,60,50,.16); color: #a3271d; }
+.idc-body { flex: 1 1 auto; display: flex; gap: 13px; align-items: center; min-height: 0; padding-top: 8px; }
+.idc-photo {
+  flex: 0 0 auto; width: 25%; aspect-ratio: 3 / 3.6; border-radius: 7px;
+  background: rgba(0,0,0,.06); color: rgba(0,0,0,.22); display: grid; place-items: end center; overflow: hidden;
+}
+.idc-photo svg { width: 82%; display: block; }
+.idc-who { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.idc-who b {
+  font-size: 16px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.idc-who span { font-size: 12px; color: var(--c-sub); font-family: var(--data); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.idc-who i { font-style: normal; font-family: var(--ui); font-weight: 600; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; }
+.idc-foot { display: flex; align-items: center; gap: 8px; min-width: 0; padding-top: 6px; }
+.idc-num {
+  flex: 1 1 auto; min-width: 0; font-family: var(--data); font-size: 19px; font-weight: 500;
+  letter-spacing: .06em; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.idc-num.masked { color: var(--c-sub); }
+.idc-num.idc-empty { font-size: 13px; letter-spacing: 0; color: var(--c-sub); font-family: var(--ui); }
+.idc .idc-eye { border-color: rgba(0,0,0,.18); color: var(--c-sub); background: rgba(255,255,255,.4); }
+.idc-mark {
+  flex: 0 0 auto; text-align: right; margin-top: 3px; font-size: 8.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-sub); opacity: .6;
+}
+.idc.passport .idc-mark { text-align: center; }
+
+.idc.pan { --c-bg: linear-gradient(135deg, #dbe9f8, #f4f8fd 60%, #cfe0f3); --c-ink: #14243f; --c-sub: #4a5c78; --c-band: #2c5aa0; }
+.idc.voter { --c-bg: linear-gradient(135deg, #f6f1fa, #ffffff 55%, #ece3f4); --c-ink: #261a33; --c-sub: #66577a; --c-band: linear-gradient(90deg, #6a3f99, #a77bd1); }
+.idc.dl { --c-bg: linear-gradient(135deg, #fdf3f4, #ffffff 60%, #f6e2e5); --c-ink: #2c1418; --c-sub: #7a5258; --c-band: #9b2335; }
+.idc.abha { --c-bg: linear-gradient(135deg, #e5f6f4, #ffffff 60%, #d5efeb); --c-ink: #0f2e2b; --c-sub: #47706b; --c-band: #13857a; }
+.idc.other { --c-bg: linear-gradient(135deg, #eef0f3, #ffffff 60%, #e3e6eb); --c-ink: #1b1e22; --c-sub: #5c646e; --c-band: #5c646e; }
+.idc.ration { --c-band: rgba(0,0,0,.25); }
+.idc.ration.yellow { --c-bg: linear-gradient(135deg, #fbe7a1, #fdf3cf); --c-ink: #3b2c00; --c-sub: #7a6420; }
+.idc.ration.pink   { --c-bg: linear-gradient(135deg, #f7c9d6, #fde7ee); --c-ink: #3d0f1d; --c-sub: #864059; }
+.idc.ration.blue   { --c-bg: linear-gradient(135deg, #c7dcf5, #e8f1fc); --c-ink: #0f2440; --c-sub: #3f5f86; }
+.idc.ration.white  { --c-bg: linear-gradient(135deg, #f2f2f0, #ffffff); --c-ink: #1b1e22; --c-sub: #5c646e; }
+
+.idc.passport {
+  aspect-ratio: 125 / 88; --c-bg: radial-gradient(120% 90% at 30% 20%, #253a74, #172452 60%, #111b3e);
+  --c-ink: #e3c983; --c-sub: #c8ad6a; --c-band: transparent;
+  box-shadow: 0 10px 28px rgba(0,0,0,.35), inset 0 0 0 2px rgba(227,201,131,.35), inset 0 0 0 9px #172452, inset 0 0 0 10px rgba(227,201,131,.25);
+}
+.idc.passport .idc-band { height: 6px; }
+.idc.passport { padding: 0 22px 14px; }
+.idc-pp-mid { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.idc-pp-word { font-size: 25px; font-weight: 600; letter-spacing: .32em; padding-left: .32em; }
+.idc-pp-country { font-size: 11px; font-weight: 600; letter-spacing: .26em; color: var(--c-sub); }
+.idc.passport .idc-pill { background: rgba(227,201,131,.16); color: #e3c983; }
+.idc.passport .idc-pill.warn { background: rgba(240,170,60,.25); color: #ffcf7a; }
+.idc.passport .idc-pill.bad { background: rgba(230,90,80,.28); color: #ffb3aa; }
+.idc.passport .idc-num { text-align: center; }
+.idc.passport .idc-num.masked { color: var(--c-sub); }
+.idc.passport .idc-eye { border-color: rgba(227,201,131,.4); color: #e3c983; background: transparent; }
+
+.idps { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 18px; }
+.idp {
+  min-width: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--fg-dim); overflow: hidden; display: flex; flex-direction: column;
+}
+.idp img { width: 100%; aspect-ratio: 85.6 / 54; object-fit: cover; display: block; }
+.idp span { font-size: 12px; padding: 6px 8px; text-align: left; }
+.idp-none { margin: -2px 0 18px; }
+
+.lightbox {
+  position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,.92);
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+           calc(70px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; display: block; }
+.lightbox-close {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  min-height: 44px; padding: 0 22px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; font-weight: 600;
+}
+
 /* ---------- 2FA code ---------- */
 .otp {
   border: 1px solid var(--brass);
@@ -462,9 +588,9 @@ select.input {
 
 /* ---------- editor ---------- */
 .form-body { padding-block: 18px 0; }
-.kindpick { display: flex; gap: 7px; margin-bottom: 22px; }
+.kindpick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-bottom: 14px; }
 .kindpick button {
-  flex: 1 1 0; padding: 11px 6px; border-radius: var(--r-md);
+  min-width: 0; padding: 11px 6px; border-radius: var(--r-md);
   border: 1px solid var(--line); background: transparent; color: var(--fg-dim);
   font-size: 13.5px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
@@ -716,6 +842,9 @@ select.input {
         <p>Writes one file holding your whole box, still encrypted with your current passphrase. It is safe to keep in iCloud Drive, on a laptop, or anywhere else — without the passphrase the file is meaningless.</p>
         <button class="btn" id="btn-export">Save a backup</button>
         <div class="bk-stat" id="bk-status"></div>
+        <div class="notice alarm" id="bk-space" hidden>
+          <b>The box is getting full.</b> Safari allows this app about 5 MB, and card photos take the most space. Save a backup now, and remove photos you don't need.
+        </div>
         <div id="bk-dump-wrap" hidden>
           <p class="bk-found bk-dump-note">If your phone did not offer to save a file, copy everything below into a note or a text file instead — that text <b>is</b> the backup, and it is already encrypted.</p>
           <textarea class="input bk-dump" id="bk-dump" readonly spellcheck="false"></textarea>
@@ -766,6 +895,11 @@ select.input {
 <div id="toast" role="status" hidden></div>
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*" hidden>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Card photo">
+  <img id="lightbox-img" alt="">
+  <button class="lightbox-close" id="lightbox-close">Close</button>
+</div>
 
 <div class="sheet-bg" id="confirm" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
@@ -947,7 +1081,144 @@ select.input {
       ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'broker', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'id', 'race'];
+
+  /* --- Indian government IDs ---
+     One "ID document" kind and one tab, with a sub-type per document. Each
+     carries the fields printed on the real document, plus up to two photos of
+     the user's own card, kept inside the encrypted vault. */
+  var GENDERS = ['Female', 'Male', 'Transgender'];
+  var DOC_ORDER = ['id_aadhaar', 'id_pan', 'id_voter', 'id_passport', 'id_dl', 'id_ration', 'id_abha', 'id_other'];
+
+  TYPES.id_aadhaar = {
+    group: 'id', name: 'Aadhaar', short: 'Aadhaar', titleLabel: 'Name', titlePh: 'My Aadhaar',
+    head: 'AADHAAR', style: 'aadhaar',
+    fields: [
+      { k: 'number', l: 'Aadhaar number', secret: true, mono: true, num: true, tail: true, group4: true, ph: '12 digits' },
+      { k: 'vid', l: 'Virtual ID (VID)', secret: true, mono: true, num: true, tail: true, group4: true, ph: '16 digits' },
+      { k: 'name', l: 'Name on card', onCard: true },
+      { k: 'dob', l: 'Date of birth', date: true, onCard: true },
+      { k: 'gender', l: 'Gender', opts: GENDERS, onCard: true },
+      { k: 'mobile', l: 'Linked mobile number', mono: true, num: true },
+      { k: 'address', l: 'Address', area: true },
+      { k: 'eid', l: 'Enrolment ID (EID)', mono: true }
+    ]
+  };
+  TYPES.id_pan = {
+    group: 'id', name: 'PAN card', short: 'PAN', titleLabel: 'Name', titlePh: 'My PAN',
+    head: 'PERMANENT ACCOUNT NUMBER', style: 'pan',
+    fields: [
+      { k: 'number', l: 'PAN', secret: true, mono: true, upper: true, tail: true, ph: 'ABCDE1234F' },
+      { k: 'name', l: 'Name on card', onCard: true },
+      { k: 'father', l: "Father's name" },
+      { k: 'dob', l: 'Date of birth', date: true, onCard: true },
+      { k: 'aadhaarlink', l: 'Linked to Aadhaar', opts: ['Yes', 'No', 'Not sure'] }
+    ]
+  };
+  TYPES.id_voter = {
+    group: 'id', name: 'Voter ID', short: 'Voter ID', titleLabel: 'Name', titlePh: 'My voter ID',
+    head: 'ELECTOR PHOTO IDENTITY CARD', style: 'voter',
+    fields: [
+      { k: 'number', l: 'EPIC number', mono: true, upper: true, ph: 'ABC1234567' },
+      { k: 'name', l: 'Name on card', onCard: true },
+      { k: 'relation', l: "Father's, mother's or husband's name" },
+      { k: 'gender', l: 'Gender', opts: GENDERS, onCard: true },
+      { k: 'dob', l: 'Date of birth', date: true, onCard: true },
+      { k: 'constituency', l: 'Assembly constituency', ph: '081 - Ernakulam' },
+      { k: 'part', l: 'Part number', mono: true },
+      { k: 'serial', l: 'Serial number in the part', mono: true },
+      { k: 'booth', l: 'Polling station' },
+      { k: 'address', l: 'Address', area: true }
+    ]
+  };
+  TYPES.id_passport = {
+    group: 'id', name: 'Passport', short: 'Passport', titleLabel: 'Name', titlePh: 'My passport',
+    head: 'PASSPORT', style: 'passport', sides: ['Photo page', 'Address page'],
+    fields: [
+      { k: 'number', l: 'Passport number', secret: true, mono: true, upper: true, tail: true, ph: 'A1234567' },
+      { k: 'surname', l: 'Surname', onCard: true },
+      { k: 'given', l: 'Given name(s)', onCard: true },
+      { k: 'dob', l: 'Date of birth', date: true },
+      { k: 'pob', l: 'Place of birth' },
+      { k: 'issued', l: 'Date of issue', date: true },
+      { k: 'expiry', l: 'Date of expiry', date: true, onCard: true },
+      { k: 'poi', l: 'Place of issue', ph: 'Cochin' },
+      { k: 'file', l: 'File number', mono: true, upper: true }
+    ]
+  };
+  TYPES.id_dl = {
+    group: 'id', name: 'Driving licence', short: 'Licence', titleLabel: 'Name', titlePh: 'My driving licence',
+    head: 'DRIVING LICENCE', style: 'dl',
+    fields: [
+      { k: 'number', l: 'Licence number', secret: true, mono: true, upper: true, tail: true, ph: 'KL07 20190012345' },
+      { k: 'name', l: 'Name on licence', onCard: true },
+      { k: 'dob', l: 'Date of birth', date: true, onCard: true },
+      { k: 'blood', l: 'Blood group', opts: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], onCard: true },
+      { k: 'classes', l: 'Vehicle classes', upper: true, ph: 'MCWG, LMV' },
+      { k: 'issued', l: 'Date of issue', date: true },
+      { k: 'expiry', l: 'Valid till (non-transport)', date: true, onCard: true },
+      { k: 'rto', l: 'Issuing RTO', ph: 'RTO Ernakulam' }
+    ]
+  };
+  TYPES.id_ration = {
+    group: 'id', name: 'Ration card', short: 'Ration', titleLabel: 'Name', titlePh: 'Family ration card',
+    head: 'RATION CARD', style: 'ration',
+    fields: [
+      { k: 'number', l: 'Ration card number', mono: true, num: true, ph: '10 digits' },
+      { k: 'cardtype', l: 'Card colour', opts: ['Yellow (AAY)', 'Pink (PHH)', 'Blue (NPS)', 'White (NPNS)', 'Other'], onCard: true },
+      { k: 'head', l: 'Head of family', onCard: true },
+      { k: 'members', l: 'Members on the card', area: true },
+      { k: 'shop', l: 'Ration shop (ARD) number', mono: true },
+      { k: 'taluk', l: 'Taluk supply office' }
+    ]
+  };
+  TYPES.id_abha = {
+    group: 'id', name: 'ABHA health ID', short: 'ABHA', titleLabel: 'Name', titlePh: 'My ABHA',
+    head: 'ABHA · HEALTH ID', style: 'abha',
+    fields: [
+      { k: 'number', l: 'ABHA number', secret: true, mono: true, num: true, tail: true, abha: true, ph: '14 digits' },
+      { k: 'address', l: 'ABHA address', ph: 'name@abdm' },
+      { k: 'name', l: 'Name', onCard: true },
+      { k: 'dob', l: 'Date of birth', date: true, onCard: true },
+      { k: 'gender', l: 'Gender', opts: GENDERS },
+      { k: 'mobile', l: 'Linked mobile number', mono: true, num: true }
+    ]
+  };
+  TYPES.id_other = {
+    group: 'id', name: 'Other document', short: 'Other', titleLabel: 'Name', titlePh: 'Birth certificate',
+    head: '', style: 'other',
+    fields: [
+      { k: 'doctype', l: 'What document', ph: 'Birth certificate, SSLC, UAN…', onCard: true },
+      { k: 'number', l: 'Number', secret: true, mono: true, tail: true },
+      { k: 'name', l: 'Name on document', onCard: true },
+      { k: 'issuer', l: 'Issued by' },
+      { k: 'issued', l: 'Date of issue', date: true },
+      { k: 'expiry', l: 'Valid till', date: true, onCard: true }
+    ]
+  };
+
+  ICON.id = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><circle cx="8.5" cy="11" r="2.1"/><path d="M5.6 16.2c.5-1.6 1.6-2.4 2.9-2.4s2.4.8 2.9 2.4M14 10h4.5M14 13.5h3"/></svg>';
+  DOC_ORDER.forEach(function (k) { ICON[k] = ICON.id; });
+
+  function groupOf(type) { return (TYPES[type] && TYPES[type].group) || type; }
+
+  // Aadhaar's last digit is a Verhoeff check digit, so a mistyped number
+  // is caught here rather than at a counter.
+  var VH_D = [[0,1,2,3,4,5,6,7,8,9],[1,2,3,4,0,6,7,8,9,5],[2,3,4,0,1,7,8,9,5,6],[3,4,0,1,2,8,9,5,6,7],
+    [4,0,1,2,3,9,5,6,7,8],[5,9,8,7,6,0,4,3,2,1],[6,5,9,8,7,1,0,4,3,2],[7,6,5,9,8,2,1,0,4,3],
+    [8,7,6,5,9,3,2,1,0,4],[9,8,7,6,5,4,3,2,1,0]];
+  var VH_P = [[0,1,2,3,4,5,6,7,8,9],[1,5,7,6,2,8,3,0,9,4],[5,8,0,3,7,9,6,1,4,2],[8,9,1,6,0,4,3,5,2,7],
+    [9,4,5,3,1,2,6,8,7,0],[4,2,8,6,5,7,3,9,0,1],[2,7,9,3,8,0,6,4,1,5],[7,0,4,6,9,1,3,2,5,8]];
+  function verhoeffOk(num) {
+    var a = String(num).split('').reverse(), c = 0;
+    for (var i = 0; i < a.length; i++) c = VH_D[c][VH_P[i % 8][+a[i]]];
+    return c === 0;
+  }
+  function aadhaarOk(v) {
+    var d = String(v || '').replace(/\D/g, '');
+    return /^[2-9]\d{11}$/.test(d) && verhoeffOk(d);
+  }
+
 
   /* ============ helpers ============ */
   function esc(s) {
@@ -1223,7 +1494,7 @@ select.input {
     if (view === 'detail') renderDetail();
     if (view === 'edit') renderEdit();
     if (view === 'backup') renderBackup();
-    if (view !== 'detail') stopOtp();
+    if (view !== 'detail') { stopOtp(); closeLightbox(); }
     if (view !== 'lock') armIdle();
   }
 
@@ -1233,8 +1504,15 @@ select.input {
     if (!S.key) return;
     idleTimer = setTimeout(function () { lockNow('Locked after 3 minutes idle'); }, IDLE_MS);
   }
+  function closeLightbox() {
+    $('#lightbox').hidden = true;
+    $('#lightbox-img').removeAttribute('src');
+  }
+  $('#lightbox').addEventListener('click', closeLightbox);
+
   function lockNow(msg) {
     stopOtp();
+    closeLightbox();
     if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
     S.mk = null;
     S.key = null; S.data = null; S.id = null; S.draft = null; S.isNew = false; S.filter = 'all';
@@ -1323,9 +1601,12 @@ select.input {
     var s = String(v || '');
     if (!s) return '';
     if (f.tail) {
-      var n = f.card ? digits(s) : s;
+      var n = (f.card || f.group4 || f.abha) ? digits(s) : s;
       if (n.length > 4) {
-        var hid = f.card ? '•••• •••• •••• ' : '•••• ';
+        var hid = f.card ? '•••• •••• •••• '
+          : f.group4 ? new Array(Math.ceil(n.length / 4)).join('•••• ')
+          : f.abha ? '••-••••-••••-'
+          : '•••• ';
         return hid + n.slice(-4);
       }
       return '••••';
@@ -1334,6 +1615,11 @@ select.input {
   }
   function shownValue(v, f) {
     if (f.card) return groupCard(v);
+    if (f.group4) return (digits(v).match(/.{1,4}/g) || []).join(' ');
+    if (f.abha) {
+      var a = digits(v);
+      if (a.length === 14) return a.slice(0, 2) + '-' + a.slice(2, 6) + '-' + a.slice(6, 10) + '-' + a.slice(10);
+    }
     return String(v || '');
   }
   /* --- one-time codes (RFC 6238 TOTP, the scheme Kite's 2FA uses) ---
@@ -1669,8 +1955,8 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, race: 0 };
-    entries().forEach(function (e) { c.all++; if (c[e.type] != null) c[e.type]++; });
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, id: 0, race: 0 };
+    entries().forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
   function rowMeta(e) {
@@ -1688,6 +1974,14 @@ select.input {
     if (e.type === 'broker') {
       return [f.broker, f.clientid].filter(Boolean).join('  ·  ');
     }
+    if (groupOf(e.type) === 'id') {
+      var td = TYPES[e.type], nf = fieldDef(e.type, 'number');
+      var bits = [e.type === 'id_other' && f.doctype ? f.doctype : td.short];
+      if (f.number && nf) bits.push(nf.secret ? maskOf(f.number, nf) : shownValue(f.number, nf));
+      var ex = expiryState(f.expiry);
+      if (ex && ex.level !== 'ok') bits.push(ex.short);
+      return bits.join('  ·  ');
+    }
     if (e.type === 'race') {
       if (isUpcoming(e)) {
         return [countdown(daysUntil(f.date)), fmtDate(f.date), f.status === 'Registered' ? 'Registered' : '']
@@ -1701,7 +1995,7 @@ select.input {
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', id: 'IDs', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -1710,7 +2004,7 @@ select.input {
         (S.filter === t.k) + '">' + esc(t.n) + '<span class="n">' + c[t.k] + '</span></button>';
     }).join('');
 
-    var list = entries().filter(function (e) { return S.filter === 'all' || e.type === S.filter; });
+    var list = entries().filter(function (e) { return S.filter === 'all' || groupOf(e.type) === S.filter; });
     if (S.filter === 'race') {
       // Races read as a calendar: what's next first, then most recent results.
       list.sort(function (a, b) {
@@ -1731,17 +2025,17 @@ select.input {
     if (!hasAny) { $('#list').textContent = ''; return; }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', race: 'races' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', id: 'ID documents', race: 'races' };
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + ' stored so far.</p></div>';
       return;
     }
 
     $('#list').innerHTML = list.map(function (e) {
-      var cov = e.type === 'race' && (e.f || {}).cover;
+      var cov = (e.type === 'race' && (e.f || {}).cover) || (groupOf(e.type) === 'id' && (e.f || {}).img1);
       return '<button class="row" data-id="' + esc(e.id) + '">' +
         (cov
-          ? '<img class="row-cover" src="' + esc(e.f.cover) + '" alt="">'
+          ? '<img class="row-cover" src="' + esc(cov) + '" alt="">'
           : '<span class="glyph" aria-hidden="true">' + ICON[e.type] + '</span>') +
         '<span class="row-text"><span class="row-title">' + esc(e.title || 'Untitled') + '</span>' +
         '<span class="row-meta">' + esc(rowMeta(e)) + '</span></span>' +
@@ -1775,6 +2069,82 @@ select.input {
     var list = entries();
     for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
     return null;
+  }
+
+  /* --- ID cards ---
+     A designed stand-in for each document at its real proportions: ID-1 cards
+     are 85.6 x 54 mm, a passport book 125 x 88 mm. It carries the user's own
+     details and deliberately no emblems or official logos. */
+  function expiryState(ymd) {
+    var d = daysUntil(ymd);
+    if (d === null) return null;
+    if (d < 0) return { level: 'bad', short: 'Expired', text: 'Expired on ' + fmtDate(ymd) };
+    if (d <= 180) return { level: 'warn', short: 'Expires in ' + d + ' days', text: 'Expires in ' + d + ' days · renew soon' };
+    return { level: 'ok', short: 'Valid', text: 'Valid till ' + fmtDate(ymd) };
+  }
+
+  function idCard(e) {
+    var t = TYPES[e.type], f = e.f || {};
+    var nf = fieldDef(e.type, 'number');
+    var num = f.number
+      ? '<span class="idc-num' + (nf && nf.secret ? ' masked' : '') + '" data-field="number" data-masked="' +
+        (nf && nf.secret ? '1' : '0') + '">' + esc(nf && nf.secret ? maskOf(f.number, nf) : shownValue(f.number, nf || {})) + '</span>'
+      : '<span class="idc-num idc-empty">No number added</span>';
+
+    var head = t.head || (f.doctype ? String(f.doctype).toUpperCase() : 'DOCUMENT');
+    var ex = expiryState(f.expiry);
+    var pill = ex ? '<span class="idc-pill ' + ex.level + '">' + esc(ex.level === 'ok' ? 'Valid till ' + fmtDate(f.expiry) : ex.short) + '</span>' : '';
+
+    var who = e.type === 'id_passport'
+      ? [f.given, f.surname].filter(Boolean).join(' ')
+      : e.type === 'id_ration' ? f.head : f.name;
+    var facts = [];
+    if (f.dob) facts.push(['DOB', fmtDate(f.dob)]);
+    if (f.gender) facts.push(['Gender', f.gender]);
+    if (f.blood) facts.push(['Blood', f.blood]);
+    if (e.type === 'id_ration' && f.cardtype) facts.push(['Card', f.cardtype]);
+
+    var style = t.style;
+    if (e.type === 'id_ration') {
+      var ct = String(f.cardtype || '');
+      style += ct.indexOf('Yellow') === 0 ? ' yellow' : ct.indexOf('Pink') === 0 ? ' pink'
+             : ct.indexOf('Blue') === 0 ? ' blue' : ' white';
+    }
+
+    var face = e.type === 'id_passport'
+      ? '<div class="idc-pp-mid"><span class="idc-pp-word">PASSPORT</span>' +
+        '<span class="idc-pp-country">REPUBLIC OF INDIA</span></div>'
+      : '<div class="idc-body"><div class="idc-photo" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="9" r="4"/><path d="M4 21c.9-4 4-6 8-6s7.1 2 8 6Z"/></svg></div>' +
+        '<div class="idc-who"><b>' + esc(who || 'Name not added') + '</b>' +
+        facts.map(function (x) { return '<span><i>' + esc(x[0]) + '</i> ' + esc(x[1]) + '</span>'; }).join('') +
+        '</div></div>';
+
+    return '<div class="idc ' + style + '">' +
+      '<div class="idc-band"></div>' +
+      '<div class="idc-top"><span class="idc-head">' + esc(head) + '</span>' + pill + '</div>' +
+      face +
+      '<div class="idc-foot">' + num +
+      (nf && nf.secret && f.number
+        ? '<button class="mini idc-eye" data-reveal="number" aria-label="Reveal number">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>'
+        : '') +
+      '</div>' +
+      '<div class="idc-mark">Personal record · Deposit Box</div>' +
+      '</div>';
+  }
+
+  function idPhotos(e) {
+    var f = e.f || {}, sides = TYPES[e.type].sides || ['Front', 'Back'];
+    var shots = ['img1', 'img2'].map(function (slot, i) {
+      return f[slot]
+        ? '<button class="idp" data-view="' + slot + '"><img src="' + esc(f[slot]) + '" alt="' + esc(sides[i]) + '">' +
+          '<span>' + esc(sides[i]) + '</span></button>'
+        : '';
+    }).join('');
+    if (!shots) return '<p class="hint idp-none">No photos of the real card yet. Tap <b>Edit</b> to add the front and back.</p>';
+    return '<div class="idps">' + shots + '</div>';
   }
 
   // The headline of a race is the finish time, with pace worked out from the
@@ -1834,6 +2204,7 @@ select.input {
       '</div></span></div>';
 
     if (e.type === 'race') html += raceCard(e);
+    if (groupOf(e.type) === 'id') html += idCard(e) + idPhotos(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
       html += '<div class="otp">' +
@@ -1849,6 +2220,9 @@ select.input {
     }
 
     var inHero = {};
+    if (groupOf(e.type) === 'id') {
+      t.fields.forEach(function (fd) { if (fd.onCard) inHero[fd.k] = 1; });
+    }
     if (e.type === 'race') {
       inHero = { date: 1, distance: 1, time: 1 };
       if (isUpcoming(e)) { inHero.start = 1; inHero.status = 1; }
@@ -1900,23 +2274,22 @@ select.input {
     if (rv) {
       var k = rv.dataset.reveal;
       var f = fieldDef(e.type, k);
-      var span = $('[data-field="' + k + '"]', $('#detail-body'));
-      if (!span || !f) return;
-      if (span.dataset.masked === '1') {
-        span.textContent = shownValue(e.f[k], f);
-        span.classList.remove('masked');
-        span.dataset.masked = '0';
+      // The same value can sit on the card and in the rows; reveal both together.
+      var spans = $('#detail-body').querySelectorAll('[data-field="' + k + '"]');
+      if (!spans.length || !f) return;
+      var opening = spans[0].dataset.masked === '1';
+      var setOpen = function (open) {
+        Array.prototype.forEach.call(spans, function (sp) {
+          sp.textContent = open ? shownValue(e.f[k], f) : maskOf(e.f[k], f);
+          sp.classList.toggle('masked', !open);
+          sp.dataset.masked = open ? '0' : '1';
+        });
+      };
+      setOpen(opening);
+      if (opening) {
         setTimeout(function () {
-          if (span.dataset.masked === '0' && S.key) {
-            span.textContent = maskOf(e.f[k], f);
-            span.classList.add('masked');
-            span.dataset.masked = '1';
-          }
+          if (spans[0].dataset.masked === '0' && S.key) setOpen(false);
         }, REVEAL_MS);
-      } else {
-        span.textContent = maskOf(e.f[k], f);
-        span.classList.add('masked');
-        span.dataset.masked = '1';
       }
       return;
     }
@@ -1928,6 +2301,16 @@ select.input {
       if (!cf) return;
       var raw = e.f[ck];
       copyValue(cf.card ? digits(raw) : String(raw), cf.l, cp);
+      return;
+    }
+
+    var viewBtn = ev.target.closest('[data-view]');
+    if (viewBtn) {
+      var src = (e.f || {})[viewBtn.dataset.view];
+      if (src) {
+        $('#lightbox-img').src = src;
+        $('#lightbox').hidden = false;
+      }
       return;
     }
 
@@ -1979,9 +2362,16 @@ select.input {
     var html = '';
     if (S.isNew) {
       html += '<div class="kindpick">' + ORDER.map(function (k) {
-        return '<button type="button" data-kind="' + k + '" aria-pressed="' + (d.type === k) + '">' +
-          ICON[k] + '<span>' + esc(TYPES[k].name) + '</span></button>';
+        var label = k === 'id' ? 'ID document' : TYPES[k].name;
+        return '<button type="button" data-kind="' + k + '" aria-pressed="' + (groupOf(d.type) === k) + '">' +
+          ICON[k] + '<span>' + esc(label) + '</span></button>';
       }).join('') + '</div>';
+      if (groupOf(d.type) === 'id') {
+        html += '<div class="docpick" role="group" aria-label="Which document">' + DOC_ORDER.map(function (k) {
+          return '<button type="button" data-doc="' + k + '" aria-pressed="' + (d.type === k) + '">' +
+            esc(TYPES[k].short) + '</button>';
+        }).join('') + '</div>';
+      }
     }
 
     if (S.isNew && d.type === 'race') {
@@ -2004,6 +2394,22 @@ select.input {
     html += '<div class="field"><label class="label" for="in-title">' + esc(t.titleLabel) + '</label>' +
       '<input class="input" id="in-title" type="text" value="' + esc(d.title) + '" placeholder="' +
       esc(t.titlePh) + '" autocapitalize="words" spellcheck="false"></div>';
+
+    if (groupOf(d.type) === 'id') {
+      var sides = t.sides || ['Front', 'Back'];
+      html += '<div class="field"><span class="label">Photos of your card</span><div class="docshots">' +
+        ['img1', 'img2'].map(function (slot, i) {
+          var src = (d.f || {})[slot];
+          return '<div class="docshot">' +
+            (src ? '<img src="' + esc(src) + '" alt="' + esc(sides[i]) + '">'
+                 : '<div class="docshot-empty">' + esc(sides[i]) + '</div>') +
+            '<div class="docshot-acts">' +
+            '<button type="button" data-shot="' + slot + '">' + (src ? 'Replace' : 'Add ' + esc(sides[i].toLowerCase())) + '</button>' +
+            (src ? '<button type="button" class="drop" data-unshot="' + slot + '">Remove</button>' : '') +
+            '</div></div>';
+        }).join('') + '</div>' +
+        '<p class="hint">Photos are shrunk and kept encrypted inside the box. Nothing is uploaded.</p></div>';
+    }
 
     if (d.type === 'race') {
       var cov = (d.f || {}).cover;
@@ -2080,18 +2486,53 @@ select.input {
     });
   }
 
+  // Drop anything the new kind has no slot for, so a half-filled login can't
+  // ride along invisibly inside a saved card. Photos stay when moving between
+  // two kinds that both hold them.
+  function switchType(t) {
+    collectDraft();
+    var old = S.draft.f || {}, from = groupOf(S.draft.type);
+    S.draft.type = t;
+    var keep = {};
+    TYPES[t].fields.forEach(function (f) { if (old[f.k]) keep[f.k] = old[f.k]; });
+    if (from === 'id' && groupOf(t) === 'id') {
+      if (old.img1) keep.img1 = old.img1;
+      if (old.img2) keep.img2 = old.img2;
+    }
+    if (from === 'race' && t === 'race' && old.cover) keep.cover = old.cover;
+    S.draft.f = keep;
+    renderEdit();
+  }
+
   $('#edit-body').addEventListener('click', function (ev) {
     var kind = ev.target.closest('[data-kind]');
     if (kind) {
+      var want = kind.dataset.kind;
+      if (want === 'id') {
+        if (groupOf(S.draft.type) !== 'id') switchType('id_aadhaar');
+      } else {
+        switchType(want);
+      }
+      return;
+    }
+
+    var docb = ev.target.closest('[data-doc]');
+    if (docb) { switchType(docb.dataset.doc); return; }
+
+    var shot = ev.target.closest('[data-shot]');
+    if (shot) {
       collectDraft();
-      S.draft.type = kind.dataset.kind;
-      // Drop anything the new kind has no slot for, so a half-filled login
-      // cannot ride along invisibly inside a saved card.
-      var keep = {};
-      TYPES[S.draft.type].fields.forEach(function (f) {
-        if (S.draft.f[f.k]) keep[f.k] = S.draft.f[f.k];
-      });
-      S.draft.f = keep;
+      imgTarget = shot.dataset.shot;
+      guardSheet();
+      var si = $('#img-in');
+      si.value = '';
+      si.click();
+      return;
+    }
+    var unshot = ev.target.closest('[data-unshot]');
+    if (unshot) {
+      collectDraft();
+      delete S.draft.f[unshot.dataset.unshot];
       renderEdit();
       return;
     }
@@ -2134,6 +2575,7 @@ select.input {
         renderEdit();
       } else {
         collectDraft();
+        imgTarget = 'cover';
         guardSheet();
         var ii = $('#img-in');
         ii.value = '';
@@ -2204,21 +2646,29 @@ select.input {
 
   // Photos are shrunk before they go in. The vault lives in localStorage,
   // which is small, and a phone photo straight off the camera would fill it.
-  function readCover(file) {
+  // Covers are scaled to 900px wide; card photos to 1400px on the long side
+  // so small print stays readable. Quality steps down until the photo fits.
+  var imgTarget = 'cover';
+  function readCover(file, opts) {
+    opts = opts || {};
+    var maxSide = opts.maxSide || 0, maxW = opts.maxW || 900, limit = opts.limit || 600000;
     return new Promise(function (res, rej) {
       var fr = new FileReader();
       fr.onload = function () {
         var img = new Image();
         img.onload = function () {
-          var maxW = 900;
           var w = img.width, h = img.height;
           if (!w || !h) { rej(new Error('decode')); return; }
-          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          var scale = maxSide ? Math.min(1, maxSide / Math.max(w, h)) : Math.min(1, maxW / w);
+          w = Math.round(w * scale); h = Math.round(h * scale);
           var c = document.createElement('canvas');
           c.width = w; c.height = h;
           c.getContext('2d').drawImage(img, 0, 0, w, h);
-          try { res(c.toDataURL('image/jpeg', 0.78)); }
-          catch (e) { rej(new Error('encode')); }
+          try {
+            var q = 0.8, url = c.toDataURL('image/jpeg', q);
+            while (url.length > limit && q > 0.45) { q -= 0.1; url = c.toDataURL('image/jpeg', q); }
+            res(url);
+          } catch (e) { rej(new Error('encode')); }
         };
         img.onerror = function () { rej(new Error('decode')); };
         img.src = String(fr.result);
@@ -2231,15 +2681,17 @@ select.input {
   $('#img-in').addEventListener('change', function () {
     var file = this.files && this.files[0];
     if (!file || !S.draft) return;
-    readCover(file).then(function (url) {
+    var slot = imgTarget;
+    var doc = slot === 'img1' || slot === 'img2';
+    readCover(file, doc ? { maxSide: 1400, limit: 700000 } : { maxW: 900, limit: 600000 }).then(function (url) {
       if (url.length > 1400000) {   // ~1 MB of base64
         toast('That photo is too large even after shrinking');
         return;
       }
       S.draft.f = S.draft.f || {};
-      S.draft.f.cover = url;
+      S.draft.f[slot] = url;
       renderEdit();
-      toast('Cover photo added');
+      toast(doc ? 'Photo added' : 'Cover photo added');
     }).catch(function () {
       toast('Could not read that image');
     });
@@ -2279,6 +2731,29 @@ select.input {
     if (d.type === 'card' && f.expiry && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(f.expiry)) {
       $('#edit-err').textContent = 'Write the expiry as MM/YY, for example 09/29.';
       return;
+    }
+    if (groupOf(d.type) === 'id') {
+      var bad = '';
+      if (d.type === 'id_aadhaar' && f.number) {
+        f.number = digits(f.number);
+        if (!aadhaarOk(f.number)) bad = 'That Aadhaar number is not valid. It is 12 digits, does not start with 0 or 1, and the last digit is a check digit — one may be mistyped.';
+      }
+      if (d.type === 'id_aadhaar' && f.vid) {
+        f.vid = digits(f.vid);
+        if (!/^\d{16}$/.test(f.vid)) bad = 'A Virtual ID (VID) is 16 digits.';
+      }
+      if (d.type === 'id_pan' && f.number && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(f.number)) {
+        bad = 'A PAN is 10 characters: five letters, four digits, one letter. For example ABCDE1234F.';
+      }
+      if (d.type === 'id_passport' && f.number && !/^[A-Z][0-9]{7}$/.test(f.number)) {
+        bad = 'An Indian passport number is one letter then seven digits, for example A1234567.';
+      }
+      if (d.type === 'id_abha' && f.number) {
+        f.number = digits(f.number);
+        if (!/^\d{14}$/.test(f.number)) bad = 'An ABHA number is 14 digits.';
+      }
+      if (f.issued && f.expiry && f.expiry < f.issued) bad = 'The expiry date is before the issue date.';
+      if (bad) { $('#edit-err').textContent = bad; return; }
     }
     if (d.type === 'broker') {
       if (f.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(f.pan)) {
@@ -2422,6 +2897,12 @@ select.input {
             (cv.indexOf('data:image/') === 0 || cv.indexOf('assets/') === 0)) {
           f.cover = cv;
         }
+        if (groupOf(e.type) === 'id') {
+          ['img1', 'img2'].forEach(function (slot) {
+            var v = e.f[slot];
+            if (typeof v === 'string' && v.length < 1500000 && v.indexOf('data:image/jpeg') === 0) f[slot] = v;
+          });
+        }
       }
       return {
         id: String(e.id),
@@ -2484,8 +2965,13 @@ select.input {
   function updateBkStatus() {
     var n = entries().length;
     var last = S.data && S.data.lastExport;
+    var used = 0;
+    try { used = (localStorage.getItem(STORE) || '').length; } catch (e) {}
+    var mb = used / 1048576;
     $('#bk-status').textContent = (last ? 'Last backup: ' + stampOf(last) : 'Never backed up') +
-      '  ·  ' + n + ' ' + plural(n) + ' in the box';
+      '  ·  ' + n + ' ' + plural(n) + ' in the box  ·  ' + mb.toFixed(1) + ' MB used';
+    // Safari gives a site roughly 5 MB of this kind of storage. Warn early.
+    $('#bk-space').hidden = mb < 3;
   }
 
   function renderFaceSection() {
