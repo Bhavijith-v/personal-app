@@ -122,6 +122,30 @@ for a passport). They're shrunk to 1400px and stored encrypted in the vault.
 Tap one to show it full screen, at a counter for example. Settings shows how
 much space the vault uses, and warns you before Safari's ~5 MB limit.
 
+### Home: search and three shortcuts
+
+The vault list opens with a **search box**. It matches names, notes, document
+types and every field that isn't secret. Passwords, PINs and card numbers are
+never searched, so typing can't be used to probe them.
+
+Below it, three tiles:
+
+- **Needs attention**: passports, licences and documents expiring within a
+  year, cards expiring within 90 days, upcoming races, and a backup due after 30
+  days, soonest first with a status label. **Add to Calendar** creates all-day
+  iPhone Calendar events with alerts ahead of time (90 and 30 days before an ID
+  expires, 7 days and 1 day before a race). The calendar file holds only the
+  entry name and date, never a number or password.
+- **Password health**: flags passwords reused in more than one place, weak ones
+  (under 10 characters or easy to guess) and ones unchanged for a year. It
+  checks login, netbanking, transaction and trading passwords, not PINs, and
+  never shows the values.
+- **Running**: log training runs (date, km, time, type, notes) and see
+  **personal bests** for 5K, 10K, half and full (races count too; distances
+  within 2% match, so a 10.05 km GPS run is a 10K), distance this week, month
+  and year, and a 12-week chart. Tap a week to see its total. Runs are stored
+  encrypted and travel with backups.
+
 ### Trading accounts and 2FA codes
 
 The **Trading account** type holds a broker login: client ID, password, Kite

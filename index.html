@@ -37,6 +37,10 @@
   --ok: #5fae7e;
   --danger: #d9655c;
   --danger-soft: rgba(217, 101, 92, 0.13);
+  --warn: #e39446;
+  --warn-soft: rgba(227, 148, 70, 0.14);
+  --ok-soft: rgba(95, 174, 126, 0.13);
+  --bar: #b88a40;
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 
   --ui: "Archivo", "Helvetica Neue", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -64,6 +68,10 @@
     --ok: #2f7d50;
     --danger: #b03a31;
     --danger-soft: rgba(176, 58, 49, 0.09);
+    --warn: #b4570f;
+    --warn-soft: rgba(180, 87, 15, 0.10);
+    --ok-soft: rgba(47, 125, 80, 0.10);
+    --bar: #95660f;
     --shadow: 0 12px 32px rgba(27, 30, 34, 0.14);
     color-scheme: light;
   }
@@ -84,6 +92,10 @@
   --ok: #2f7d50;
   --danger: #b03a31;
   --danger-soft: rgba(176, 58, 49, 0.09);
+  --warn: #b4570f;
+  --warn-soft: rgba(180, 87, 15, 0.10);
+  --ok-soft: rgba(47, 125, 80, 0.10);
+  --bar: #95660f;
   --shadow: 0 12px 32px rgba(27, 30, 34, 0.14);
   color-scheme: light;
 }
@@ -493,6 +505,99 @@ select.input {
   border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; font-weight: 600;
 }
 
+/* ---------- search + hub ---------- */
+.search { position: relative; margin-top: 14px; }
+.search svg { position: absolute; left: 13px; top: 50%; width: 17px; height: 17px; transform: translateY(-50%); color: var(--fg-faint); pointer-events: none; }
+.search .input { padding-left: 40px; }
+.search .input::-webkit-search-cancel-button { filter: grayscale(1); }
+.hub { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.hub-tile {
+  min-width: 0; text-align: left; padding: 11px 12px; border-radius: var(--r-md);
+  border: 1px solid var(--line-soft); background: var(--surface); color: var(--fg);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hub-tile b { font-family: var(--data); font-size: 22px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.hub-tile span { font-size: 11.5px; color: var(--fg-dim); line-height: 1.25; }
+.hub-tile.alert { border-color: var(--warn); }
+.hub-tile.alert b { color: var(--warn); }
+.page-body { padding-block: 14px calc(32px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- status pills (label + colour, never colour alone) ---------- */
+.pill {
+  flex: 0 0 auto; font-size: 11px; font-weight: 600; letter-spacing: .03em;
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--danger-soft); color: var(--danger); }
+
+/* ---------- needs attention ---------- */
+.att-all { margin-bottom: 14px; }
+.att-list { display: flex; flex-direction: column; gap: 8px; }
+.att { display: flex; gap: 8px; align-items: stretch; min-width: 0; }
+.att-main {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left;
+  padding: 12px 13px; border-radius: var(--r-md); border: 1px solid var(--line-soft);
+  background: var(--surface); color: var(--fg);
+}
+.att-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.att-text b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-text small { font-size: 12.5px; color: var(--fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-text .att-when { font-family: var(--data); font-size: 12px; color: var(--fg-faint); }
+.att-cal {
+  flex: 0 0 auto; width: 48px; border-radius: var(--r-md); border: 1px solid var(--line);
+  background: transparent; color: var(--brass); display: grid; place-items: center;
+}
+.att-cal svg { width: 19px; height: 19px; display: block; }
+
+/* ---------- password health ---------- */
+.health-head {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 16px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface);
+}
+.health-head b { font-family: var(--data); font-size: 30px; font-weight: 500; line-height: 1; }
+.health-head span { color: var(--fg-dim); font-size: 14px; }
+.health-head.warn { border-color: var(--warn); }
+.health-head.warn b { color: var(--warn); }
+.health-head.ok b { color: var(--ok); }
+.health-why { margin: -2px 0 9px; }
+.health-row { width: 100%; text-align: left; background: transparent; border-left: 0; border-right: 0; border-top: 0; color: var(--fg); }
+
+/* ---------- running ---------- */
+.pbs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pb {
+  min-width: 0; padding: 12px 13px; border-radius: var(--r-md);
+  border: 1px solid var(--line-soft); background: var(--surface); display: flex; flex-direction: column; gap: 2px;
+}
+.pb b { font-family: var(--data); font-size: 22px; font-weight: 500; color: var(--brass); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.pb.none b { color: var(--fg-faint); }
+.pb small { font-size: 12px; color: var(--fg-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tot { min-width: 0; padding: 11px 12px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--surface); }
+.tot .label { display: block; margin-bottom: 3px; }
+.tot b { font-family: var(--data); font-size: 19px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tot b i { font-style: normal; font-size: 12px; color: var(--fg-faint); }
+.wk-wrap { position: relative; border: 1px solid var(--line-soft); background: var(--surface); border-radius: var(--r-md); padding: 10px 10px 4px; }
+.wk-chart { width: 100%; height: auto; display: block; max-width: 100%; }
+.wk-grid { stroke: var(--line); stroke-width: 1; }
+.wk-tick { fill: var(--fg-faint); font-family: var(--data); font-size: 10px; }
+.wk-val { fill: var(--fg); font-family: var(--data); font-size: 10.5px; font-weight: 500; }
+.wk-bar { fill: var(--bar); opacity: .72; }
+.wk-bar.now { opacity: 1; }
+.wk-hit { fill: transparent; cursor: pointer; }
+.wk-tip {
+  position: absolute; top: 4px; padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+  background: var(--surface-3); color: var(--fg); border: 1px solid var(--line);
+  font-family: var(--data); font-size: 12px; pointer-events: none; box-shadow: var(--shadow);
+}
+.run-form { padding: 14px; margin-bottom: 4px; border: 1px solid var(--brass); border-radius: var(--r-md); background: var(--surface); }
+.run-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.run-foot { padding-block: 4px 0; }
+.run-row .val { font-size: 14px; }
+.run-note { display: block; font-size: 13px; color: var(--fg-dim); margin-top: 2px; }
+.run-empty { padding: 28px 10px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
 /* ---------- 2FA code ---------- */
 .otp {
   border: 1px solid var(--brass);
@@ -781,6 +886,15 @@ select.input {
       <button class="notice nudge" id="backup-nudge" hidden>
         <b>No backup yet.</b> If this phone is lost or wiped, everything in the box goes with it. Tap to save an encrypted copy.
       </button>
+      <div class="search" id="search-wrap" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <input class="input" id="q" type="search" placeholder="Search the box" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search the box">
+      </div>
+      <div class="hub" id="hub" hidden>
+        <button class="hub-tile" id="hub-attn"><b id="hub-attn-n">0</b><span>Needs attention</span></button>
+        <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
+        <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
+      </div>
       <div class="tabs" role="tablist" id="tabs"></div>
       <div class="list" id="list"></div>
       <div class="empty" id="empty" hidden>
@@ -871,6 +985,25 @@ select.input {
       </div>
 
     </div>
+  </section>
+
+  <!-- ================= NEEDS ATTENTION ================= -->
+  <section id="screen-attn" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Needs attention</h1></div></header>
+    <div class="col gutter page-body" id="attn-body"></div>
+  </section>
+
+  <!-- ================= PASSWORD HEALTH ================= -->
+  <section id="screen-health" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Password health</h1></div></header>
+    <div class="col gutter page-body" id="health-body"></div>
+  </section>
+
+  <!-- ================= RUNNING ================= -->
+  <section id="screen-run" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Running</h1>
+      <button class="txt-btn" id="btn-run-add">Log a run</button></div></header>
+    <div class="col gutter page-body" id="run-body"></div>
   </section>
 
   <!-- ================= EDITOR ================= -->
@@ -1484,7 +1617,8 @@ select.input {
 
   var SCREENS = {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
-    edit: '#screen-edit', backup: '#screen-backup'
+    edit: '#screen-edit', backup: '#screen-backup',
+    attn: '#screen-attn', health: '#screen-health', run: '#screen-run'
   };
   function show(view) {
     S.view = view;
@@ -1494,6 +1628,9 @@ select.input {
     if (view === 'detail') renderDetail();
     if (view === 'edit') renderEdit();
     if (view === 'backup') renderBackup();
+    if (view === 'attn') renderAttn();
+    if (view === 'health') renderHealth();
+    if (view === 'run') renderRun();
     if (view !== 'detail') { stopOtp(); closeLightbox(); }
     if (view !== 'lock') armIdle();
   }
@@ -1516,6 +1653,8 @@ select.input {
     if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
     S.mk = null;
     S.key = null; S.data = null; S.id = null; S.draft = null; S.isNew = false; S.filter = 'all';
+    query = ''; $('#q').value = '';
+    $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
     $('#edit-body').textContent = '';
@@ -1993,6 +2132,43 @@ select.input {
     return '';
   }
 
+  /* ============ search ============
+     Matches names, notes, document types and every field that isn't a secret.
+     Passwords, PINs and card numbers are never searched, so typing can't be
+     used to probe them. Every word typed must match. */
+  var query = '';
+  function matches(e, q) {
+    var t = TYPES[e.type];
+    var hay = [e.title, e.notes, t && t.name, t && t.short, groupOf(e.type) === 'id' ? 'id document' : ''];
+    if (t) t.fields.forEach(function (f) {
+      var v = (e.f || {})[f.k];
+      if (v && !f.secret) hay.push(f.date ? fmtDate(v) + ' ' + v : v);
+    });
+    hay = hay.join(' ').toLowerCase();
+    return q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+  }
+  $('#q').addEventListener('input', function () {
+    query = this.value.trim().toLowerCase();
+    renderVault();
+  });
+
+  function renderHub() {
+    var att = attentionItems().filter(function (a) { return a.level !== 'ok'; }).length;
+    var bad = healthReport().filter(function (h) { return h.reused || h.weak || h.old; }).length;
+    var km = totalsKm().month;
+    $('#hub-attn-n').textContent = att;
+    $('#hub-health-n').textContent = bad;
+    $('#hub-run-n').textContent = km >= 100 ? Math.round(km) : km.toFixed(1).replace(/\.0$/, '');
+    $('#hub-attn').classList.toggle('alert', att > 0);
+    $('#hub-health').classList.toggle('alert', bad > 0);
+  }
+  $('#hub-attn').addEventListener('click', function () { show('attn'); });
+  $('#hub-health').addEventListener('click', function () { show('health'); });
+  $('#hub-run').addEventListener('click', function () { show('run'); });
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest('[data-back]')) show('vault');
+  });
+
   function renderVault() {
     var c = counts();
     var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', id: 'IDs', race: 'Races' };
@@ -2020,9 +2196,19 @@ select.input {
     var hasAny = c.all > 0;
     $('#empty').hidden = hasAny;
     $('#tabs').hidden = !hasAny;
-    $('#backup-nudge').hidden = !(hasAny && !(S.data && S.data.lastExport));
+    $('#search-wrap').hidden = !hasAny;
+    $('#hub').hidden = !hasAny || !!query;
+    $('#backup-nudge').hidden = !(hasAny && !(S.data && S.data.lastExport)) || !!query;
+    if (hasAny) renderHub();
 
     if (!hasAny) { $('#list').textContent = ''; return; }
+
+    if (query) list = list.filter(function (e) { return matches(e, query); });
+    if (!list.length && query) {
+      $('#list').innerHTML = '<div class="empty"><h2>No matches</h2><p>Nothing in ' +
+        (S.filter === 'all' ? 'the box' : 'this tab') + ' matches “' + esc(query) + '”.</p></div>';
+      return;
+    }
 
     if (!list.length) {
       var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', id: 'ID documents', race: 'races' };
@@ -3130,11 +3316,15 @@ select.input {
         }).then(function (ok) {
           if (!ok) { setImportBusy(false); return; }
           S.data.entries = incoming;
+          S.data.runs = sanitizeRuns(r.data && r.data.runs);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
       }
       var res = mergeEntries(entries(), incoming);
       S.data.entries = res.entries;
+      var have = {};
+      runs().forEach(function (x) { have[x.id] = 1; });
+      S.data.runs = runs().concat(sanitizeRuns(r.data && r.data.runs).filter(function (x) { return !have[x.id]; }));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
       if (res.updated) parts.push('updated ' + res.updated);
@@ -3160,6 +3350,7 @@ select.input {
       S.data = {
         v: 1,
         entries: sanitize(r.data && r.data.entries),
+        runs: sanitizeRuns(r.data && r.data.runs),
         lastExport: (r.data && r.data.lastExport) || null
       };
       if (r.raw) {
@@ -3225,6 +3416,458 @@ select.input {
     lockMode = S.rec ? 'unlock' : 'setup';
     renderLock();
   });
+
+  /* ============ dates ============ */
+  function toYmd(d) {
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  // A card printed "09/29" is valid to the last day of September 2029.
+  function cardExpiryYmd(mmyy) {
+    var m = String(mmyy || '').match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+    return m ? toYmd(new Date(2000 + +m[2], +m[1], 0)) : null;
+  }
+
+  /* ============ needs attention ============
+     Everything in the box that has a date coming up, soonest first. Each
+     item can go to the iPhone Calendar as an all-day event with alerts, which
+     is how this app gets real reminders without a server. */
+  function attentionItems() {
+    var out = [];
+    entries().forEach(function (e) {
+      var f = e.f || {}, d;
+      if (groupOf(e.type) === 'id' && f.expiry) {
+        d = daysUntil(f.expiry);
+        if (d !== null && d <= 365) {
+          out.push({ e: e, date: f.expiry, days: d, level: d < 0 ? 'bad' : d <= 180 ? 'warn' : 'ok',
+            what: TYPES[e.type].name + (d < 0 ? ' expired' : ' expires'), cal: TYPES[e.type].name + ' expires',
+            alarms: ['-P90D', '-P30D'] });
+        }
+      }
+      if (e.type === 'card' && f.expiry) {
+        var cy = cardExpiryYmd(f.expiry);
+        d = daysUntil(cy);
+        if (d !== null && d <= 90) {
+          out.push({ e: e, date: cy, days: d, level: d < 0 ? 'bad' : 'warn',
+            what: 'Card ' + (d < 0 ? 'expired' : 'expires'), cal: 'Card expires',
+            alarms: ['-P30D', '-P7D'] });
+        }
+      }
+      if (e.type === 'race' && isUpcoming(e)) {
+        d = daysUntil(f.date);
+        out.push({ e: e, date: f.date, days: d, level: d <= 14 ? 'warn' : 'ok',
+          what: 'Race day' + (f.start ? ' · flag-off ' + f.start : ''), cal: 'Race day',
+          alarms: ['-P7D', '-P1D'] });
+      }
+    });
+    out.sort(function (a, b) { return a.days - b.days; });
+    var last = S.data && S.data.lastExport;
+    if (entries().length && (!last || Date.now() - last > 30 * 86400000)) {
+      out.unshift({ backup: true, level: 'warn', days: null,
+        what: last ? 'Last backup was ' + Math.floor((Date.now() - last) / 86400000) + ' days ago' : 'Never backed up' });
+    }
+    return out;
+  }
+
+  function whenText(a) {
+    if (a.days === null) return '';
+    if (a.days < 0) return Math.abs(a.days) + ' days ago · ' + fmtDate(a.date);
+    if (a.days === 0) return 'Today · ' + fmtDate(a.date);
+    if (a.days === 1) return 'Tomorrow · ' + fmtDate(a.date);
+    return 'In ' + a.days + ' days · ' + fmtDate(a.date);
+  }
+  var LEVEL_WORD = { bad: 'Overdue', warn: 'Soon', ok: 'Coming up' };
+  var BACKUP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M3.5 7.5h17v12a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5Z"/><path d="M2.5 4.5h19v3h-19z"/><path d="M12 10.5v6M9.5 14l2.5 2.5 2.5-2.5"/></svg>';
+
+  function renderAttn() {
+    var items = attentionItems();
+    if (!items.length) {
+      $('#attn-body').innerHTML = '<div class="empty"><h2>Nothing needs you</h2><p>No IDs or cards expiring within a year, and no races ahead. Add expiry dates to your documents and they will show here.</p></div>';
+      return;
+    }
+    var dated = items.filter(function (a) { return !a.backup; });
+    $('#attn-body').innerHTML =
+      (dated.length ? '<button class="btn ghost att-all" id="btn-cal-all">Add all ' + dated.length + ' to Calendar</button>' : '') +
+      '<div class="att-list">' + items.map(function (a, i) {
+        var title = a.backup ? 'Back up the box' : (a.e.title || 'Untitled');
+        return '<div class="att">' +
+          '<button class="att-main" data-att="' + i + '">' +
+          '<span class="glyph" aria-hidden="true">' + (a.backup ? BACKUP_ICON : ICON[a.e.type]) + '</span>' +
+          '<span class="att-text"><b>' + esc(title) + '</b><small>' + esc(a.what) + '</small>' +
+          (a.days !== null ? '<small class="att-when">' + esc(whenText(a)) + '</small>' : '') + '</span>' +
+          '<span class="pill ' + a.level + '">' + esc(a.backup ? 'Due' : LEVEL_WORD[a.level]) + '</span>' +
+          '</button>' +
+          (a.backup ? '' : '<button class="att-cal" data-cal="' + i + '" aria-label="Add ' + esc(title) + ' to Calendar">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+            '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M12 12.5v5M9.5 15h5"/></svg></button>') +
+          '</div>';
+      }).join('') + '</div>' +
+      '<p class="hint">Calendar adds an all-day event with alerts ahead of time. Nothing secret goes into it: only the entry name and the date.</p>';
+    attnCache = items;
+  }
+  var attnCache = [];
+
+  $('#attn-body').addEventListener('click', function (ev) {
+    var m = ev.target.closest('[data-att]');
+    if (m) {
+      var a = attnCache[+m.dataset.att];
+      if (!a) return;
+      if (a.backup) { show('backup'); return; }
+      S.id = a.e.id; show('detail');
+      return;
+    }
+    var c = ev.target.closest('[data-cal]');
+    if (c) { var one = attnCache[+c.dataset.cal]; if (one) shareIcs([one]); return; }
+    if (ev.target.closest('#btn-cal-all')) shareIcs(attnCache.filter(function (a) { return !a.backup; }));
+  });
+
+  function icsText(s) {
+    return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  }
+  function buildIcs(items) {
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+    var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Deposit Box//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+    items.forEach(function (a) {
+      var start = a.date.replace(/-/g, '');
+      var endD = new Date(+a.date.slice(0, 4), +a.date.slice(5, 7) - 1, +a.date.slice(8, 10) + 1);
+      var summary = (a.e.title || 'Untitled') + ' — ' + a.cal;
+      L.push('BEGIN:VEVENT',
+        'UID:' + a.e.id + '-' + a.date + '@deposit-box',
+        'DTSTAMP:' + stamp,
+        'DTSTART;VALUE=DATE:' + start,
+        'DTEND;VALUE=DATE:' + toYmd(endD).replace(/-/g, ''),
+        'SUMMARY:' + icsText(summary),
+        'DESCRIPTION:' + icsText('From Deposit Box. Open the app for details.'),
+        'TRANSP:TRANSPARENT');
+      a.alarms.forEach(function (tr) {
+        L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(summary), 'TRIGGER:' + tr, 'END:VALARM');
+      });
+      L.push('END:VEVENT');
+    });
+    L.push('END:VCALENDAR');
+    // RFC 5545: long lines are folded with CRLF + one space.
+    return L.map(function (line) {
+      var out = '';
+      while (line.length > 60) { out += line.slice(0, 60) + '\r\n '; line = line.slice(60); }
+      return out + line;
+    }).join('\r\n') + '\r\n';
+  }
+  function shareIcs(items) {
+    if (!items.length) return;
+    var text = buildIcs(items);
+    var name = items.length === 1 ? 'deposit-box-reminder.ics' : 'deposit-box-reminders.ics';
+    var blob = new Blob([text], { type: 'text/calendar' });
+    var file = null;
+    try { file = new File([blob], name, { type: 'text/calendar' }); } catch (e) {}
+    if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      guardSheet();
+      navigator.share({ files: [file] }).catch(function () {});
+      return;
+    }
+    try {
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url; link.download = name;
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 20000);
+      toast('Open the downloaded file to add it to Calendar');
+    } catch (e) { toast('This browser cannot create calendar files'); }
+  }
+
+  /* ============ password health ============
+     Looks only at real passwords, never PINs (those are short by design).
+     Values are compared in memory and never shown on this screen. */
+  var PW_FIELDS = { login: ['password'], bank: ['nbpass', 'txnpass'], broker: ['password'] };
+  function healthReport() {
+    var items = [], seen = {};
+    entries().forEach(function (e) {
+      (PW_FIELDS[e.type] || []).forEach(function (k) {
+        var v = (e.f || {})[k];
+        if (!v) return;
+        items.push({ e: e, k: k, v: v });
+        seen[v] = (seen[v] || 0) + 1;
+      });
+    });
+    items.forEach(function (it) {
+      it.reused = seen[it.v] > 1;
+      it.weak = it.v.length < 10 || strength(it.v) < 50;
+      it.old = Date.now() - (it.e.updated || 0) > 365 * 86400000;
+    });
+    return items;
+  }
+  function renderHealth() {
+    var items = healthReport();
+    if (!items.length) {
+      $('#health-body').innerHTML = '<div class="empty"><h2>No passwords yet</h2><p>Add a login, bank or trading account and its password will be checked here.</p></div>';
+      return;
+    }
+    var bad = items.filter(function (i) { return i.reused || i.weak || i.old; });
+    var groups = [
+      ['reused', 'Used in more than one place', 'If one site leaks, every place sharing it is exposed. Give each its own.'],
+      ['weak', 'Weak', 'Shorter than 10 characters or easy to guess. Use the generator when you edit it.'],
+      ['old', 'Not changed in over a year', 'Worth refreshing, starting with banking.']
+    ];
+    var html = '<div class="health-head ' + (bad.length ? 'warn' : 'ok') + '">' +
+      '<b>' + (bad.length ? bad.length + ' of ' + items.length : 'All ' + items.length) + '</b>' +
+      '<span>' + (bad.length ? 'passwords need attention' : 'passwords look good') + '</span></div>';
+    groups.forEach(function (g) {
+      var list = items.filter(function (i) { return i[g[0]]; });
+      if (!list.length) return;
+      html += '<div class="section-label">' + esc(g[1]) + ' · ' + list.length + '</div>' +
+        '<p class="hint health-why">' + esc(g[2]) + '</p><div class="card">' +
+        list.map(function (i) {
+          var fd = fieldDef(i.e.type, i.k);
+          return '<button class="frow health-row" data-open="' + esc(i.e.id) + '">' +
+            '<span class="frow-text"><span class="label">' + esc(fd ? fd.l : i.k) + '</span>' +
+            '<span class="val plain">' + esc(i.e.title || 'Untitled') + '</span></span>' +
+            '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></span></button>';
+        }).join('') + '</div>';
+    });
+    html += '<p class="hint">Checked on this phone. Passwords never leave the vault and are not shown here.</p>';
+    $('#health-body').innerHTML = html;
+  }
+  $('#health-body').addEventListener('click', function (ev) {
+    var o = ev.target.closest('[data-open]');
+    if (o) { S.id = o.dataset.open; show('detail'); }
+  });
+
+  /* ============ running ============
+     Training runs live beside the entries (S.data.runs), not in the list.
+     Personal bests come from races and runs alike, matched to the standard
+     distances within 2%, so a GPS-measured 10.08 km counts as a 10K. */
+  var PB_DIST = [['5K', 5], ['10K', 10], ['Half', 21.0975], ['Marathon', 42.195]];
+  var RUN_KINDS = ['Easy', 'Long', 'Tempo', 'Intervals', 'Race', 'Treadmill'];
+  function runs() { return (S.data && S.data.runs) || []; }
+  function fmtSecs(t) {
+    var h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = Math.round(t % 60);
+    if (sec === 60) { m += 1; sec = 0; }
+    var mm = (h && m < 10 ? '0' : '') + m, ss = (sec < 10 ? '0' : '') + sec;
+    return (h ? h + ':' : '') + mm + ':' + ss;
+  }
+  function paceText(secs, km) {
+    if (!secs || !km) return '';
+    var per = secs / km;
+    return fmtSecs(per) + ' /km';
+  }
+  function efforts() {
+    var out = [];
+    entries().forEach(function (e) {
+      if (e.type !== 'race') return;
+      var f = e.f || {}, t = parseTime(f.time), km = DISTANCES[f.distance];
+      if (f.date && km && (t || f.status === 'Ran it') && daysUntil(f.date) <= 0) {
+        out.push({ date: f.date, km: km, secs: t, label: e.title, race: true });
+      }
+    });
+    runs().forEach(function (r) {
+      out.push({ date: r.date, km: +r.km, secs: parseTime(r.time), label: r.kind || 'Run', run: r });
+    });
+    return out;
+  }
+  function personalBests() {
+    var all = efforts();
+    return PB_DIST.map(function (p) {
+      var best = null;
+      all.forEach(function (x) {
+        if (x.secs && Math.abs(x.km - p[1]) <= p[1] * 0.02 && (!best || x.secs < best.secs)) best = x;
+      });
+      return { name: p[0], best: best };
+    });
+  }
+  function weekStart(d) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));   // Monday
+    return x;
+  }
+  function ymdDate(ymd) { return new Date(+ymd.slice(0, 4), +ymd.slice(5, 7) - 1, +ymd.slice(8, 10)); }
+  function totalsKm() {
+    var now = new Date(), wk = toYmd(weekStart(now)), mo = toYmd(now).slice(0, 7), yr = String(now.getFullYear());
+    var t = { week: 0, month: 0, year: 0 };
+    efforts().forEach(function (x) {
+      if (!x.date || daysUntil(x.date) > 0) return;
+      if (x.date >= wk) t.week += x.km;
+      if (x.date.slice(0, 7) === mo) t.month += x.km;
+      if (x.date.slice(0, 4) === yr) t.year += x.km;
+    });
+    return t;
+  }
+  function weeklyKm(n) {
+    var start = weekStart(new Date()), weeks = [];
+    for (var i = n - 1; i >= 0; i--) {
+      var w = new Date(start); w.setDate(w.getDate() - i * 7);
+      weeks.push({ start: w, key: toYmd(w), km: 0 });
+    }
+    efforts().forEach(function (x) {
+      if (!x.date || daysUntil(x.date) > 0) return;
+      var k = toYmd(weekStart(ymdDate(x.date)));
+      weeks.forEach(function (w) { if (w.key === k) w.km += x.km; });
+    });
+    return weeks;
+  }
+  function kmText(km) { return (Math.round(km * 10) / 10).toFixed(km >= 100 ? 0 : 1).replace(/\.0$/, ''); }
+
+  // Weekly distance, last 12 weeks. One series in the brass bar colour, so
+  // no legend: the heading names it. Columns cap at 24px with 4px rounded
+  // tops, square at the baseline; hairline grid; tap a week for its value.
+  function weeklyChart() {
+    var weeks = weeklyKm(12);
+    var max = Math.max.apply(null, weeks.map(function (w) { return w.km; }));
+    var top = max <= 10 ? 10 : max <= 20 ? 20 : max <= 50 ? Math.ceil(max / 10) * 10 : Math.ceil(max / 25) * 25;
+    var W = 400, H = 150, padL = 30, padB = 22, padT = 18;
+    var plotW = W - padL, plotH = H - padB - padT, slot = plotW / weeks.length;
+    var bw = Math.min(24, slot - 6);
+    var y = function (v) { return padT + plotH - (v / top) * plotH; };
+    var svg = '<svg class="wk-chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Distance run per week, last 12 weeks. This week ' +
+      kmText(weeks[weeks.length - 1].km) + ' km, busiest week ' + kmText(max) + ' km.">';
+    [0, top / 2, top].forEach(function (v) {
+      svg += '<line class="wk-grid" x1="' + padL + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+        '<text class="wk-tick" x="' + (padL - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' + v + '</text>';
+    });
+    var peak = -1;
+    weeks.forEach(function (w, i) { if (w.km > 0 && (peak < 0 || w.km > weeks[peak].km)) peak = i; });
+    weeks.forEach(function (w, i) {
+      var cx = padL + slot * i + slot / 2, x0 = cx - bw / 2;
+      if (w.km > 0) {
+        var y0 = y(w.km), base = y(0), r = Math.min(4, (base - y0) / 2);
+        svg += '<path class="wk-bar' + (i === weeks.length - 1 ? ' now' : '') + '" d="M' + x0 + ' ' + base +
+          'V' + (y0 + r) + 'Q' + x0 + ' ' + y0 + ' ' + (x0 + r) + ' ' + y0 + 'H' + (x0 + bw - r) +
+          'Q' + (x0 + bw) + ' ' + y0 + ' ' + (x0 + bw) + ' ' + (y0 + r) + 'V' + base + 'Z"/>';
+      }
+      if ((i === weeks.length - 1 || i === peak) && w.km > 0) {
+        svg += '<text class="wk-val" x="' + cx + '" y="' + (y(w.km) - 5) + '" text-anchor="middle">' + kmText(w.km) + '</text>';
+      }
+      if (i % 3 === 2 || i === weeks.length - 1) {
+        var lab = i === weeks.length - 1 ? 'This wk'
+          : w.start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        // The last label hugs the right edge instead of centring past it.
+        var lastLab = i === weeks.length - 1;
+        svg += '<text class="wk-tick" x="' + (lastLab ? W - 1 : cx) + '" y="' + (H - 6) + '" text-anchor="' +
+          (lastLab ? 'end' : 'middle') + '">' + esc(lab) + '</text>';
+      }
+      svg += '<rect class="wk-hit" data-wk="' + i + '" x="' + (padL + slot * i) + '" y="' + padT + '" width="' + slot + '" height="' + (plotH + 4) + '"/>';
+    });
+    svg += '</svg>';
+    var table = '<table class="sr-only"><caption>Kilometres per week</caption><tr><th>Week starting</th><th>km</th></tr>' +
+      weeks.map(function (w) { return '<tr><td>' + esc(fmtDate(w.key)) + '</td><td>' + kmText(w.km) + '</td></tr>'; }).join('') + '</table>';
+    wkCache = weeks;
+    return '<div class="wk-wrap">' + svg + '<div class="wk-tip" id="wk-tip" hidden></div></div>' + table;
+  }
+  var wkCache = [];
+
+  function renderRun() {
+    var pbs = personalBests(), t = totalsKm();
+    var list = efforts().filter(function (x) { return x.date && daysUntil(x.date) <= 0; })
+      .sort(function (a, b) { return b.date < a.date ? -1 : b.date > a.date ? 1 : 0; });
+    var html =
+      '<div class="run-form" id="run-form" hidden>' +
+      '<div class="run-grid">' +
+      '<div class="field"><label class="label" for="run-date">Date</label><input class="input" id="run-date" type="date" value="' + toYmd(new Date()) + '"></div>' +
+      '<div class="field"><label class="label" for="run-km">Distance (km)</label><input class="input mono" id="run-km" type="text" inputmode="decimal" placeholder="10.2"></div>' +
+      '<div class="field"><label class="label" for="run-time">Time</label><input class="input mono" id="run-time" type="text" inputmode="numeric" placeholder="52:30"></div>' +
+      '<div class="field"><label class="label" for="run-kind">Type</label><select class="input" id="run-kind">' +
+        RUN_KINDS.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join('') + '</select></div>' +
+      '</div>' +
+      '<div class="field"><label class="label" for="run-note">Notes</label><input class="input" id="run-note" type="text" placeholder="Marine Drive loop, felt strong"></div>' +
+      '<p class="err" id="run-err" role="alert"></p>' +
+      '<div class="form-foot run-foot"><button class="btn ghost" id="run-cancel">Cancel</button><button class="btn" id="run-save">Save run</button></div>' +
+      '</div>' +
+
+      '<div class="section-label">Personal bests</div><div class="pbs">' +
+      pbs.map(function (p) {
+        return '<div class="pb' + (p.best ? '' : ' none') + '"><span class="label">' + esc(p.name) + '</span>' +
+          '<b>' + (p.best ? fmtSecs(p.best.secs) : '—') + '</b>' +
+          '<small>' + (p.best ? esc(fmtDate(p.best.date)) + (p.best.race ? ' · race' : '') : 'No time yet') + '</small></div>';
+      }).join('') + '</div>' +
+
+      '<div class="section-label">Distance</div><div class="totals">' +
+      [['This week', t.week], ['This month', t.month], ['This year', t.year]].map(function (x) {
+        return '<div class="tot"><span class="label">' + x[0] + '</span><b>' + kmText(x[1]) + '<i> km</i></b></div>';
+      }).join('') + '</div>' +
+
+      '<div class="section-label">Kilometres per week</div>' + weeklyChart() +
+
+      '<div class="section-label">Recent · ' + list.length + '</div>' +
+      (list.length
+        ? '<div class="card">' + list.slice(0, 40).map(function (x) {
+            return '<div class="frow run-row"><span class="frow-text">' +
+              '<span class="label">' + esc(fmtDate(x.date)) + ' · ' + esc(x.label) + '</span>' +
+              '<span class="val">' + kmText(x.km) + ' km' + (x.secs ? '  ·  ' + fmtSecs(x.secs) + '  ·  ' + paceText(x.secs, x.km) : '') + '</span>' +
+              (x.run && x.run.note ? '<span class="run-note">' + esc(x.run.note) + '</span>' : '') +
+              '</span>' +
+              (x.run ? '<span class="frow-acts"><button class="mini" data-delrun="' + esc(x.run.id) + '" aria-label="Delete this run">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : '') +
+              '</div>';
+          }).join('') + '</div>'
+        : '<div class="empty run-empty"><h2>No runs yet</h2><p>Tap <b>Log a run</b> to add one. Races with a finish time count too.</p></div>');
+    $('#run-body').innerHTML = html;
+  }
+
+  $('#btn-run-add').addEventListener('click', function () {
+    var f = $('#run-form');
+    if (!f) return;
+    f.hidden = !f.hidden;
+    if (!f.hidden) { window.scrollTo(0, 0); $('#run-km').focus(); }
+  });
+  $('#run-body').addEventListener('click', function (ev) {
+    if (ev.target.closest('#run-cancel')) { $('#run-form').hidden = true; return; }
+    if (ev.target.closest('#run-save')) { saveRun(); return; }
+    var del = ev.target.closest('[data-delrun]');
+    if (del) {
+      askConfirm({ title: 'Delete this run?', body: 'It will be removed from your log and totals.', yes: 'Delete' })
+        .then(function (ok) {
+          if (!ok) return;
+          S.data.runs = runs().filter(function (r) { return r.id !== del.dataset.delrun; });
+          persist().then(function () { renderRun(); toast('Run deleted'); });
+        });
+      return;
+    }
+    var hit = ev.target.closest('[data-wk]');
+    var tip = $('#wk-tip');
+    if (hit && tip) {
+      var w = wkCache[+hit.dataset.wk];
+      var box = hit.getBoundingClientRect(), wrap = tip.parentNode.getBoundingClientRect();
+      tip.textContent = 'Week of ' + fmtDate(w.key) + ' · ' + kmText(w.km) + ' km';
+      tip.hidden = false;
+      var left = box.left - wrap.left + box.width / 2 - tip.offsetWidth / 2;
+      tip.style.left = Math.max(0, Math.min(wrap.width - tip.offsetWidth, left)) + 'px';
+      return;
+    }
+    if (tip) tip.hidden = true;
+  });
+
+  function saveRun() {
+    var date = $('#run-date').value, kmRaw = $('#run-km').value.trim().replace(',', '.');
+    var time = $('#run-time').value.trim(), km = parseFloat(kmRaw);
+    var err = '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) err = 'Pick the date of the run.';
+    else if (daysUntil(date) > 0) err = 'That date is in the future.';
+    else if (!(km > 0 && km < 300)) err = 'Enter the distance in kilometres, for example 10.2.';
+    else if (time && parseTime(time) === null) err = 'Write the time as h:mm:ss or mm:ss, for example 52:30.';
+    if (err) { $('#run-err').textContent = err; return; }
+    S.data.runs = runs().concat([{
+      id: uid(), date: date, km: Math.round(km * 100) / 100, time: time,
+      kind: $('#run-kind').value, note: $('#run-note').value.trim().slice(0, 300)
+    }]);
+    persist().then(function (ok) {
+      if (!ok) return;
+      renderRun();
+      toast('Run saved');
+    });
+  }
+
+  // Runs travel with backups, so restoring and merging must keep them.
+  function sanitizeRuns(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (r) {
+      return r && typeof r === 'object' && r.id && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && +r.km > 0 && +r.km < 1000;
+    }).map(function (r) {
+      return {
+        id: String(r.id), date: r.date, km: Math.round(+r.km * 100) / 100,
+        time: parseTime(r.time) !== null ? String(r.time) : '',
+        kind: RUN_KINDS.indexOf(r.kind) !== -1 ? r.kind : 'Easy',
+        note: String(r.note || '').slice(0, 300)
+      };
+    });
+  }
 
   /* ============ confirm sheet ============ */
   var confirmResolve = null;
