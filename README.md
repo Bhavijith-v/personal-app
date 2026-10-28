@@ -175,6 +175,59 @@ reading, so compare it with the card).
 The page's security policy now allows `connect-src 'self'`, so the app can
 fetch its own reader files. It still can't contact any other host.
 
+### Ask Claude
+
+**Running → Ask Claude about your running.** A chat with Claude Opus 5.5
+about training, pacing and race day, using your races, personal bests,
+weekly kilometres and recent runs.
+
+**What's sent, and what isn't.** The screen shows the exact text Claude
+receives ("What Claude sees"): races, bests and runs, and nothing else.
+Passwords, card numbers, bank details and ID numbers are never included, and
+the test suite checks that none of them ever leaves the app. The chat is kept
+in memory only and is gone when the box locks.
+
+**Why a server.** The app is public code, so it can't hold an Anthropic API
+key: anyone could copy it and spend your credit. The key lives in a small
+Cloudflare Worker you own (`claude-worker/`). The worker answers only this
+app's address and only with your access token, caps each answer at 8,000
+output tokens, and streams the reply back. If Claude declines a request, the
+worker has Anthropic retry it on its recommended fallback model
+(`fallbacks: "default"`).
+
+**Cost.** Claude Opus 5.5 is $4 per million input tokens and $20 per million
+output tokens. A typical question costs about 1–3 US cents. The app shows the
+estimate under each answer. Set a monthly spend limit in the Anthropic Console
+as a backstop.
+
+#### Setting it up (once, about 10 minutes)
+
+1. **Anthropic API key.** At console.anthropic.com, add some credit under
+   Billing, set a spend limit, and create an API key. This is separate from a
+   claude.ai Pro or Max plan.
+2. **Cloudflare account.** Sign up free at dash.cloudflare.com.
+3. **Make an access token.** This is a password between the app and your
+   server:
+   ```
+   node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
+   ```
+4. **Deploy the server** from this folder:
+   ```
+   cd claude-worker
+   npm install
+   npx wrangler login
+   npx wrangler secret put ANTHROPIC_API_KEY     (paste the API key)
+   npx wrangler secret put APP_TOKEN             (paste the token from step 3)
+   npx wrangler deploy
+   ```
+   Wrangler prints an address like
+   `https://deposit-box-claude.yourname.workers.dev`.
+5. **Connect the app.** Running → Ask Claude → paste the address and the
+   token → **Test and save**. Both are stored encrypted in the box.
+
+The page's security policy allows `connect-src 'self' https://*.workers.dev`,
+so the app can reach your worker and nothing else.
+
 ### Trading accounts and 2FA codes
 
 The **Trading account** type holds a broker login: client ID, password, Kite

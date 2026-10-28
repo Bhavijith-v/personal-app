@@ -1,0 +1,16 @@
+{
+  "name": "deposit-box-claude",
+  "private": true,
+  "type": "module",
+  "description": "Holds the Anthropic API key for Deposit Box's Ask Claude screen.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.133.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.150.0"
+  }
+}

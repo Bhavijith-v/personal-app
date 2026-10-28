@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self' https://*.workers.dev; form-action 'none'; base-uri 'none'">
 <title>Deposit Box</title>
 <meta name="description" content="A private, offline, passphrase-encrypted vault for logins, bank accounts and cards.">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -625,6 +625,52 @@ select.input {
 .scan-photo { margin-top: 8px; border: 1px solid var(--line-soft); border-radius: var(--r-sm); }
 .scan-photo .scan-val { font-family: var(--ui); }
 
+/* ---------- ask Claude ---------- */
+.coach-go { margin-bottom: 4px; gap: 9px; }
+.coach-go svg { width: 19px; height: 19px; display: block; color: var(--brass); }
+.coach-setup h2 { font-size: 18px; margin: 4px 0 8px; }
+.coach-setup > p { color: var(--fg-dim); font-size: 14px; line-height: 1.5; margin: 0 0 16px; }
+.coach-setup > .hint { margin-top: 14px; font-size: 12.5px; }
+.coach-ctx { border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); margin-bottom: 14px; }
+.coach-ctx summary { padding: 11px 13px; font-size: 13px; color: var(--fg-dim); cursor: pointer; list-style-position: inside; }
+.coach-ctx pre {
+  margin: 0; padding: 0 13px 13px; font-family: var(--data); font-size: 11.5px; line-height: 1.5;
+  color: var(--fg-dim); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto;
+}
+.coach-log { display: flex; flex-direction: column; gap: 10px; min-height: 120px; }
+.coach-empty p { color: var(--fg-dim); font-size: 14px; margin: 6px 0 12px; }
+.chips { display: flex; flex-direction: column; gap: 8px; }
+.chip {
+  text-align: left; padding: 10px 13px; min-height: 42px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 14px; line-height: 1.35;
+}
+.msg { max-width: 92%; border-radius: 14px; padding: 10px 13px; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; min-width: 0; }
+.msg.me { align-self: flex-end; background: var(--brass-soft); border: 1px solid var(--brass); }
+.msg.ai { align-self: flex-start; background: var(--surface); border: 1px solid var(--line-soft); }
+.msg.ai.failed { border-color: var(--danger); }
+.msg-note { margin: 8px 0 0; font-size: 12.5px; color: var(--warn); }
+.msg.ai.failed .msg-note { color: var(--danger); }
+.typing { color: var(--fg-faint); font-style: italic; }
+.md p { margin: 0 0 8px; }
+.md p:last-child { margin-bottom: 0; }
+.md .md-h { font-weight: 600; margin-top: 10px; }
+.md ul, .md ol { margin: 0 0 8px; padding-left: 20px; }
+.md li { margin-bottom: 3px; }
+.md code { font-family: var(--data); font-size: 13px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+.md-table { overflow-x: auto; margin: 6px 0 10px; }
+.md-table table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.md-table th, .md-table td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.md-table th { background: var(--surface-2); font-weight: 600; }
+.coach-input {
+  position: sticky; bottom: 0; z-index: 5; display: flex; gap: 8px; align-items: flex-end;
+  margin-top: 14px; padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--bg);
+}
+.coach-input .input { flex: 1 1 auto; resize: none; min-height: 48px; max-height: 160px; }
+.coach-input .btn { width: auto; flex: 0 0 auto; min-width: 84px; }
+.coach-meta { margin-top: 6px; }
+.linkish { background: none; border: none; padding: 0; color: var(--brass); font-size: inherit; font-weight: 600; min-height: 0; }
+.coach-page { padding-bottom: 0; }
+
 /* ---------- 2FA code ---------- */
 .otp {
   border: 1px solid var(--brass);
@@ -1031,6 +1077,13 @@ select.input {
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Running</h1>
       <button class="txt-btn" id="btn-run-add">Log a run</button></div></header>
     <div class="col gutter page-body" id="run-body"></div>
+  </section>
+
+  <!-- ================= ASK CLAUDE ================= -->
+  <section id="screen-coach" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-coach-back" aria-label="Back to running"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Ask Claude</h1>
+      <button class="txt-btn" id="btn-coach-new">New chat</button></div></header>
+    <div class="col gutter page-body coach-page" id="coach-body"></div>
   </section>
 
   <!-- ================= EDITOR ================= -->
@@ -1646,7 +1699,7 @@ select.input {
   var SCREENS = {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
-    attn: '#screen-attn', health: '#screen-health', run: '#screen-run'
+    attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach'
   };
   function show(view) {
     S.view = view;
@@ -1659,6 +1712,7 @@ select.input {
     if (view === 'attn') renderAttn();
     if (view === 'health') renderHealth();
     if (view === 'run') renderRun();
+    if (view === 'coach') renderCoach();
     if (view !== 'detail') { stopOtp(); closeLightbox(); }
     if (view !== 'edit') scanState = null;
     if (view !== 'lock') armIdle();
@@ -1685,6 +1739,7 @@ select.input {
     S.mk = null;
     S.key = null; S.data = null; S.id = null; S.draft = null; S.isNew = false; S.filter = 'all';
     query = ''; $('#q').value = '';
+    coachReset();
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -3387,6 +3442,7 @@ select.input {
         v: 1,
         entries: sanitize(r.data && r.data.entries),
         runs: sanitizeRuns(r.data && r.data.runs),
+        claude: sanitizeClaude(r.data && r.data.claude),
         lastExport: (r.data && r.data.lastExport) || null
       };
       if (r.raw) {
@@ -3794,6 +3850,10 @@ select.input {
     var list = efforts().filter(function (x) { return x.date && daysUntil(x.date) <= 0; })
       .sort(function (a, b) { return b.date < a.date ? -1 : b.date > a.date ? 1 : 0; });
     var html =
+      '<button class="btn ghost coach-go" id="btn-coach">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 3.5 13.8 9l5.7 1.2-5.7 1.3L12 17l-1.8-5.5-5.7-1.3L10.2 9Z"/><path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7Z"/></svg>' +
+      'Ask Claude about your running</button>' +
       '<div class="run-form" id="run-form" hidden>' +
       '<div class="run-grid">' +
       '<div class="field"><label class="label" for="run-date">Date</label><input class="input" id="run-date" type="date" value="' + toYmd(new Date()) + '"></div>' +
@@ -3844,6 +3904,7 @@ select.input {
     if (!f.hidden) { window.scrollTo(0, 0); $('#run-km').focus(); }
   });
   $('#run-body').addEventListener('click', function (ev) {
+    if (ev.target.closest('#btn-coach')) { show('coach'); return; }
     if (ev.target.closest('#run-cancel')) { $('#run-form').hidden = true; return; }
     if (ev.target.closest('#run-save')) { saveRun(); return; }
     var del = ev.target.closest('[data-delrun]');
@@ -4548,6 +4609,332 @@ select.input {
   $('#scan-in').addEventListener('change', function () {
     var file = this.files && this.files[0];
     if (file) scanFile(file);
+  });
+
+  /* ============ ask Claude ============
+     Talks to your own Cloudflare Worker (claude-worker/ in this repo), which
+     holds the Anthropic API key. The app sends only what coachContext()
+     builds - races, bests, weekly km, recent runs - plus the chat. The
+     screen shows that exact text before you ask. No passwords, numbers or ID
+     details are ever included. The chat lives in memory only and is gone
+     when the box locks. */
+  var coach = { turns: [], busy: false, abort: null, last: null, setup: false };
+  var LOCAL_DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  function coachReset() {
+    if (coach.abort) { try { coach.abort.abort(); } catch (e) {} }
+    coach.turns = []; coach.busy = false; coach.abort = null; coach.last = null; coach.setup = false;
+    var el = $('#coach-body');
+    if (el) el.textContent = '';
+  }
+  function claudeConf() { return S.data && S.data.claude && S.data.claude.url ? S.data.claude : null; }
+  function serverUrlOk(u) {
+    return /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.workers\.dev\/?$/i.test(u) ||
+      (LOCAL_DEV && /^http:\/\/(localhost|127\.0\.0\.1):\d+\/?$/.test(u));
+  }
+  function sanitizeClaude(c) {
+    if (!c || typeof c !== 'object') return null;
+    var url = String(c.url || ''), token = String(c.token || '');
+    return serverUrlOk(url) && token.length >= 8 && token.length <= 200 ? { url: url, token: token } : null;
+  }
+
+  function coachContext() {
+    var L = ['Today: ' + fmtDate(toYmd(new Date()))];
+    var races = entries().filter(function (e) { return e.type === 'race' && e.f && e.f.date; });
+    var ahead = races.filter(isUpcoming).sort(function (a, b) { return a.f.date < b.f.date ? -1 : 1; });
+    var past = races.filter(function (e) { return !isUpcoming(e); }).sort(function (a, b) { return a.f.date > b.f.date ? -1 : 1; });
+    var line = function (e) {
+      var f = e.f, p = paceOf(e);
+      return '- ' + (e.title || 'Race') + ': ' + [fmtDate(f.date), f.distance, f.start ? 'flag-off ' + f.start : '', f.venue,
+        f.time ? 'finished in ' + f.time + (p ? ' (' + p.pace + ' /km)' : '') : '', f.status].filter(Boolean).join(', ');
+    };
+    L.push('', 'Upcoming races:');
+    if (ahead.length) ahead.forEach(function (e) { L.push(line(e) + ', in ' + daysUntil(e.f.date) + ' days'); });
+    else L.push('- none');
+    L.push('', 'Past races:');
+    if (past.length) past.slice(0, 12).forEach(function (e) { L.push(line(e)); });
+    else L.push('- none');
+    L.push('', 'Personal bests: ' + personalBests().map(function (p) {
+      return p.name + ' ' + (p.best ? fmtSecs(p.best.secs) + ' (' + fmtDate(p.best.date) + ')' : 'none yet');
+    }).join('; '));
+    var t = totalsKm();
+    L.push('Distance: this week ' + kmText(t.week) + ' km, this month ' + kmText(t.month) + ' km, this year ' + kmText(t.year) + ' km.');
+    L.push('Weekly km for the last 12 weeks, oldest first: ' + weeklyKm(12).map(function (w) { return kmText(w.km); }).join(', ') + '.');
+    var rs = runs().slice().sort(function (a, b) { return a.date > b.date ? -1 : 1; }).slice(0, 30);
+    L.push('', 'Recent training runs, newest first:');
+    if (rs.length) rs.forEach(function (r) {
+      var sec = parseTime(r.time);
+      L.push('- ' + fmtDate(r.date) + ', ' + (r.kind || 'Run') + ', ' + kmText(+r.km) + ' km' +
+        (sec ? ' in ' + r.time + ' (' + fmtSecs(sec / r.km) + ' /km)' : '') + (r.note ? ': ' + r.note : ''));
+    });
+    else L.push('- none logged yet');
+    return L.join('\n');
+  }
+
+  // A small, safe Markdown subset: escape everything first, then allow
+  // headings, lists, bold, inline code and simple tables.
+  function mdLite(src) {
+    var out = [], list = null, table = null;
+    var inline = function (t) {
+      return esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
+    };
+    var closeList = function () { if (list) { out.push('</' + list + '>'); list = null; } };
+    var closeTable = function () {
+      if (!table) return;
+      out.push('<div class="md-table"><table>' + table.map(function (cells, i) {
+        var tag = i === 0 ? 'th' : 'td';
+        return '<tr>' + cells.map(function (c) { return '<' + tag + '>' + inline(c) + '</' + tag + '>'; }).join('') + '</tr>';
+      }).join('') + '</table></div>');
+      table = null;
+    };
+    String(src).split('\n').forEach(function (raw) {
+      var ln = raw.replace(/\s+$/, ''), m;
+      if (/^\s*\|.*\|\s*$/.test(ln)) {
+        closeList();
+        if (/^\s*\|[\s:|-]+\|\s*$/.test(ln)) return;   // the |---| row
+        (table = table || []).push(ln.trim().slice(1, -1).split('|').map(function (c) { return c.trim(); }));
+        return;
+      }
+      closeTable();
+      if (!ln.trim()) { closeList(); return; }
+      if ((m = /^\s*#{1,4}\s+(.*)$/.exec(ln))) { closeList(); out.push('<p class="md-h">' + inline(m[1]) + '</p>'); return; }
+      if ((m = /^\s*[-*•]\s+(.*)$/.exec(ln))) {
+        if (list !== 'ul') { closeList(); out.push('<ul>'); list = 'ul'; }
+        out.push('<li>' + inline(m[1]) + '</li>'); return;
+      }
+      if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(ln))) {
+        if (list !== 'ol') { closeList(); out.push('<ol>'); list = 'ol'; }
+        out.push('<li>' + inline(m[1]) + '</li>'); return;
+      }
+      closeList();
+      out.push('<p>' + inline(ln) + '</p>');
+    });
+    closeList(); closeTable();
+    return out.join('');
+  }
+
+  // Claude Opus 5.5 rates, per million tokens: $4 in, $20 out, cache writes
+  // at 1.25x input, cache reads $0.20.
+  function costText(u) {
+    if (!u) return '';
+    var usd = ((u.input || 0) * 4 + (u.cacheWrite || 0) * 5 + (u.cacheRead || 0) * 0.2 + (u.output || 0) * 20) / 1e6;
+    return 'about $' + (usd < 0.01 ? usd.toFixed(4) : usd.toFixed(2));
+  }
+  function coachMeta() {
+    var u = coach.last;
+    return u
+      ? 'Last answer: ' + ((u.input || 0) + (u.cacheRead || 0) + (u.cacheWrite || 0)).toLocaleString('en-IN') + ' tokens in, ' +
+        (u.output || 0).toLocaleString('en-IN') + ' out, ' + costText(u)
+      : 'Claude Opus 5.5, through your own server';
+  }
+
+  function turnHtml(t) {
+    if (t.role === 'user') return '<div class="msg me">' + esc(t.content).replace(/\n/g, '<br>') + '</div>';
+    return '<div class="msg ai' + (t.failed ? ' failed' : '') + '"><div class="md"' + (t.live ? ' id="coach-live"' : '') + '>' +
+      (t.content ? mdLite(t.content) : (t.live ? '<span class="typing">Claude is thinking…</span>' : '')) + '</div>' +
+      (t.note ? '<p class="msg-note">' + esc(t.note) + '</p>' : '') + '</div>';
+  }
+
+  function coachChips() {
+    var next = entries().filter(function (e) { return e.type === 'race' && isUpcoming(e); })
+      .sort(function (a, b) { return a.f.date < b.f.date ? -1 : 1; })[0];
+    var out = [];
+    if (next) {
+      out.push('Build me a training plan for ' + next.title + ' on ' + fmtDate(next.f.date) + '.');
+      out.push('What pace should I aim for at ' + next.title + '?');
+      out.push('Give me a race-day checklist for ' + next.title + '.');
+    }
+    out.push('How has my training gone over the last four weeks?');
+    return out;
+  }
+
+  function renderCoach() {
+    var el = $('#coach-body');
+    if (!el || !S.data) return;
+    var conf = claudeConf();
+    $('#btn-coach-new').hidden = !conf || coach.setup;
+    if (!conf || coach.setup) {
+      el.innerHTML = '<div class="coach-setup">' +
+        '<h2>Connect Claude</h2>' +
+        '<p>Ask Claude goes through your own small server, which keeps your Anthropic API key out of this app. ' +
+        'You set it up once; the steps are in the README under <b>Ask Claude</b>.</p>' +
+        '<div class="field"><label class="label" for="coach-url">Server address</label>' +
+        '<input class="input mono" id="coach-url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
+        'placeholder="https://deposit-box-claude.you.workers.dev" value="' + esc(conf ? conf.url : '') + '"></div>' +
+        '<div class="field"><label class="label" for="coach-token">Access token</label>' +
+        '<div class="pw-wrap"><input class="input mono" id="coach-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="' +
+        esc(conf ? conf.token : '') + '"></div></div>' +
+        '<p class="err" id="coach-err" role="alert"></p>' +
+        '<div class="bk-acts">' + (conf ? '<button type="button" class="btn ghost" id="coach-cancel">Cancel</button>' +
+          '<button type="button" class="btn danger" id="coach-forget">Disconnect</button>' : '') +
+        '<button type="button" class="btn" id="coach-save">Test and save</button></div>' +
+        '<p class="hint">Only your races, personal bests and runs are ever sent. Never passwords, card numbers or ID details. ' +
+        'The address and token are stored encrypted in the box.</p></div>';
+      return;
+    }
+    var ctx = coachContext();
+    el.innerHTML =
+      '<details class="coach-ctx"><summary>What Claude sees: your races, bests and runs. Nothing else.</summary><pre>' + esc(ctx) + '</pre></details>' +
+      '<div class="coach-log" id="coach-log">' +
+      (coach.turns.length ? coach.turns.map(turnHtml).join('')
+        : '<div class="coach-empty"><p>Ask about training, pacing or race day. Claude sees the running data above.</p><div class="chips">' +
+          coachChips().map(function (c) { return '<button type="button" class="chip" data-ask="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') +
+          '</div></div>') +
+      '</div>' +
+      '<div class="coach-input">' +
+      '<textarea class="input" id="coach-in" rows="2" placeholder="Ask about your running…" autocapitalize="sentences"></textarea>' +
+      '<button type="button" class="btn' + (coach.busy ? ' ghost' : '') + '" id="coach-send">' + (coach.busy ? 'Stop' : 'Send') + '</button></div>' +
+      '<p class="hint coach-meta"><span id="coach-meta">' + esc(coachMeta()) + '</span> · ' +
+      '<button type="button" class="linkish" id="coach-conn">Connection</button></p>';
+  }
+
+  var liveFrame = 0;
+  function paintLive(t) {
+    if (liveFrame) return;
+    liveFrame = requestAnimationFrame(function () {
+      liveFrame = 0;
+      var el = document.getElementById('coach-live');
+      if (el) el.innerHTML = t.content ? mdLite(t.content) : '<span class="typing">Claude is thinking…</span>';
+      var log = $('#coach-log');
+      if (log) window.scrollTo(0, document.body.scrollHeight);
+    });
+  }
+
+  function coachSend(text) {
+    text = String(text || '').trim();
+    var conf = claudeConf();
+    if (!text || coach.busy || !conf) return;
+    var history = coach.turns.filter(function (t) { return !t.failed; })
+      .map(function (t) { return { role: t.role, content: t.content }; });
+    history.push({ role: 'user', content: text });
+    var mine = { role: 'user', content: text };
+    var live = { role: 'assistant', content: '', live: true };
+    coach.turns.push(mine, live);
+    coach.busy = true;
+    var ctrl = new AbortController();
+    coach.abort = ctrl;
+    var ended = false;
+    renderCoach();
+    window.scrollTo(0, document.body.scrollHeight);
+
+    var fail = function (note) { mine.failed = true; live.failed = true; live.note = note; };
+    var onEvent = function (ev) {
+      if (ev.t === 'text') { live.content += ev.v; paintLive(live); }
+      else if (ev.t === 'done') {
+        ended = true;
+        coach.last = ev.usage || null;
+        if (ev.stop === 'refusal') fail('Claude declined to answer this one. Try asking it a different way.');
+        else if (ev.stop === 'max_tokens') live.note = 'This answer hit the length limit and stopped early.';
+      } else if (ev.t === 'error') { ended = true; fail(ev.v); }
+    };
+
+    fetch(conf.url, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + conf.token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history, context: coachContext() }),
+      signal: ctrl.signal
+    }).then(function (res) {
+      if (!res.ok) {
+        return res.json().catch(function () { return {}; }).then(function (j) {
+          throw new Error((j && j.error) || 'Your server answered with error ' + res.status + '.');
+        });
+      }
+      var reader = res.body.getReader(), dec = new TextDecoder(), buf = '';
+      var pump = function () {
+        return reader.read().then(function (r) {
+          if (r.done) return;
+          buf += dec.decode(r.value, { stream: true });
+          var nl;
+          while ((nl = buf.indexOf('\n')) >= 0) {
+            var ln = buf.slice(0, nl);
+            buf = buf.slice(nl + 1);
+            if (ln.trim()) { try { onEvent(JSON.parse(ln)); } catch (e) {} }
+          }
+          return pump();
+        });
+      };
+      return pump();
+    }).then(function () {
+      if (!ended) fail(live.content ? 'The answer was cut off. Ask again to continue.' : 'No answer came back. Try again.');
+    }).catch(function (err) {
+      if (err && err.name === 'AbortError') {
+        if (live.content) live.note = 'Stopped.'; else fail('Stopped.');
+      } else {
+        fail(err && err.message && !/Failed to fetch|NetworkError|Load failed/i.test(err.message)
+          ? err.message : 'Could not reach your server. Check the internet connection.');
+      }
+    }).then(function () {
+      live.live = false;
+      coach.busy = false;
+      coach.abort = null;
+      if (S.view === 'coach') renderCoach();
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+  }
+
+  function coachSave() {
+    var url = $('#coach-url').value.trim().replace(/\/+$/, '');
+    var token = $('#coach-token').value.trim();
+    var err = $('#coach-err');
+    if (!serverUrlOk(url)) { err.textContent = 'Use the address Cloudflare gave you, like https://deposit-box-claude.you.workers.dev'; return; }
+    if (token.length < 8) { err.textContent = 'Paste the access token you set on the server (at least 8 characters).'; return; }
+    err.textContent = '';
+    var btn = $('#coach-save');
+    btn.disabled = true; btn.textContent = 'Testing…';
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ping: true })
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (j) {
+        if (!res.ok) throw new Error(j.error || 'The server answered with error ' + res.status + '.');
+        S.data.claude = { url: url, token: token };
+        return persist();
+      });
+    }).then(function () {
+      coach.setup = false;
+      renderCoach();
+      toast('Connected to Claude');
+    }).catch(function (e) {
+      btn.disabled = false; btn.textContent = 'Test and save';
+      err.textContent = e && e.message && !/Failed to fetch|NetworkError|Load failed/i.test(e.message)
+        ? e.message : 'Could not reach that address. Check it, and that the server allows this app.';
+    });
+  }
+
+  $('#coach-body').addEventListener('click', function (ev) {
+    var chip = ev.target.closest('[data-ask]');
+    if (chip) { coachSend(chip.dataset.ask); return; }
+    if (ev.target.closest('#coach-send')) {
+      if (coach.busy) { if (coach.abort) coach.abort.abort(); return; }
+      var box = $('#coach-in');
+      if (box && box.value.trim()) { var v = box.value; box.value = ''; coachSend(v); }
+      return;
+    }
+    if (ev.target.closest('#coach-conn')) { coach.setup = true; renderCoach(); return; }
+    if (ev.target.closest('#coach-cancel')) { coach.setup = false; renderCoach(); return; }
+    if (ev.target.closest('#coach-save')) { coachSave(); return; }
+    if (ev.target.closest('#coach-forget')) {
+      askConfirm({ title: 'Disconnect Claude?', body: 'The server address and token are removed from the box. Your server keeps running until you delete it in Cloudflare.', yes: 'Disconnect' })
+        .then(function (ok) {
+          if (!ok) return;
+          delete S.data.claude;
+          coachReset();
+          persist().then(function () { renderCoach(); toast('Claude disconnected'); });
+        });
+    }
+  });
+  $('#coach-body').addEventListener('keydown', function (ev) {
+    if (ev.target.id === 'coach-in' && ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) {
+      ev.preventDefault();
+      var v = ev.target.value; ev.target.value = ''; coachSend(v);
+    }
+  });
+  $('#btn-coach-back').addEventListener('click', function () { show('run'); });
+  $('#btn-coach-new').addEventListener('click', function () {
+    if (coach.abort) coach.abort.abort();
+    coach.turns = []; coach.last = null; coach.busy = false; coach.abort = null;
+    renderCoach();
   });
 
   /* ============ confirm sheet ============ */

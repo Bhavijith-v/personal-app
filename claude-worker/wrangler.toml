@@ -1,0 +1,13 @@
+name = "deposit-box-claude"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Only the app may call this worker. Add http://localhost:8080 while testing.
+ALLOWED_ORIGINS = "https://bhavijith-v.github.io"
+
+# Secrets, set once with:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put APP_TOKEN
+# Never put them in this file - it is public.
