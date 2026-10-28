@@ -366,6 +366,39 @@ select.input {
 }
 .bib.soon { border-color: var(--brass); }
 .bib-link { margin: -6px 0 18px; text-decoration: none; }
+
+/* ---------- 2FA code ---------- */
+.otp {
+  border: 1px solid var(--brass);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 14px 14px 0;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.otp .label { display: block; margin-bottom: 6px; }
+.otp-row { display: flex; align-items: center; gap: 12px; padding-bottom: 13px; }
+.otp-code {
+  flex: 1 1 auto;
+  font-family: var(--data);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--brass);
+  font-variant-numeric: tabular-nums;
+}
+.otp-left {
+  font-family: var(--data);
+  font-size: 13px;
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  text-align: right;
+}
+.otp-track { height: 3px; margin: 0 -14px; background: var(--surface-3); }
+.otp-track i { display: block; height: 100%; width: 100%; background: var(--brass); transition: width 1s linear; }
+@media (prefers-reduced-motion: reduce) { .otp-track i { transition: none; } }
 .preset em {
   font-style: normal;
   font-size: 11px;
@@ -769,7 +802,8 @@ select.input {
     login: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.2 2.3 3.4 5.4 3.4 8.5s-1.2 6.2-3.4 8.5c-2.2-2.3-3.4-5.4-3.4-8.5S9.8 5.8 12 3.5Z"/></svg>',
     bank: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5 12 4.5l8.5 5"/><path d="M5.5 9.5v9M18.5 9.5v9M9.5 12.5v6M14.5 12.5v6M3 18.5h18"/></svg>',
     card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.2"/><path d="M2.5 10h19M6 14.5h3.5"/></svg>',
-    race: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 2.8 11 8.4M15.4 2.8 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="m12 11.9 1 2.1 2.3.3-1.65 1.6.4 2.3-2.05-1.1-2.05 1.1.4-2.3L8.7 14.3l2.3-.3Z"/></svg>'
+    race: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 2.8 11 8.4M15.4 2.8 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="m12 11.9 1 2.1 2.3.3-1.65 1.6.4 2.3-2.05-1.1-2.05 1.1.4-2.3L8.7 14.3l2.3-.3Z"/></svg>',
+    broker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5v3M6 15.5v5"/><rect x="4" y="6.5" width="4" height="9" rx="1"/><path d="M12 6v3M12 17v3.5"/><rect x="10" y="9" width="4" height="8" rx="1"/><path d="M18 3v4M18 13v4.5"/><rect x="16" y="7" width="4" height="6" rx="1"/></svg>'
   };
 
   // Events already run, so adding one is a single tap. `cover` points at a
@@ -895,9 +929,25 @@ select.input {
         { k: 'organiser', l: 'Organised by', ph: 'THE WEEK' },
         { k: 'link', l: 'Website or registration page', ph: 'https://…' }
       ]
+    },
+    broker: {
+      name: 'Trading account', titleLabel: 'Name', titlePh: 'Zerodha',
+      fields: [
+        { k: 'broker', l: 'Broker', ph: 'Zerodha' },
+        { k: 'clientid', l: 'Client ID', mono: true, upper: true, ph: 'AB1234' },
+        { k: 'password', l: 'Login password', secret: true, gen: true },
+        { k: 'pin', l: 'Kite PIN', secret: true, mono: true, num: true },
+        { k: 'totp', l: '2FA (TOTP) secret key', secret: true, mono: true, upper: true, ph: '32 letters and digits from setup' },
+        { k: 'boid', l: 'Demat BO ID', secret: true, mono: true, num: true, tail: true, ph: '16 digits' },
+        { k: 'tpin', l: 'CDSL TPIN', secret: true, mono: true, num: true },
+        { k: 'pan', l: 'PAN', secret: true, mono: true, upper: true, tail: true, ph: 'ABCDE1234F' },
+        { k: 'contact', l: 'Registered mobile or email' },
+        { k: 'bankac', l: 'Linked bank account' },
+        { k: 'nominee', l: 'Nominee' }
+      ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'race'];
 
   /* ============ helpers ============ */
   function esc(s) {
@@ -1173,6 +1223,7 @@ select.input {
     if (view === 'detail') renderDetail();
     if (view === 'edit') renderEdit();
     if (view === 'backup') renderBackup();
+    if (view !== 'detail') stopOtp();
     if (view !== 'lock') armIdle();
   }
 
@@ -1183,6 +1234,7 @@ select.input {
     idleTimer = setTimeout(function () { lockNow('Locked after 3 minutes idle'); }, IDLE_MS);
   }
   function lockNow(msg) {
+    stopOtp();
     if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
     S.mk = null;
     S.key = null; S.data = null; S.id = null; S.draft = null; S.isNew = false; S.filter = 'all';
@@ -1284,6 +1336,71 @@ select.input {
     if (f.card) return groupCard(v);
     return String(v || '');
   }
+  /* --- one-time codes (RFC 6238 TOTP, the scheme Kite's 2FA uses) ---
+     Computed on the device from the stored secret with HMAC-SHA1; nothing is
+     fetched. 30-second steps, 6 digits, matching Google Authenticator. */
+  function base32Decode(str) {
+    var alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    var s = String(str || '').toUpperCase().replace(/[\s=-]/g, '');
+    if (!s) return null;
+    var bits = 0, value = 0, out = [];
+    for (var i = 0; i < s.length; i++) {
+      var idx = alpha.indexOf(s[i]);
+      if (idx < 0) return null;
+      value = ((value << 5) | idx) & 0xffff;   // only the low `bits` bits matter
+      bits += 5;
+      if (bits >= 8) { out.push((value >>> (bits - 8)) & 255); bits -= 8; }
+    }
+    return new Uint8Array(out);
+  }
+  function totpAt(secret, unixSeconds) {
+    var counter = Math.floor(unixSeconds / 30);
+    var msg = new Uint8Array(8);
+    for (var i = 7; i >= 0; i--) { msg[i] = counter & 255; counter = Math.floor(counter / 256); }
+    return crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign'])
+      .then(function (k) { return crypto.subtle.sign('HMAC', k, msg); })
+      .then(function (sig) {
+        var h = new Uint8Array(sig);
+        var off = h[h.length - 1] & 15;
+        var bin = ((h[off] & 127) << 24) | (h[off + 1] << 16) | (h[off + 2] << 8) | h[off + 3];
+        var code = String(bin % 1000000);
+        while (code.length < 6) code = '0' + code;
+        return code;
+      });
+  }
+
+  var otpTimer = null, otpSecret = null, otpStep = -1, otpCode = '';
+  function stopOtp() {
+    clearInterval(otpTimer);
+    otpTimer = null; otpSecret = null; otpStep = -1; otpCode = '';
+    var el = $('#otp-code');
+    if (el) el.textContent = '··· ···';   // don't leave a live code in the hidden page
+  }
+  function startOtp(secretText) {
+    stopOtp();
+    otpSecret = base32Decode(secretText);
+    if (!otpSecret || otpSecret.length < 10) return;
+    var tick = function () {
+      if (!otpSecret || S.view !== 'detail') { stopOtp(); return; }
+      var now = Date.now() / 1000;
+      var step = Math.floor(now / 30);
+      var left = 30 - Math.floor(now % 30);
+      var leftEl = $('#otp-left'), barEl = $('#otp-bar');
+      if (leftEl) leftEl.textContent = left + 's';
+      if (barEl) barEl.style.width = (left / 30 * 100) + '%';
+      if (step !== otpStep) {
+        otpStep = step;
+        totpAt(otpSecret, now).then(function (code) {
+          otpCode = code;
+          var el = $('#otp-code');
+          if (el) el.textContent = code.slice(0, 3) + ' ' + code.slice(3);
+        });
+      }
+    };
+    tick();
+    otpTimer = setInterval(tick, 1000);
+  }
+
   /* --- race maths --- */
   // Accepts h:mm:ss or mm:ss and returns whole seconds, or null.
   function parseTime(v) {
@@ -1552,7 +1669,7 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, race: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, race: 0 };
     entries().forEach(function (e) { c.all++; if (c[e.type] != null) c[e.type]++; });
     return c;
   }
@@ -1568,6 +1685,9 @@ select.input {
       var t4 = digits(f.number) ? '•••• ' + digits(f.number).slice(-4) : '';
       return [net, t4].filter(Boolean).join('  ');
     }
+    if (e.type === 'broker') {
+      return [f.broker, f.clientid].filter(Boolean).join('  ·  ');
+    }
     if (e.type === 'race') {
       if (isUpcoming(e)) {
         return [countdown(daysUntil(f.date)), fmtDate(f.date), f.status === 'Registered' ? 'Registered' : '']
@@ -1581,7 +1701,7 @@ select.input {
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -1611,7 +1731,7 @@ select.input {
     if (!hasAny) { $('#list').textContent = ''; return; }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', race: 'races' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', race: 'races' };
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + ' stored so far.</p></div>';
       return;
@@ -1714,6 +1834,19 @@ select.input {
       '</div></span></div>';
 
     if (e.type === 'race') html += raceCard(e);
+    var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
+    if (hasOtp) {
+      html += '<div class="otp">' +
+        '<span class="label">' + esc(((e.f || {}).broker || 'Login') + ' 2FA code') + '</span>' +
+        '<div class="otp-row">' +
+        '<span class="otp-code" id="otp-code">··· ···</span>' +
+        '<span class="otp-left" id="otp-left"></span>' +
+        '<button class="mini" id="btn-otp-copy" aria-label="Copy code">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
+        'stroke-linejoin="round"><rect x="9" y="9" width="11.5" height="11.5" rx="2"/>' +
+        '<path d="M6.5 15H5a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 5 3.5h8.5A1.5 1.5 0 0 1 15 5v1.5"/></svg></button>' +
+        '</div><div class="otp-track"><i id="otp-bar"></i></div></div>';
+    }
 
     var inHero = {};
     if (e.type === 'race') {
@@ -1756,6 +1889,7 @@ select.input {
       '<div class="detail-foot"><button class="btn danger" id="btn-delete">Delete entry</button></div>';
 
     $('#detail-body').innerHTML = html;
+    if (hasOtp) startOtp(e.f.totp); else stopOtp();
   }
 
   $('#detail-body').addEventListener('click', function (ev) {
@@ -1794,6 +1928,11 @@ select.input {
       if (!cf) return;
       var raw = e.f[ck];
       copyValue(cf.card ? digits(raw) : String(raw), cf.l, cp);
+      return;
+    }
+
+    if (ev.target.closest('#btn-otp-copy')) {
+      if (otpCode) copyValue(otpCode, 'Code', ev.target.closest('#btn-otp-copy'));
       return;
     }
 
@@ -2140,6 +2279,27 @@ select.input {
     if (d.type === 'card' && f.expiry && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(f.expiry)) {
       $('#edit-err').textContent = 'Write the expiry as MM/YY, for example 09/29.';
       return;
+    }
+    if (d.type === 'broker') {
+      if (f.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(f.pan)) {
+        $('#edit-err').textContent = 'A PAN is 10 characters: five letters, four digits, one letter. For example ABCDE1234F.';
+        return;
+      }
+      if (f.boid && !/^\d{16}$/.test(digits(f.boid))) {
+        $('#edit-err').textContent = 'A demat BO ID is 16 digits.';
+        return;
+      }
+      if (f.tpin && !/^\d{6}$/.test(f.tpin)) {
+        $('#edit-err').textContent = 'A CDSL TPIN is 6 digits.';
+        return;
+      }
+      if (f.totp) {
+        var sec = base32Decode(f.totp);
+        if (!sec || sec.length < 10) {
+          $('#edit-err').textContent = 'That 2FA key does not look right. Use the letters and digits (A–Z, 2–7) shown when you set up TOTP.';
+          return;
+        }
+      }
     }
     if (d.type === 'race' && f.time && parseTime(f.time) === null) {
       $('#edit-err').textContent = 'Write the finish time as h:mm:ss or mm:ss, for example 2:14:36.';

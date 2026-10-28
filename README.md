@@ -91,6 +91,24 @@ passphrase unlocks.
 - **Backups never contain the Face ID wrap** — a passkey is useless on another
   device — so a backup always restores with the passphrase alone.
 
+### Trading accounts and 2FA codes
+
+The **Trading account** type holds a broker login: client ID, password, Kite
+PIN, demat BO ID, CDSL TPIN, PAN and the **2FA (TOTP) secret key**.
+
+If you store the TOTP key, the entry shows the **current 6-digit login code**
+with a countdown, like an authenticator app. It is computed on the phone with
+the standard RFC 6238 method (HMAC-SHA1, 30-second steps), so it needs no
+network. The code was checked against the RFC's official test vectors.
+
+Keeping the password and the TOTP key in the same vault means the vault
+passphrase guards both. That's the same trade every password manager with
+built-in codes makes; keep a separate authenticator app too if you'd rather not.
+
+Live portfolio data is deliberately **not** in this app. Zerodha's API rules
+forbid embedding the API secret in a client-side app, and the session token
+it issues can place trades, not just read.
+
 ### It locks itself
 
 - 3 minutes with no touch → locked.
