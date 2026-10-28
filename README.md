@@ -72,6 +72,25 @@ not sync.
   from making any network request. Even if the code tried to send your data
   somewhere, Safari would stop it.
 
+### Face ID
+
+Turn it on from the gear icon → **Face ID**. Needs iOS 18.4 or newer with
+iCloud Keychain on.
+
+It uses a passkey with the **WebAuthn PRF extension**: after a successful Face
+ID check, the device hands the page a 32-byte secret that never leaves it. That
+secret is stretched with HKDF and used to unlock the same vault key your
+passphrase unlocks.
+
+- The vault key is random and wrapped **twice** — once by your passphrase,
+  once by Face ID. Both open the same box.
+- **Your passphrase always works.** Face ID is a convenience layer, never a
+  replacement. If the passkey is lost (phone reset, iCloud problem), the
+  passphrase is the way back in.
+- Turning Face ID off just deletes its wrap. Nothing in the box changes.
+- **Backups never contain the Face ID wrap** — a passkey is useless on another
+  device — so a backup always restores with the passphrase alone.
+
 ### It locks itself
 
 - 3 minutes with no touch → locked.
