@@ -264,6 +264,59 @@ body::before {
 .detail-foot .btn { flex: 1 1 0; }
 .stamp { font-family: var(--data); font-size: 12px; color: var(--fg-faint); padding-top: 14px; font-variant-numeric: tabular-nums; }
 
+/* ---------- race card ---------- */
+.bib {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.bib-top {
+  padding: 16px 16px 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-bottom: 1px dashed var(--line);
+}
+.bib-time {
+  font-family: var(--data);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brass);
+  font-variant-numeric: tabular-nums;
+}
+.bib-time.none { font-size: 19px; color: var(--fg-faint); letter-spacing: 0; }
+.bib-dist {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.bib-stats { display: flex; }
+.bib-stat {
+  flex: 1 1 0;
+  padding: 11px 14px;
+  border-right: 1px solid var(--line-soft);
+  min-width: 0;
+}
+.bib-stat:last-child { border-right: none; }
+.bib-stat .label { display: block; margin-bottom: 3px; }
+.bib-stat b {
+  font-family: var(--data);
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---------- editor ---------- */
 .form-body { padding-block: 18px 0; }
 .kindpick { display: flex; gap: 7px; margin-bottom: 22px; }
@@ -604,7 +657,16 @@ body::before {
   var ICON = {
     login: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.2 2.3 3.4 5.4 3.4 8.5s-1.2 6.2-3.4 8.5c-2.2-2.3-3.4-5.4-3.4-8.5S9.8 5.8 12 3.5Z"/></svg>',
     bank: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5 12 4.5l8.5 5"/><path d="M5.5 9.5v9M18.5 9.5v9M9.5 12.5v6M14.5 12.5v6M3 18.5h18"/></svg>',
-    card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.2"/><path d="M2.5 10h19M6 14.5h3.5"/></svg>'
+    card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.2"/><path d="M2.5 10h19M6 14.5h3.5"/></svg>',
+    race: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 2.8 11 8.4M15.4 2.8 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="m12 11.9 1 2.1 2.3.3-1.65 1.6.4 2.3-2.05-1.1-2.05 1.1.4-2.3L8.7 14.3l2.3-.3Z"/></svg>'
+  };
+
+  // Standard distances, in km, so pace can be worked out from a finish time.
+  var DISTANCES = {
+    '5K': 5,
+    '10K': 10,
+    'Half marathon (21.1K)': 21.0975,
+    'Marathon (42.2K)': 42.195
   };
 
   var TYPES = {
@@ -642,9 +704,21 @@ body::before {
         { k: 'pin', l: 'ATM / card PIN', secret: true, mono: true, num: true },
         { k: 'bank', l: 'Issuing bank' }
       ]
+    },
+    race: {
+      name: 'Race', titleLabel: 'Event', titlePh: 'THE WEEK Half Marathon 2026',
+      fields: [
+        { k: 'date', l: 'Race day', date: true },
+        { k: 'distance', l: 'Distance', opts: ['5K', '10K', 'Half marathon (21.1K)', 'Marathon (42.2K)', 'Other'] },
+        { k: 'time', l: 'Finish time', mono: true, ph: '2:14:36', time: true },
+        { k: 'bib', l: 'Bib number', mono: true },
+        { k: 'place', l: 'Finishing position', mono: true, ph: '142 of 280' },
+        { k: 'venue', l: 'Where', ph: 'Willingdon Island, Kochi' },
+        { k: 'organiser', l: 'Organised by', ph: 'THE WEEK' }
+      ]
     }
   };
-  var ORDER = ['login', 'bank', 'card'];
+  var ORDER = ['login', 'bank', 'card', 'race'];
 
   /* ============ helpers ============ */
   function esc(s) {
@@ -1031,6 +1105,41 @@ body::before {
     if (f.card) return groupCard(v);
     return String(v || '');
   }
+  /* --- race maths --- */
+  // Accepts h:mm:ss or mm:ss and returns whole seconds, or null.
+  function parseTime(v) {
+    var m = String(v || '').trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    var h = m[1] ? parseInt(m[1], 10) : 0;
+    var mi = parseInt(m[2], 10);
+    var s = parseInt(m[3], 10);
+    if (mi > 59 || s > 59) return null;
+    return h * 3600 + mi * 60 + s;
+  }
+  function paceOf(e) {
+    var f = e.f || {};
+    var secs = parseTime(f.time);
+    var km = DISTANCES[f.distance];
+    if (!secs || !km) return null;
+    var per = secs / km;
+    var m = Math.floor(per / 60);
+    var s = Math.round(per - m * 60);
+    if (s === 60) { m += 1; s = 0; }
+    return {
+      pace: m + ':' + (s < 10 ? '0' : '') + s,
+      speed: (km / (secs / 3600)).toFixed(1),
+      km: km
+    };
+  }
+  function fmtDate(ymd) {
+    var m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return String(ymd || '');
+    try {
+      return new Date(+m[1], +m[2] - 1, +m[3])
+        .toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (err) { return ymd; }
+  }
+
   function stampOf(ts) {
     if (!ts) return '';
     try {
@@ -1238,7 +1347,7 @@ body::before {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, race: 0 };
     entries().forEach(function (e) { c.all++; if (c[e.type] != null) c[e.type]++; });
     return c;
   }
@@ -1254,13 +1363,17 @@ body::before {
       var t4 = digits(f.number) ? '•••• ' + digits(f.number).slice(-4) : '';
       return [net, t4].filter(Boolean).join('  ');
     }
+    if (e.type === 'race') {
+      return [f.time, f.distance, f.date ? fmtDate(f.date) : ''].filter(Boolean).join('  ·  ');
+    }
     return '';
   }
 
   function renderVault() {
     var c = counts();
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
-      return { k: k, n: k === 'login' ? 'Logins' : k === 'bank' ? 'Banks' : 'Cards' };
+      return { k: k, n: TAB_NAMES[k] };
     }));
     $('#tabs').innerHTML = tabDefs.map(function (t) {
       return '<button class="tab" role="tab" data-filter="' + t.k + '" aria-selected="' +
@@ -1278,9 +1391,9 @@ body::before {
     if (!hasAny) { $('#list').textContent = ''; return; }
 
     if (!list.length) {
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', race: 'races' };
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
-        esc(S.filter === 'login' ? 'logins' : S.filter === 'bank' ? 'bank accounts' : 'cards') +
-        ' stored so far.</p></div>';
+        esc(NONE[S.filter] || 'entries') + ' stored so far.</p></div>';
       return;
     }
 
@@ -1321,6 +1434,34 @@ body::before {
     return null;
   }
 
+  // The headline of a race is the finish time, with pace worked out from the
+  // distance. Stats only appear once there is something real to show.
+  function raceCard(e) {
+    var f = e.f || {};
+    var p = paceOf(e);
+    var head = f.time
+      ? '<span class="bib-time">' + esc(f.time) + '</span>'
+      : '<span class="bib-time none">No finish time yet</span>';
+    if (f.distance) head += '<span class="bib-dist">' + esc(f.distance) + '</span>';
+
+    var stats = [];
+    if (p) {
+      stats.push(['Pace', p.pace + ' /km']);
+      stats.push(['Speed', p.speed + ' km/h']);
+    }
+    if (f.date) stats.push(['Race day', fmtDate(f.date)]);
+    if (!p && f.bib) stats.push(['Bib', f.bib]);
+
+    return '<div class="bib"><div class="bib-top">' + head + '</div>' +
+      (stats.length
+        ? '<div class="bib-stats">' + stats.map(function (s) {
+            return '<div class="bib-stat"><span class="label">' + esc(s[0]) +
+              '</span><b>' + esc(s[1]) + '</b></div>';
+          }).join('') + '</div>'
+        : '') +
+      '</div>';
+  }
+
   function renderDetail() {
     var e = findEntry(S.id);
     if (!e) { show('vault'); return; }
@@ -1333,6 +1474,8 @@ body::before {
       '<div class="detail-kind">' + esc(t.name) +
       (e.type === 'card' && network((e.f || {}).number) ? ' · ' + esc(network(e.f.number)) : '') +
       '</div></span></div>';
+
+    if (e.type === 'race') html += raceCard(e);
 
     var rows = t.fields.filter(function (f) { return (e.f || {})[f.k]; }).map(function (f) {
       var raw = e.f[f.k];
@@ -1476,7 +1619,7 @@ body::before {
       } else {
         var attrs = ' autocomplete="off" autocapitalize="' + (f.upper ? 'characters' : 'off') + '" spellcheck="false"';
         if (f.num) attrs += ' inputmode="numeric"';
-        var type = f.secret ? 'password' : 'text';
+        var type = f.secret ? 'password' : f.date ? 'date' : 'text';
         body = '<div class="pw-wrap"><input class="input' + (f.mono ? ' mono' : '') + '" id="' + id +
           '" type="' + type + '" data-key="' + esc(f.k) + '" value="' + esc(val) + '" placeholder="' +
           esc(f.ph || '') + '"' + attrs + '>';
@@ -1627,6 +1770,10 @@ body::before {
     }
     if (d.type === 'card' && f.expiry && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(f.expiry)) {
       $('#edit-err').textContent = 'Write the expiry as MM/YY, for example 09/29.';
+      return;
+    }
+    if (d.type === 'race' && f.time && parseTime(f.time) === null) {
+      $('#edit-err').textContent = 'Write the finish time as h:mm:ss or mm:ss, for example 2:14:36.';
       return;
     }
     $('#edit-err').textContent = '';
