@@ -732,6 +732,23 @@ select.input {
 .lab-links .btn { text-decoration: none; }
 .lab-links .spoiler { color: var(--warn); border-color: var(--warn); }
 
+/* ---------- education + certifications ---------- */
+.edu, .certc {
+  position: relative; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface);
+  padding: 16px 16px 14px; margin-bottom: 14px; overflow: hidden;
+}
+.edu::before, .certc::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--brass); }
+.edu-kind, .certc-issuer { font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--brass); }
+.edu h3, .certc h3 { font-size: 19px; font-weight: 600; letter-spacing: -.01em; margin: 6px 0 4px; line-height: 1.25; text-wrap: balance; }
+.edu p { margin: 0; color: var(--fg-dim); font-size: 14px; line-height: 1.45; }
+.edu-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 12px; }
+.edu-facts .label { display: block; margin-bottom: 2px; }
+.edu-facts b { font-family: var(--data); font-weight: 500; font-size: 14px; }
+.certc-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.certc-top .pill:not(.ok):not(.warn):not(.bad) { background: var(--surface-2); color: var(--fg-dim); }
+.certc-code { margin: 0; font-family: var(--data); font-size: 14px; color: var(--fg-dim); }
+.certc-verify { margin-top: 14px; text-decoration: none; }
+
 /* ---------- 2FA code ---------- */
 .otp {
   border: 1px solid var(--brass);
@@ -1372,7 +1389,7 @@ select.input {
       ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'broker', 'id', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'id', 'edu', 'cert', 'race'];
 
   /* --- Indian government IDs ---
      One "ID document" kind and one tab, with a sub-type per document. Each
@@ -1490,6 +1507,105 @@ select.input {
 
   ICON.id = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><circle cx="8.5" cy="11" r="2.1"/><path d="M5.6 16.2c.5-1.6 1.6-2.4 2.9-2.4s2.4.8 2.9 2.4M14 10h4.5M14 13.5h3"/></svg>';
   DOC_ORDER.forEach(function (k) { ICON[k] = ICON.id; });
+
+  /* --- education, Indian system ---
+     Class 10 and 12 by board, UG and PG by university, plus diplomas and
+     anything else. Certificates and mark sheets can be photographed. */
+  var UG_DEGREES = ['B.Tech', 'B.E.', 'B.Sc', 'B.Com', 'BCA', 'BA', 'BBA', 'B.Arch', 'MBBS', 'LLB', 'B.Pharm', 'B.Ed'];
+  var PG_DEGREES = ['M.Tech', 'M.E.', 'M.Sc', 'M.Com', 'MCA', 'MBA', 'MA', 'M.Arch', 'MD', 'LLM', 'M.Pharm', 'M.Ed'];
+  var UNIVERSITIES = ['APJ Abdul Kalam Technological University (KTU)', 'University of Kerala', 'Mahatma Gandhi University',
+    'University of Calicut', 'Kannur University', 'Cochin University of Science and Technology (CUSAT)', 'IGNOU',
+    'Anna University', 'Visvesvaraya Technological University (VTU)', 'Autonomous institution'];
+  var EDU_SIDES = ['Certificate', 'Mark sheet'];
+  var YEAR = { mono: true, num: true, year: true };
+  function eduHigher(name, short, ph, degrees) {
+    return {
+      group: 'edu', photos: true, sides: EDU_SIDES, name: name, short: short, titleLabel: 'Name', titlePh: ph,
+      fields: [
+        { k: 'degree', l: 'Degree', ph: degrees[0], list: degrees, onCard: true },
+        { k: 'branch', l: 'Branch or specialisation', ph: 'Computer Science and Engineering', onCard: true },
+        { k: 'college', l: 'College', onCard: true },
+        { k: 'university', l: 'University', ph: UNIVERSITIES[0], list: UNIVERSITIES, onCard: true },
+        { k: 'from', l: 'Year of joining', mono: true, num: true, year: true, ph: '2016' },
+        { k: 'year', l: 'Year of passing', mono: true, num: true, year: true, ph: '2020', onCard: true },
+        { k: 'regno', l: 'Register number', mono: true, upper: true },
+        { k: 'result', l: 'CGPA or percentage', ph: '8.2 CGPA', onCard: true },
+        { k: 'class', l: 'Class awarded', opts: ['First class with distinction', 'First class', 'Second class', 'Pass', 'Result awaited'], onCard: true },
+        { k: 'certno', l: 'Degree certificate number', mono: true }
+      ]
+    };
+  }
+  TYPES.edu_10 = {
+    group: 'edu', photos: true, sides: EDU_SIDES, name: 'Class 10 (SSLC / Secondary)', short: '10th',
+    titleLabel: 'Name', titlePh: 'SSLC 2014',
+    fields: [
+      { k: 'board', l: 'Board', opts: ['CBSE', 'ICSE', 'Kerala State (SSLC)', 'Other state board', 'NIOS', 'Cambridge (IGCSE)', 'Other'], onCard: true },
+      { k: 'school', l: 'School', onCard: true },
+      { k: 'year', l: 'Year of passing', mono: true, num: true, year: true, ph: '2014', onCard: true },
+      { k: 'regno', l: 'Register or roll number', mono: true },
+      { k: 'result', l: 'Result', ph: '92%, 9.4 CGPA or A+ in all subjects', onCard: true },
+      { k: 'certno', l: 'Certificate number', mono: true },
+      { k: 'medium', l: 'Medium of instruction', opts: ['English', 'Malayalam', 'Hindi', 'Tamil', 'Other'] }
+    ]
+  };
+  TYPES.edu_12 = {
+    group: 'edu', photos: true, sides: EDU_SIDES, name: 'Class 12 (Plus Two / HSC)', short: '12th',
+    titleLabel: 'Name', titlePh: 'Plus Two 2016',
+    fields: [
+      { k: 'board', l: 'Board', opts: ['CBSE', 'ISC', 'Kerala Higher Secondary (DHSE)', 'Kerala VHSE', 'Other state board', 'NIOS', 'IB / Cambridge', 'Other'], onCard: true },
+      { k: 'stream', l: 'Stream', opts: ['Science (Maths)', 'Science (Biology)', 'Science (Maths + Biology)', 'Computer Science', 'Commerce', 'Humanities', 'Vocational', 'Other'], onCard: true },
+      { k: 'school', l: 'School', onCard: true },
+      { k: 'year', l: 'Year of passing', mono: true, num: true, year: true, ph: '2016', onCard: true },
+      { k: 'regno', l: 'Register or roll number', mono: true },
+      { k: 'result', l: 'Result', ph: '88% or 1104 / 1200', onCard: true },
+      { k: 'certno', l: 'Certificate number', mono: true }
+    ]
+  };
+  TYPES.edu_ug = eduHigher('Degree (UG)', 'Degree', 'B.Tech, Computer Science', UG_DEGREES);
+  TYPES.edu_pg = eduHigher('Postgraduate (PG)', 'PG', 'M.Tech, Cyber Security', PG_DEGREES);
+  TYPES.edu_other = {
+    group: 'edu', photos: true, sides: EDU_SIDES, name: 'Diploma / other', short: 'Other',
+    titleLabel: 'Name', titlePh: 'Diploma in Computer Engineering',
+    fields: [
+      { k: 'qual', l: 'Qualification', ph: 'Polytechnic diploma, ITI, PhD…', onCard: true },
+      { k: 'institution', l: 'Institution', onCard: true },
+      { k: 'board', l: 'Board or university', onCard: true },
+      { k: 'from', l: 'Year of joining', mono: true, num: true, year: true },
+      { k: 'year', l: 'Year of passing', mono: true, num: true, year: true, onCard: true },
+      { k: 'regno', l: 'Register number', mono: true, upper: true },
+      { k: 'result', l: 'Result', onCard: true },
+      { k: 'certno', l: 'Certificate number', mono: true }
+    ]
+  };
+  var EDU_ORDER = ['edu_10', 'edu_12', 'edu_ug', 'edu_pg', 'edu_other'];
+
+  /* --- certifications --- */
+  TYPES.cert = {
+    photos: true, sides: ['Certificate', 'Score report'], name: 'Certification', short: 'Cert',
+    titleLabel: 'Certification', titlePh: 'Microsoft Certified: Azure Fundamentals',
+    fields: [
+      { k: 'issuer', l: 'Issued by', ph: 'Microsoft', onCard: true,
+        list: ['Microsoft', 'Anthropic', 'Amazon Web Services (AWS)', 'Google Cloud', 'OffSec', 'CompTIA', 'Cisco',
+          'EC-Council', 'ISC2', 'Oracle', 'Red Hat', 'HashiCorp', 'Linux Foundation', 'Hack The Box', 'Coursera', 'NPTEL'] },
+      { k: 'code', l: 'Exam code', mono: true, upper: true, ph: 'AZ-900', onCard: true },
+      { k: 'status', l: 'Status', opts: ['Planning', 'Studying', 'Exam booked', 'Passed', 'Expired'], onCard: true },
+      { k: 'examdate', l: 'Exam date', date: true, onCard: true },
+      { k: 'issued', l: 'Issued on', date: true, onCard: true },
+      { k: 'expiry', l: 'Valid till', date: true, onCard: true },
+      { k: 'credid', l: 'Credential ID', mono: true },
+      { k: 'verify', l: 'Verification link', ph: 'https://learn.microsoft.com/…' },
+      { k: 'score', l: 'Score', ph: '850 / 1000' }
+    ]
+  };
+
+  ICON.edu = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9 12 4.5 21.5 9 12 13.5Z"/><path d="M6.5 11v4.5c1.6 1.6 3.6 2.4 5.5 2.4s3.9-.8 5.5-2.4V11"/><path d="M21.5 9v5.5"/></svg>';
+  ICON.cert = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="m9 13.8-1.5 7 4.5-2.3 4.5 2.3-1.5-7"/><path d="m9.6 9 1.6 1.6 3.2-3.2"/></svg>';
+  EDU_ORDER.forEach(function (k) { ICON[k] = ICON.edu; });
+
+  // Kinds that pick a sub-type, and how the picker names them.
+  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER };
+  var KIND_LABEL = { id: 'ID document', edu: 'Education' };
+  function hasPhotos(type) { return !!(TYPES[type] && (TYPES[type].photos || TYPES[type].group === 'id')); }
 
   function groupOf(type) { return (TYPES[type] && TYPES[type].group) || type; }
 
@@ -2261,7 +2377,7 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, id: 0, race: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, id: 0, edu: 0, cert: 0, race: 0 };
     entries().forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
@@ -2279,6 +2395,13 @@ select.input {
     }
     if (e.type === 'broker') {
       return [f.broker, f.clientid].filter(Boolean).join('  ·  ');
+    }
+    if (groupOf(e.type) === 'edu') {
+      return [TYPES[e.type].short, f.degree || f.board || f.qual, f.year, f.result].filter(Boolean).join('  ·  ');
+    }
+    if (e.type === 'cert') {
+      var cs = certState(f);
+      return [f.issuer, f.code, cs ? cs.text : f.status].filter(Boolean).join('  ·  ');
     }
     if (groupOf(e.type) === 'id') {
       var td = TYPES[e.type], nf = fieldDef(e.type, 'number');
@@ -2306,7 +2429,7 @@ select.input {
   var query = '';
   function matches(e, q) {
     var t = TYPES[e.type];
-    var hay = [e.title, e.notes, t && t.name, t && t.short, groupOf(e.type) === 'id' ? 'id document' : ''];
+    var hay = [e.title, e.notes, t && t.name, t && t.short, KIND_LABEL[groupOf(e.type)] || ''];
     if (t) t.fields.forEach(function (f) {
       var v = (e.f || {})[f.k];
       if (v && !f.secret) hay.push(f.date ? fmtDate(v) + ' ' + v : v);
@@ -2341,7 +2464,7 @@ select.input {
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', id: 'IDs', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', id: 'IDs', edu: 'Education', cert: 'Certs', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -2381,14 +2504,14 @@ select.input {
     }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', id: 'ID documents', race: 'races' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', id: 'ID documents', edu: 'education records', cert: 'certifications', race: 'races' };
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + ' stored so far.</p></div>';
       return;
     }
 
     $('#list').innerHTML = list.map(function (e) {
-      var cov = (e.type === 'race' && (e.f || {}).cover) || (groupOf(e.type) === 'id' && (e.f || {}).img1);
+      var cov = (e.type === 'race' && (e.f || {}).cover) || (hasPhotos(e.type) && (e.f || {}).img1);
       return '<button class="row" data-id="' + esc(e.id) + '">' +
         (cov
           ? '<img class="row-cover" src="' + esc(cov) + '" alt="">'
@@ -2491,6 +2614,55 @@ select.input {
       '</div>';
   }
 
+  // A certificate's state, for its card and the list: booked exam countdown,
+  // or validity once it's earned.
+  function certState(f) {
+    if (f.status === 'Exam booked' && f.examdate) {
+      var d = daysUntil(f.examdate);
+      if (d !== null && d >= 0) return { level: d <= 7 ? 'warn' : 'ok', text: d === 0 ? 'Exam today' : 'Exam in ' + d + (d === 1 ? ' day' : ' days') };
+    }
+    if (f.expiry && (f.status === 'Passed' || f.status === 'Expired' || !f.status)) {
+      var ex = expiryState(f.expiry);
+      if (ex) return { level: ex.level, text: ex.level === 'ok' ? 'Valid till ' + fmtDate(f.expiry) : ex.short };
+    }
+    if (f.status === 'Passed') return { level: 'ok', text: 'Passed' };
+    return f.status ? { level: 'none', text: f.status } : null;
+  }
+
+  function eduCard(e) {
+    var f = e.f || {}, t = TYPES[e.type];
+    var head = e.type === 'edu_ug' || e.type === 'edu_pg'
+      ? [f.degree, f.branch].filter(Boolean).join(' in ')
+      : e.type === 'edu_other' ? f.qual : f.board;
+    var where = e.type === 'edu_ug' || e.type === 'edu_pg'
+      ? [f.college, f.university].filter(Boolean).join(', ')
+      : e.type === 'edu_other' ? [f.institution, f.board].filter(Boolean).join(', ') : f.school;
+    var facts = [['Passed', f.year], ['Result', f.result], ['Class', f.class], ['Stream', f.stream]].filter(function (x) { return x[1]; });
+    return '<div class="edu">' +
+      '<h3>' + esc(head || e.title || t.name) + '</h3>' +
+      (where ? '<p>' + esc(where) + '</p>' : '') +
+      (facts.length ? '<div class="edu-facts">' + facts.map(function (x) {
+        return '<div><span class="label">' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>';
+      }).join('') + '</div>' : '') +
+      '</div>';
+  }
+
+  function certCard(e) {
+    var f = e.f || {}, st = certState(f), link = safeLink(f.verify);
+    var facts = [['Issued', f.issued && fmtDate(f.issued)], ['Valid till', f.expiry && fmtDate(f.expiry)],
+      ['Exam date', f.status === 'Exam booked' && f.examdate && fmtDate(f.examdate)]].filter(function (x) { return x[1]; });
+    return '<div class="certc">' +
+      '<div class="certc-top"><span class="certc-issuer">' + esc(f.issuer || 'Certification') + '</span>' +
+      (st ? '<span class="pill ' + (st.level === 'none' ? '' : st.level) + '">' + esc(st.text) + '</span>' : '') + '</div>' +
+      '<h3>' + esc(e.title || 'Certification') + '</h3>' +
+      (f.code ? '<p class="certc-code">' + esc(f.code) + '</p>' : '') +
+      (facts.length ? '<div class="edu-facts">' + facts.map(function (x) {
+        return '<div><span class="label">' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>';
+      }).join('') + '</div>' : '') +
+      (link ? '<a class="btn ghost certc-verify" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">Verify this credential</a>' : '') +
+      '</div>';
+  }
+
   function idPhotos(e) {
     var f = e.f || {}, sides = TYPES[e.type].sides || ['Front', 'Back'];
     var shots = ['img1', 'img2'].map(function (slot, i) {
@@ -2499,7 +2671,9 @@ select.input {
           '<span>' + esc(sides[i]) + '</span></button>'
         : '';
     }).join('');
-    if (!shots) return '<p class="hint idp-none">No photos of the real card yet. Tap <b>Edit</b> to add the front and back.</p>';
+    var noun = TYPES[e.type].photos ? 'certificate' : 'card';
+    if (!shots) return '<p class="hint idp-none">No photos of the real ' + noun + ' yet. Tap <b>Edit</b> to add the ' +
+      esc(sides[0].toLowerCase()) + ' and ' + esc(sides[1].toLowerCase()) + '.</p>';
     return '<div class="idps">' + shots + '</div>';
   }
 
@@ -2561,6 +2735,8 @@ select.input {
 
     if (e.type === 'race') html += raceCard(e);
     if (groupOf(e.type) === 'id') html += idCard(e) + idPhotos(e);
+    if (groupOf(e.type) === 'edu') html += eduCard(e) + idPhotos(e);
+    if (e.type === 'cert') html += certCard(e) + idPhotos(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
       html += '<div class="otp">' +
@@ -2576,9 +2752,7 @@ select.input {
     }
 
     var inHero = {};
-    if (groupOf(e.type) === 'id') {
-      t.fields.forEach(function (fd) { if (fd.onCard) inHero[fd.k] = 1; });
-    }
+    t.fields.forEach(function (fd) { if (fd.onCard) inHero[fd.k] = 1; });
     if (e.type === 'race') {
       inHero = { date: 1, distance: 1, time: 1 };
       if (isUpcoming(e)) { inHero.start = 1; inHero.status = 1; }
@@ -2718,12 +2892,12 @@ select.input {
     var html = '';
     if (S.isNew) {
       html += '<div class="kindpick">' + ORDER.map(function (k) {
-        var label = k === 'id' ? 'ID document' : TYPES[k].name;
+        var label = KIND_LABEL[k] || TYPES[k].name;
         return '<button type="button" data-kind="' + k + '" aria-pressed="' + (groupOf(d.type) === k) + '">' +
           ICON[k] + '<span>' + esc(label) + '</span></button>';
       }).join('') + '</div>';
-      if (groupOf(d.type) === 'id') {
-        html += '<div class="docpick" role="group" aria-label="Which document">' + DOC_ORDER.map(function (k) {
+      if (SUBKINDS[groupOf(d.type)]) {
+        html += '<div class="docpick" role="group" aria-label="Which one">' + SUBKINDS[groupOf(d.type)].map(function (k) {
           return '<button type="button" data-doc="' + k + '" aria-pressed="' + (d.type === k) + '">' +
             esc(TYPES[k].short) + '</button>';
         }).join('') + '</div>';
@@ -2752,9 +2926,9 @@ select.input {
       esc(t.titlePh) + '" autocapitalize="words" spellcheck="false"></div>';
 
     if (groupOf(d.type) === 'id') html += '<div id="scan-area"></div>';
-    if (groupOf(d.type) === 'id') {
+    if (hasPhotos(d.type)) {
       var sides = t.sides || ['Front', 'Back'];
-      html += '<div class="field"><span class="label">Photos of your card</span><div class="docshots">' +
+      html += '<div class="field"><span class="label">Photos of your ' + (t.photos ? 'certificate' : 'card') + '</span><div class="docshots">' +
         ['img1', 'img2'].map(function (slot, i) {
           var src = (d.f || {})[slot];
           return '<div class="docshot">' +
@@ -2801,6 +2975,8 @@ select.input {
       } else {
         var attrs = ' autocomplete="off" autocapitalize="' + (f.upper ? 'characters' : 'off') + '" spellcheck="false"';
         if (f.num) attrs += ' inputmode="numeric"';
+        if (f.year) attrs += ' maxlength="4" pattern="[0-9]*"';
+        if (f.list) attrs += ' list="dl-' + esc(f.k) + '"';
         var type = f.secret ? 'password' : f.date ? 'date' : 'text';
         body = '<div class="pw-wrap"><input class="input' + (f.mono ? ' mono' : '') + '" id="' + id +
           '" type="' + type + '" data-key="' + esc(f.k) + '" value="' + esc(val) + '" placeholder="' +
@@ -2821,6 +2997,10 @@ select.input {
       }
       return '<div class="field"><label class="label" for="' + id + '">' + esc(f.l) + '</label>' + body +
         '<div data-genpanel="' + esc(f.k) + '"></div></div>';
+    }).join('');
+
+    html += t.fields.filter(function (f) { return f.list; }).map(function (f) {
+      return '<datalist id="dl-' + esc(f.k) + '">' + f.list.map(function (o) { return '<option value="' + esc(o) + '">'; }).join('') + '</datalist>';
     }).join('');
 
     html += '<div class="field"><label class="label" for="in-notes">Notes</label>' +
@@ -2849,11 +3029,11 @@ select.input {
   // two kinds that both hold them.
   function switchType(t) {
     collectDraft();
-    var old = S.draft.f || {}, from = groupOf(S.draft.type);
+    var old = S.draft.f || {}, from = groupOf(S.draft.type), fromType = S.draft.type;
     S.draft.type = t;
     var keep = {};
     TYPES[t].fields.forEach(function (f) { if (old[f.k]) keep[f.k] = old[f.k]; });
-    if (from === 'id' && groupOf(t) === 'id') {
+    if (hasPhotos(fromType) && hasPhotos(t) && from === groupOf(t)) {
       if (old.img1) keep.img1 = old.img1;
       if (old.img2) keep.img2 = old.img2;
     }
@@ -2866,8 +3046,8 @@ select.input {
     var kind = ev.target.closest('[data-kind]');
     if (kind) {
       var want = kind.dataset.kind;
-      if (want === 'id') {
-        if (groupOf(S.draft.type) !== 'id') switchType('id_aadhaar');
+      if (SUBKINDS[want]) {
+        if (groupOf(S.draft.type) !== want) switchType(SUBKINDS[want][0]);
       } else {
         switchType(want);
       }
@@ -3093,6 +3273,16 @@ select.input {
       $('#edit-err').textContent = 'Write the expiry as MM/YY, for example 09/29.';
       return;
     }
+    if (groupOf(d.type) === 'edu' || d.type === 'cert') {
+      var eb = '';
+      ['from', 'year'].forEach(function (k) {
+        if (f[k] && !/^(19|20)\d{2}$/.test(f[k])) eb = 'Write years as four digits, for example 2020.';
+      });
+      if (!eb && f.from && f.year && +f.from > +f.year) eb = 'The year of joining is after the year of passing.';
+      if (!eb && f.verify && !safeLink(f.verify)) eb = 'The verification link should start with https://';
+      if (!eb && f.issued && f.expiry && f.expiry < f.issued) eb = 'The certificate expires before it was issued.';
+      if (eb) { $('#edit-err').textContent = eb; return; }
+    }
     if (groupOf(d.type) === 'id') {
       var bad = '';
       if (d.type === 'id_aadhaar' && f.number) {
@@ -3258,7 +3448,7 @@ select.input {
             (cv.indexOf('data:image/') === 0 || cv.indexOf('assets/') === 0)) {
           f.cover = cv;
         }
-        if (groupOf(e.type) === 'id') {
+        if (hasPhotos(e.type)) {
           ['img1', 'img2'].forEach(function (slot) {
             var v = e.f[slot];
             if (typeof v === 'string' && v.length < 1500000 && v.indexOf('data:image/jpeg') === 0) f[slot] = v;
@@ -3620,6 +3810,22 @@ select.input {
           out.push({ e: e, date: f.expiry, days: d, level: d < 0 ? 'bad' : d <= 180 ? 'warn' : 'ok',
             what: TYPES[e.type].name + (d < 0 ? ' expired' : ' expires'), cal: TYPES[e.type].name + ' expires',
             alarms: ['-P90D', '-P30D'] });
+        }
+      }
+      if (e.type === 'cert') {
+        if (f.expiry && f.status !== 'Planning' && f.status !== 'Studying') {
+          d = daysUntil(f.expiry);
+          if (d !== null && d <= 180) {
+            out.push({ e: e, date: f.expiry, days: d, level: d < 0 ? 'bad' : 'warn',
+              what: 'Certification ' + (d < 0 ? 'expired' : 'expires'), cal: 'Certification expires', alarms: ['-P60D', '-P14D'] });
+          }
+        }
+        if (f.status === 'Exam booked' && f.examdate) {
+          d = daysUntil(f.examdate);
+          if (d !== null && d >= 0) {
+            out.push({ e: e, date: f.examdate, days: d, level: d <= 7 ? 'warn' : 'ok',
+              what: 'Exam day' + (f.code ? ' · ' + f.code : ''), cal: 'Exam day', alarms: ['-P7D', '-P1D'] });
+          }
         }
       }
       if (e.type === 'card' && f.expiry) {

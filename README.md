@@ -175,6 +175,27 @@ reading, so compare it with the card).
 The page's security policy now allows `connect-src 'self'`, so the app can
 fetch its own reader files. It still can't contact any other host.
 
+### Education and certifications
+
+**+ → Education**, then the level:
+
+| Level | Fields |
+| --- | --- |
+| **10th** (SSLC / Secondary) | Board (CBSE, ICSE, Kerala State SSLC, NIOS…), school, year, register number, result, certificate number, medium |
+| **12th** (Plus Two / HSC) | Board (CBSE, ISC, Kerala DHSE, VHSE…), stream, school, year, register number, result, certificate number |
+| **Degree** and **PG** | Degree (B.Tech, BCA… / M.Tech, MCA, MBA…), branch, college, university (KTU, Kerala, MG, Calicut, CUSAT… suggested), years of joining and passing, register number, CGPA or percentage, class awarded, certificate number |
+| **Other** | Diplomas, ITI, PhD: qualification, institution, board, years, result |
+
+**+ → Certification**: issuer (Microsoft, Anthropic, AWS, OffSec… suggested),
+exam code, status (Planning → Studying → Exam booked → Passed → Expired),
+exam date, issue and expiry dates, credential ID, verification link and
+score. Certificates expiring within six months and booked exams appear in
+**Needs attention**, and Add to Calendar works for both.
+
+Both can hold photos of the real certificate and mark sheet (or score
+report), shrunk and encrypted like ID photos. Years must be four digits,
+joining can't come after passing, and verification links must be `https://`.
+
 ### OSCP labs
 
 Home → **OSCP labs rooted**. All 196 machines from TJ Null's NetSecFocus
