@@ -960,6 +960,26 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- notes & rules ---------- */
+.notes-warn { margin: 0 0 6px; }
+.notes { display: flex; flex-direction: column; gap: 8px; }
+.note { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.note-tick {
+  flex: 0 0 auto; width: 30px; height: 30px; margin-top: 2px; border-radius: 50%; border: 2px solid var(--line);
+  background: transparent; color: var(--brass-ink); font-weight: 700; font-size: 16px; display: grid; place-items: center;
+}
+.note-tick[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: #fff; }
+.note-main { flex: 1 1 auto; min-width: 0; }
+.note-text { width: 100%; resize: none; border: none; background: transparent; color: var(--fg); font: inherit; font-size: 15.5px; line-height: 1.45; padding: 4px 0; overflow: hidden; }
+.note-text:focus { outline: none; }
+.note.done .note-text { color: var(--fg-dim); text-decoration: line-through; text-decoration-color: var(--fg-faint); }
+.note-meta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--fg-faint); margin-top: 2px; }
+.note-meta .linkish { font-size: 12.5px; }
+.note-ideas { display: flex; flex-wrap: wrap; gap: 8px; }
+.note-idea { padding: 8px 12px; border-radius: 999px; border: 1px dashed var(--line); background: transparent; color: var(--fg-dim); font-size: 13.5px; }
+.note-idea[data-nnew] { border-style: solid; border-color: var(--brass); color: var(--brass); font-weight: 600; }
+.face-nudge { margin: 12px 0 0; }
+
 /* ---------- reminders ---------- */
 .push-st { margin: 0 0 12px; color: var(--fg); font-size: 14px; line-height: 1.5; }
 
@@ -1389,6 +1409,7 @@ select.input {
         Unlock with Face ID
       </button>
       <button class="btn" id="lock-action">Unlock</button>
+      <button class="link-row" id="btn-notes-open">Notes &amp; rules · no passphrase needed</button>
       <button class="link-row" id="btn-restore-start">Restore from a backup file</button>
       <button class="link-row" id="btn-restore-cancel" hidden>Cancel</button>
 
@@ -1433,7 +1454,9 @@ select.input {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
         <input class="input" id="q" type="search" placeholder="Search the box" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search the box">
       </div>
+      <button class="notice nudge face-nudge" id="face-nudge" hidden><b>Tired of typing your passphrase?</b> Turn on Face ID and just look at the phone to open the box. Tap here.</button>
       <div class="hub" id="hub" hidden>
+        <button class="hub-tile wide" id="hub-notes"><b id="hub-notes-n">0</b><span id="hub-notes-sub">Notes &amp; rules</span></button>
         <button class="hub-tile wide" id="hub-week"><b id="hub-week-n">0</b><span id="hub-week-sub">due this week · weekly digest</span></button>
         <button class="hub-tile" id="hub-attn"><b id="hub-attn-n">0</b><span>Needs attention</span></button>
         <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
@@ -1506,6 +1529,20 @@ select.input {
         <h2>Family</h2>
         <p>Keep your family's IDs, bank accounts, cards and logins here too. Each entry is marked with whose it is, and the box can be filtered by person. It all stays in this one encrypted box, behind your passphrase.</p>
         <div id="fam-body"></div>
+      </div>
+
+      <div class="bk-rule"></div>
+
+      <div class="bk-sect" id="lock-sect">
+        <h2>Stay unlocked</h2>
+        <p>How long the box stays open when you switch to another app or leave the phone. Longer is easier, shorter is safer. Face ID makes opening it quick either way.</p>
+        <select class="input" id="lock-after">
+          <option value="0">Lock as soon as I leave the app (safest)</option>
+          <option value="1">1 minute</option>
+          <option value="5">5 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="60">1 hour</option>
+        </select>
       </div>
 
       <div class="bk-rule"></div>
@@ -1587,6 +1624,10 @@ select.input {
   </section>
 
   <!-- ================= ONE LAB ================= -->
+  <section id="screen-notes" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-notes-back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Notes &amp; rules</h1><button class="txt-btn" id="btn-note-add">Add</button></div></header>
+    <div class="col gutter page-body" id="notes-body"></div>
+  </section>
   <section id="screen-week" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>This week</h1></div></header>
     <div class="col gutter page-body" id="week-body"></div>
@@ -3559,7 +3600,7 @@ select.input {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week', notes: '#screen-notes'
   };
   function show(view) {
     S.view = view;
@@ -3579,6 +3620,7 @@ select.input {
     if (view === 'ias') renderIas();
     if (view === 'money') renderMoney();
     if (view === 'week') renderWeek();
+    if (view === 'notes') renderNotes();
     if (view === 'vault' && !pushOnOpen) { pushOnOpen = true; schedulePushSync(); }
     if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
@@ -3592,7 +3634,8 @@ select.input {
   function armIdle() {
     clearTimeout(idleTimer);
     if (!S.key) return;
-    idleTimer = setTimeout(function () { lockNow('Locked after 3 minutes idle'); }, IDLE_MS);
+    var mins = Math.max(IDLE_MS / 60000, +(S.data && S.data.goals && S.data.goals.lockAfter) || 0);
+    idleTimer = setTimeout(function () { lockNow('Locked after ' + mins + ' minutes idle'); }, mins * 60000);
   }
   function closeLightbox() {
     $('#lightbox').hidden = true;
@@ -3646,11 +3689,19 @@ select.input {
     sheetTimer = setTimeout(function () { sheetOpen = false; }, 120000);
   }
 
+  // "Stay unlocked" (Settings) lets the box survive a quick trip to another
+  // app. Timers don't run while iPhone has the app in the background, so the
+  // time away is also checked on coming back.
+  var hiddenAt = 0;
+  function lockAfterMs() { return (+(S.data && S.data.goals && S.data.goals.lockAfter) || 0) * 60000; }
   document.addEventListener('visibilitychange', function () {
     if (!S.key) return;
     if (document.visibilityState === 'hidden') {
-      if (sheetOpen) {
-        hideTimer = setTimeout(function () { lockNow(null); }, SHEET_GRACE_MS);
+      var grace = Math.max(lockAfterMs(), sheetOpen ? SHEET_GRACE_MS : 0);
+      if (grace) {
+        hiddenAt = Date.now();
+        hiddenGrace = grace;
+        hideTimer = setTimeout(function () { lockNow(null); }, grace);
       } else {
         lockNow(null);
       }
@@ -3658,9 +3709,12 @@ select.input {
       sheetOpen = false;
       clearTimeout(sheetTimer);
       clearTimeout(hideTimer);
+      if (hiddenAt && Date.now() - hiddenAt > hiddenGrace) { hiddenAt = 0; lockNow(null); return; }
+      hiddenAt = 0;
       armIdle();
     }
   });
+  var hiddenGrace = 0;
 
   /* ============ clipboard ============
      iOS lets a page write the clipboard only during a tap, so the timed wipe
@@ -3895,7 +3949,8 @@ select.input {
       $('#lock-action').textContent = 'Create the box';
     } else if (mode === 'unlock') {
       $('#lock-title').textContent = 'Deposit Box';
-      $('#lock-sub').textContent = 'Enter your passphrase to open the box.';
+      $('#lock-sub').textContent = S.rec && S.rec.wraps && S.rec.wraps.face && faceSupported()
+        ? 'Tap Unlock with Face ID, or type your passphrase.' : 'Enter your passphrase to open the box.';
       $('#lock-action').textContent = 'Unlock';
     } else {
       $('#lock-title').textContent = 'Restore a backup';
@@ -4162,6 +4217,10 @@ select.input {
     $('#hub-run-n').textContent = km >= 100 ? Math.round(km) : km.toFixed(1).replace(/\.0$/, '');
     var ot = oscpTotals();
     $('#hub-oscp-n').textContent = ot.done + ' / ' + ot.all;
+    var nl = notesList(), rules = nl.filter(function (x) { return x.daily; }), today = toYmd(new Date());
+    $('#hub-notes-n').textContent = rules.length ? rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length + ' / ' + rules.length : nl.length;
+    $('#hub-notes-sub').textContent = rules.length ? 'daily rules done today · notes & rules' : 'notes & rules · no passphrase needed';
+    $('#face-nudge').hidden = !(faceSupported() && S.rec && S.rec.wraps && !S.rec.wraps.face);
     var wk = weekDue(), dig = digestDue();
     $('#hub-week-n').textContent = wk.length;
     $('#hub-week-sub').textContent = (wk.length === 1 ? 'thing' : 'things') + ' due this week' + (dig ? ' · new weekly digest' : ' · weekly digest');
@@ -4184,6 +4243,11 @@ select.input {
   $('#hub-ias').addEventListener('click', function () { show('ias'); });
   $('#hub-money').addEventListener('click', function () { show('money'); });
   $('#hub-week').addEventListener('click', function () { show('week'); });
+  $('#hub-notes').addEventListener('click', function () { show('notes'); });
+  $('#lock-after').addEventListener('change', function () {
+    setGoal('lockAfter', +this.value).then(function () { armIdle(); toast(+$('#lock-after').value ? 'The box stays open for ' + $('#lock-after').selectedOptions[0].textContent + ' after you leave' : 'The box locks as soon as you leave'); });
+  });
+  $('#face-nudge').addEventListener('click', function () { show('backup'); setTimeout(function () { var fs = $('#face-sect'); if (fs) fs.scrollIntoView({ block: 'start' }); }, 50); });
   // The reminder times follow whatever is in the box; refresh them on opening.
   var pushOnOpen = false;
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') pushOnOpen = false; });
@@ -5623,6 +5687,7 @@ select.input {
 
   function renderBackup() {
     updateBkStatus();
+    $('#lock-after').value = String(goals().lockAfter || 0);
     renderPushSection();
     renderFaceSection();
     famEdit = null;
@@ -9279,6 +9344,95 @@ select.input {
     }
   });
 
+  /* ============ notes & rules (no passphrase) ============
+     Kept outside the encrypted box on purpose, so they open without the
+     passphrase, even from the lock screen. Not for anything secret. Daily
+     rules get a tick for today and a streak. */
+  var NOTES_KEY = 'depositbox.notes', noteTimer = null;
+  function notesList() {
+    try { var a = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function notesSave(list) {
+    try { localStorage.setItem(NOTES_KEY, JSON.stringify(list)); return true; } catch (e) { toast('Could not save the note'); return false; }
+  }
+  function streakOf(days) {
+    var set = {}, n = 0, d = new Date();
+    (days || []).forEach(function (x) { set[x] = 1; });
+    if (!set[toYmd(d)]) d.setDate(d.getDate() - 1);   // today not ticked yet: count up to yesterday
+    while (set[toYmd(d)]) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  var NOTE_IDEAS = ['Brush two times a day', 'Drink 1 litre of water every day', 'Stretch for 10 minutes', 'Read one IAS chapter', 'Sleep by 10:30 pm'];
+  function renderNotes() {
+    var el = $('#notes-body'), list = notesList(), today = toYmd(new Date());
+    var rules = list.filter(function (x) { return x.daily; }), notes = list.filter(function (x) { return !x.daily; });
+    var done = rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length;
+    var item = function (x) {
+      var ticked = (x.days || []).indexOf(today) >= 0, st = streakOf(x.days);
+      return '<div class="note' + (ticked ? ' done' : '') + '" data-note="' + esc(x.id) + '">' +
+        (x.daily ? '<button type="button" class="note-tick" data-ntick="' + esc(x.id) + '" aria-pressed="' + ticked + '" aria-label="Done today">' + (ticked ? '✓' : '') + '</button>' : '') +
+        '<div class="note-main"><textarea class="note-text" data-ntext="' + esc(x.id) + '" rows="1" placeholder="Write something…">' + esc(x.text) + '</textarea>' +
+        '<div class="note-meta">' + (x.daily ? '<span>' + (st ? st + '-day streak' : 'No streak yet') + '</span>' : '') +
+        '<button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">' + (x.daily ? 'Make it a note' : 'Make it a daily rule') + '</button>' +
+        '<button type="button" class="linkish rm" data-ndel="' + esc(x.id) + '">Delete</button></div></div></div>';
+    };
+    el.innerHTML = '<p class="hint notes-warn">Opens without your passphrase and isn’t encrypted, so don’t write passwords, PINs or account numbers here.</p>' +
+      (rules.length ? '<div class="section-label lab-group">Daily rules <span>' + done + ' / ' + rules.length + ' done today</span></div><div class="notes">' + rules.map(item).join('') + '</div>' : '') +
+      (notes.length ? '<div class="section-label">Notes</div><div class="notes">' + notes.map(item).join('') + '</div>' : '') +
+      '<div class="section-label">Quick add</div><div class="note-ideas">' +
+      '<button type="button" class="note-idea" data-nnew="rule">+ New daily rule</button><button type="button" class="note-idea" data-nnew="note">+ New note</button>' +
+      NOTE_IDEAS.filter(function (t) { return !list.some(function (x) { return x.text === t; }); }).map(function (t) {
+        return '<button type="button" class="note-idea" data-nidea="' + esc(t) + '">' + esc(t) + '</button>';
+      }).join('') + '</div>';
+    Array.prototype.forEach.call(el.querySelectorAll('.note-text'), fitNote);
+  }
+  function fitNote(t) { t.style.height = 'auto'; t.style.height = Math.max(26, t.scrollHeight) + 'px'; }
+  function addNote(text, daily) {
+    var list = notesList(), id = 'n' + uid().slice(0, 10);
+    list.push({ id: id, text: text || '', daily: !!daily, days: [], created: Date.now() });
+    notesSave(list);
+    renderNotes();
+    var t = $('[data-ntext="' + id + '"]');
+    if (t && !text) t.focus();
+  }
+  $('#btn-note-add').addEventListener('click', function () { addNote('', false); });
+  $('#btn-notes-open').addEventListener('click', function () { show('notes'); });
+  $('#btn-notes-back').addEventListener('click', function () { if (S.key) show('vault'); else { renderLock(); show('lock'); } });
+  $('#notes-body').addEventListener('input', function (ev) {
+    var t = ev.target.closest('[data-ntext]');
+    if (!t) return;
+    fitNote(t);
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(function () {
+      var list = notesList();
+      list.forEach(function (x) { if (x.id === t.dataset.ntext) x.text = t.value.slice(0, 2000); });
+      notesSave(list);
+    }, 400);
+  });
+  $('#notes-body').addEventListener('click', function (ev) {
+    var list = notesList(), today = toYmd(new Date()), b;
+    if ((b = ev.target.closest('[data-ntick]'))) {
+      list.forEach(function (x) {
+        if (x.id !== b.dataset.ntick) return;
+        x.days = x.days || [];
+        var i = x.days.indexOf(today);
+        if (i >= 0) x.days.splice(i, 1); else x.days.push(today);
+        x.days = x.days.sort().slice(-120);
+      });
+      notesSave(list); renderNotes(); return;
+    }
+    if ((b = ev.target.closest('[data-ndaily]'))) {
+      list.forEach(function (x) { if (x.id === b.dataset.ndaily) x.daily = !x.daily; });
+      notesSave(list); renderNotes(); return;
+    }
+    if ((b = ev.target.closest('[data-ndel]'))) {
+      var id = b.dataset.ndel;
+      notesSave(list.filter(function (x) { return x.id !== id; })); renderNotes(); toast('Deleted'); return;
+    }
+    if ((b = ev.target.closest('[data-nidea]'))) { addNote(b.dataset.nidea, true); return; }
+    if ((b = ev.target.closest('[data-nnew]'))) addNote('', b.dataset.nnew === 'rule');
+  });
+
   /* ============ IAS prelims ============
      The reading list (lib/ias-prelims.js) is public: subjects, NCERT books
      and chapter titles. Your part - status, revisions, notes, chapters you
@@ -9349,6 +9503,7 @@ select.input {
     if (+o.oscpWeek >= 1 && +o.oscpWeek <= 14) out.oscpWeek = Math.round(+o.oscpWeek);
     if (typeof o.digestSeen === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.digestSeen)) out.digestSeen = o.digestSeen;
     if (o.push === true) out.push = true;
+    if ([1, 5, 15, 60].indexOf(+o.lockAfter) >= 0) out.lockAfter = +o.lockAfter;
     return out;
   }
 

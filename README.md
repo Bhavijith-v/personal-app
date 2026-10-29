@@ -331,6 +331,19 @@ opens, a reminder to run the system test (with a button to mark it done), and a
 timed event for the exam's length with alerts the day before and 45 minutes
 before.
 
+### Notes & rules (no passphrase)
+
+Opens from the lock screen or the home tile without the passphrase. Notes and
+daily rules ("Brush two times a day") with a tick for today and a streak. Kept
+outside the encrypted box (localStorage), so nothing secret goes here.
+
+### Less typing
+
+- **Face ID** (Settings): the home screen suggests it until it is on.
+- **Stay unlocked** (Settings): keep the box open for 1, 5, 15 or 60 minutes
+  after leaving the app, instead of locking at once. Checked on return too,
+  since iPhone pauses the app in the background.
+
 ### Automation
 
 - **Paste to fill:** on any new entry, *+ Paste an email or SMS* reads exam
