@@ -961,6 +961,8 @@ select.input {
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
 /* ---------- booked exams ---------- */
+.paste-box textarea { font-size: 15px; }
+.paste-box .btn-row { margin-top: 8px; }
 .exam { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
 .exam-when { margin: 0; }
 .exam-when b { display: block; font-size: 17px; }
@@ -2265,6 +2267,60 @@ select.input {
     }
   });
 
+  /* ============ booking emails ============
+     Reads a pasted exam booking email (Pearson VUE, PSI, Kryterion…) and
+     picks out what the certification form needs. Copied email tables can
+     come out label-after-label then value-after-value, so most details are
+     recognised by their shape, not only by the label in front of them. */
+  var certPasteOpen = false;
+  var MONTHS_LONG = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+  function parseBooking(raw) {
+    var text = String(raw || '').replace(/\r/g, ''), flat = text.replace(/\s+/g, ' '), out = {}, m;
+    if ((m = /order\s*(?:number|no\.?|#)\s*:?\s*([0-9][0-9-]{5,})/i.exec(flat))) out.order = m[1];
+    // "CCDV-F - Claude Certified Developer - Foundations - English (ENU)"
+    if ((m = /\b([A-Z][A-Z0-9]{1,9}(?:-[A-Z0-9]{1,6})?)\s+[-–]\s+(.+?)\s+[-–]\s+(?:English|ENU)\b/.exec(flat))) {
+      out.code = m[1]; out.title = m[2].replace(/\s+[-–]\s+/g, ' – ').trim();
+    } else if ((m = /\bexam\s*:\s*([^\n]{4,120})/i.exec(text))) out.title = m[1].trim();
+    if ((m = /candidate\s*id\s*:?\s*([A-Z]{2,}[0-9]{4,})/i.exec(flat)) || (m = /\b([A-Z]{3,6}[0-9]{5,9})\b/.exec(flat))) out.candid = m[1].toUpperCase();
+    if ((m = /registration\s*(?:id|number)\s*:?\s*([0-9]{6,12})\b/i.exec(flat))) out.regid = m[1];
+    else {
+      var nums = flat.match(/\b[0-9]{8,10}\b/g) || [], ord = (out.order || '').replace(/-/g, '');
+      var r = nums.filter(function (n) { return ord.indexOf(n) < 0; })[0];
+      if (r) out.regid = r;
+    }
+    if ((m = /\b(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+([a-z]+)\s+(\d{1,2}),?\s+(\d{4})/i.exec(flat)) ||
+        (m = /\b([a-z]+)\s+(\d{1,2}),\s+(\d{4})/i.exec(flat))) {
+      var mo = MONTHS_LONG.indexOf(m[1].toLowerCase()) + 1;
+      if (mo) { var dd = ymdOf(+m[3], mo, +m[2]); if (dd) out.examdate = dd; }
+    }
+    if ((m = /\b(\d{1,2}):(\d{2})\s*([AP])\.?M\.?/i.exec(flat))) {
+      var hr = +m[1] % 12 + (/p/i.test(m[3]) ? 12 : 0);
+      out.examtime = ('0' + hr).slice(-2) + ':' + m[2];
+    }
+    if ((m = /length\s*:?\s*(\d{2,3})\s*min/i.exec(flat)) || (m = /\b(\d{2,3})\s*min(?:ute)?s?\b/i.exec(flat))) out.duration = m[1];
+    if (/pearson\s*vue|onvue/i.test(flat)) out.provider = 'Pearson VUE';
+    else if (/kryterion|webassessor/i.test(flat)) out.provider = 'Kryterion (Webassessor)';
+    else if (/prometric/i.test(flat)) out.provider = 'Prometric';
+    else if (/\bPSI\b/.test(flat)) out.provider = 'PSI';
+    else if (/certiverse/i.test(flat)) out.provider = 'Certiverse';
+    if (/onvue|online|system test|test your system|check.?in to start|webcam/i.test(flat)) out.mode = 'Online proctored';
+    else if (/test (?:center|centre)/i.test(flat)) out.mode = 'Test centre';
+    var who = (out.title || '') + ' ' + flat;
+    if (/claude|anthropic/i.test(who)) out.issuer = 'Anthropic';
+    else if (/azure|microsoft/i.test(who)) out.issuer = 'Microsoft';
+    else if (/\baws\b|amazon web services/i.test(who)) out.issuer = 'Amazon Web Services (AWS)';
+    else if (/offsec|oscp/i.test(who)) out.issuer = 'OffSec';
+    else if (/comptia/i.test(who)) out.issuer = 'CompTIA';
+    else if (/google cloud/i.test(who)) out.issuer = 'Google Cloud';
+    (text.match(/https?:\/\/[^\s<>"')]+/g) || []).forEach(function (u) {
+      var at = text.indexOf(u), before = text.slice(Math.max(0, at - 80), at).toLowerCase();
+      if (/system|test your/.test(before) && !out.systest) out.systest = u;
+      else if (/check.?in|start exam/.test(before) && !out.checkin) out.checkin = u;
+    });
+    if (out.examdate) out.status = 'Exam booked';
+    return out;
+  }
+
   /* ============ photo capture, crop and straighten ============
      A photo of a card is taken (or chosen), the card's four corners are found
      on the phone, and the card is cut out and straightened into a flat
@@ -3221,7 +3277,7 @@ select.input {
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
-    if (view !== 'edit') { scanState = null; whoAdding = false; }
+    if (view !== 'edit') { scanState = null; whoAdding = false; certPasteOpen = false; }
     if (view !== 'lock') armIdle();
   }
 
@@ -4519,6 +4575,15 @@ select.input {
         '</div>';
     }
 
+    if (d.type === 'cert') {
+      html += certPasteOpen
+        ? '<div class="field paste-box"><label class="label" for="cert-paste">Paste the booking email</label>' +
+          '<textarea class="input" id="cert-paste" rows="6" placeholder="In Mail, press and hold the email text, tap Select All, then Copy, and paste it here."></textarea>' +
+          '<div class="btn-row"><button type="button" class="btn ghost" data-certpaste="close">Cancel</button><button type="button" class="btn" data-certfill="1">Fill in</button></div>' +
+          '<p class="hint">Read on this phone only. Links don’t come across as text: copy them separately (press and hold a link, then Copy Link).</p></div>'
+        : '<div class="field"><button type="button" class="iadd-open" data-certpaste="open">+ Fill from a booking email (Pearson VUE, PSI…)</button></div>';
+    }
+
     html += '<div class="field"><label class="label" for="in-title">' + esc(t.titleLabel) + '</label>' +
       '<input class="input" id="in-title" type="text" value="' + esc(d.title) + '" placeholder="' +
       esc(t.titlePh) + '" autocapitalize="words" spellcheck="false"></div>';
@@ -4660,6 +4725,19 @@ select.input {
         renderEdit();
         toast(np.name + ' added');
       });
+      return;
+    }
+    var cp = ev.target.closest('[data-certpaste]');
+    if (cp) { collectDraft(); certPasteOpen = cp.dataset.certpaste === 'open'; renderEdit(); var ta = $('#cert-paste'); if (ta) ta.focus(); return; }
+    if (ev.target.closest('[data-certfill]')) {
+      collectDraft();
+      var got = parseBooking($('#cert-paste').value);
+      var keys = Object.keys(got);
+      if (!keys.length) { toast('Couldn’t find exam details in that text'); return; }
+      keys.forEach(function (k) { if (k === 'title') S.draft.title = got.title; else S.draft.f[k] = got[k]; });
+      certPasteOpen = false;
+      renderEdit();
+      toast('Filled ' + keys.length + ' details. Check them, add the links, then Save.');
       return;
     }
     var kind = ev.target.closest('[data-kind]');
