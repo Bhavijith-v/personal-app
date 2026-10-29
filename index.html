@@ -957,6 +957,43 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- family ---------- */
+.whos { padding-block: 12px 0; }
+.whos .tab { display: inline-flex; align-items: center; gap: 7px; }
+.whos .tab i {
+  width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal;
+  font-size: 11px; font-weight: 700; background: var(--surface-3); color: var(--fg);
+}
+.whos .tab[aria-selected="true"] i { background: var(--brass); color: var(--brass-ink); }
+.whopick { display: flex; flex-wrap: wrap; gap: 6px; }
+.whopick button {
+  padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+  color: var(--fg-dim); font-size: 14px;
+}
+.whopick button[aria-pressed="true"] { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); font-weight: 600; }
+.whopick .whoadd { border-style: dashed; color: var(--brass); }
+.whonew { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.whonew input { flex: 1 1 150px; padding: 10px 12px; font-size: 16px; }
+.whonew select { flex: 0 1 140px; padding: 10px 34px 10px 12px; font-size: 16px; }
+.whonew .btn { width: auto; padding: 10px 18px; font-size: 15px; }
+.fam-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.fam {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line-soft);
+  border-radius: var(--r-md); background: var(--surface); min-width: 0;
+}
+.fam i {
+  flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-style: normal;
+  font-weight: 700; background: var(--brass-soft); color: var(--brass);
+}
+.fam span { flex: 1 1 auto; min-width: 0; }
+.fam b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fam small { color: var(--fg-faint); font-size: 12.5px; }
+.fam button { flex: 0 0 auto; background: none; border: none; color: var(--brass); font-weight: 600; font-size: 14px; padding: 8px 6px; }
+.fam button.rm { color: var(--danger); }
+.fam-edit { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.fam-edit input { flex: 1 1 120px; padding: 9px 11px; font-size: 16px; }
+.fam-edit select { flex: 0 1 130px; padding: 9px 32px 9px 11px; font-size: 16px; }
+
 /* ---------- IAS prelims ---------- */
 .hub-tile.wide { grid-column: 1 / -1; }
 .ias-exam { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; font-size: 13.5px; color: var(--fg-dim); }
@@ -1187,6 +1224,7 @@ select.input {
         <button class="hub-tile" id="hub-oscp"><b id="hub-oscp-n">0</b><span>OSCP labs rooted</span></button>
         <button class="hub-tile wide" id="hub-ias"><b id="hub-ias-n">0</b><span id="hub-ias-sub">IAS prelims chapters done</span></button>
       </div>
+      <div class="tabs whos" role="tablist" aria-label="Whose entries" id="whos" hidden></div>
       <div class="tabs" role="tablist" id="tabs"></div>
       <div class="list" id="list"></div>
       <div class="empty" id="empty" hidden>
@@ -1245,6 +1283,14 @@ select.input {
       </div>
 
       <div class="bk-rule" id="face-rule" hidden></div>
+
+      <div class="bk-sect" id="fam-sect">
+        <h2>Family</h2>
+        <p>Keep your family's IDs, bank accounts, cards and logins here too. Each entry is marked with whose it is, and the box can be filtered by person. It all stays in this one encrypted box, behind your passphrase.</p>
+        <div id="fam-body"></div>
+      </div>
+
+      <div class="bk-rule"></div>
 
       <div class="bk-sect">
         <h2>Save a backup</h2>
@@ -1846,6 +1892,128 @@ select.input {
     'stroke-linejoin="round"><rect x="9" y="9" width="11.5" height="11.5" rx="2"/>' +
     '<path d="M6.5 15H5a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 5 3.5h8.5A1.5 1.5 0 0 1 15 5v1.5"/></svg>';
 
+  /* ============ family ============
+     Entries carry an optional `who` (a person's id). No `who` means it's
+     yours. People live in S.data.people, inside the encrypted vault. */
+  var RELS = ['Wife', 'Husband', 'Mother', 'Father', 'Daughter', 'Son', 'Sister', 'Brother', 'Other'];
+  var whoView = 'all', famEdit = null, whoAdding = false;
+  function people() { return (S.data && S.data.people) || []; }
+  function personById(id) {
+    var ps = people();
+    for (var i = 0; i < ps.length; i++) if (ps[i].id === id) return ps[i];
+    return null;
+  }
+  function personOf(e) { return e && e.who ? personById(e.who) : null; }
+  function personLabel(p) { return p.name + (p.rel && p.rel !== 'Other' ? ' (' + p.rel + ')' : ''); }
+  function initialOf(name) { return (String(name || '?').match(/[A-Za-z0-9]/) || ['?'])[0].toUpperCase(); }
+  function inView(e) {
+    if (whoView === 'all') return true;
+    var p = personOf(e);
+    return whoView === 'me' ? !p : !!p && p.id === whoView;
+  }
+  function relOptions(sel) {
+    return RELS.map(function (r) { return '<option' + (r === sel ? ' selected' : '') + '>' + r + '</option>'; }).join('');
+  }
+  function addPerson(name, rel) {
+    name = String(name || '').trim().slice(0, 40);
+    if (!name) return null;
+    var p = { id: 'p' + uid().slice(0, 10), name: name, rel: RELS.indexOf(rel) >= 0 ? rel : 'Other' };
+    S.data.people = people().concat([p]);
+    return p;
+  }
+  function sanitizePeople(list) {
+    if (!Array.isArray(list)) return [];
+    var seen = {};
+    return list.filter(function (p) {
+      return p && typeof p.id === 'string' && /^p[0-9a-f]{6,16}$/.test(p.id) && typeof p.name === 'string' && p.name.trim() && !seen[p.id] && (seen[p.id] = 1);
+    }).slice(0, 30).map(function (p) {
+      return { id: p.id, name: p.name.trim().slice(0, 40), rel: RELS.indexOf(p.rel) >= 0 ? p.rel : 'Other' };
+    });
+  }
+  function mergePeople(mine, theirs) {
+    var out = (mine || []).slice();
+    (theirs || []).forEach(function (p) { if (!out.some(function (q) { return q.id === p.id; })) out.push(p); });
+    return out;
+  }
+
+  function renderWhos() {
+    var ps = people(), el = $('#whos');
+    el.hidden = !ps.length || !entries().length;
+    if (el.hidden) { if (whoView !== 'all' && whoView !== 'me' && !personById(whoView)) whoView = 'all'; return; }
+    if (whoView !== 'all' && whoView !== 'me' && !personById(whoView)) whoView = 'all';
+    var chip = function (k, label, ini) {
+      return '<button class="tab" role="tab" data-whof="' + esc(k) + '" aria-selected="' + (whoView === k) + '">' +
+        (ini ? '<i aria-hidden="true">' + esc(ini) + '</i>' : '') + esc(label) + '</button>';
+    };
+    el.innerHTML = chip('all', 'Everyone') + chip('me', 'Me', 'M') +
+      ps.map(function (p) { return chip(p.id, p.name, initialOf(p.name)); }).join('');
+  }
+  $('#whos').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-whof]');
+    if (!b) return;
+    whoView = b.dataset.whof;
+    renderVault();
+  });
+
+  function renderFamily() {
+    var ps = people(), el = $('#fam-body');
+    if (!el) return;
+    var counts = {};
+    entries().forEach(function (e) { if (e.who) counts[e.who] = (counts[e.who] || 0) + 1; });
+    el.innerHTML = (ps.length ? '<div class="fam-list">' + ps.map(function (p) {
+      var n = counts[p.id] || 0;
+      if (famEdit === p.id) {
+        return '<div class="fam"><div class="fam-edit"><input class="input" id="fam-name" value="' + esc(p.name) + '" maxlength="40" aria-label="Name">' +
+          '<select class="input" id="fam-rel" aria-label="Relation">' + relOptions(p.rel) + '</select></div>' +
+          '<button type="button" data-famsave="' + esc(p.id) + '">Save</button></div>';
+      }
+      return '<div class="fam"><i aria-hidden="true">' + esc(initialOf(p.name)) + '</i>' +
+        '<span><b>' + esc(p.name) + '</b><small>' + esc(p.rel) + ' · ' + n + (n === 1 ? ' entry' : ' entries') + '</small></span>' +
+        '<button type="button" data-famedit="' + esc(p.id) + '">Edit</button>' +
+        '<button type="button" class="rm" data-famrm="' + esc(p.id) + '">Remove</button></div>';
+    }).join('') + '</div>' : '') +
+      '<div class="whonew"><input class="input" id="fam-new" placeholder="Name, e.g. Anjali" maxlength="40" autocapitalize="words" aria-label="Name">' +
+      '<select class="input" id="fam-new-rel" aria-label="Relation">' + relOptions('Wife') + '</select>' +
+      '<button type="button" class="btn" id="fam-add">Add</button></div>' +
+      '<p class="err" id="fam-err" role="alert"></p>';
+  }
+  $('#fam-body').addEventListener('click', function (ev) {
+    if (ev.target.closest('#fam-add')) {
+      var p = addPerson($('#fam-new').value, $('#fam-new-rel').value);
+      if (!p) { $('#fam-err').textContent = 'Type a name first.'; return; }
+      persist().then(function () { renderFamily(); toast(p.name + ' added. Choose them under “Whose is this?” when you add an entry.'); });
+      return;
+    }
+    var ed = ev.target.closest('[data-famedit]');
+    if (ed) { famEdit = ed.dataset.famedit; renderFamily(); return; }
+    var sv = ev.target.closest('[data-famsave]');
+    if (sv) {
+      var who = personById(sv.dataset.famsave), nm = $('#fam-name').value.trim();
+      if (!who || !nm) return;
+      who.name = nm.slice(0, 40);
+      who.rel = RELS.indexOf($('#fam-rel').value) >= 0 ? $('#fam-rel').value : 'Other';
+      persist().then(function () { famEdit = null; renderFamily(); toast('Saved'); });
+      return;
+    }
+    var rm = ev.target.closest('[data-famrm]');
+    if (rm) {
+      var p2 = personById(rm.dataset.famrm);
+      if (!p2) return;
+      var n = entries().filter(function (e) { return e.who === p2.id; }).length;
+      if (n) {
+        $('#fam-err').textContent = p2.name + ' still has ' + n + (n === 1 ? ' entry' : ' entries') +
+          '. Delete them, or edit each one and change “Whose is this?”, then remove ' + p2.name + '.';
+        return;
+      }
+      askConfirm({ title: 'Remove ' + p2.name + '?', body: 'Only the name goes. ' + p2.name + ' has no entries in the box.', yes: 'Remove' }).then(function (ok) {
+        if (!ok) return;
+        S.data.people = people().filter(function (q) { return q.id !== p2.id; });
+        if (whoView === p2.id) whoView = 'all';
+        persist().then(function () { renderFamily(); toast('Removed'); });
+      });
+    }
+  });
+
   /* ============ brand covers ============
      Logins, banks and trading accounts wear their site's logo, matched on the
      name first, then the website, from lib/brands.js. Nothing is fetched, so
@@ -2205,7 +2373,7 @@ select.input {
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
-    if (view !== 'edit') scanState = null;
+    if (view !== 'edit') { scanState = null; whoAdding = false; }
     if (view !== 'lock') armIdle();
   }
 
@@ -2235,6 +2403,7 @@ select.input {
     oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };   // like the main list's tab
     $('#ias-body').textContent = ''; $('#chap-body').textContent = '';
     iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
+    whoView = 'all'; famEdit = null; whoAdding = false; $('#whos').textContent = ''; $('#fam-body').textContent = '';
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -2687,7 +2856,7 @@ select.input {
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
     var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, race: 0 };
-    entries().forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
+    entries().filter(inView).forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
   function rowMeta(e) {
@@ -2742,7 +2911,9 @@ select.input {
   function matches(e, q) {
     var t = TYPES[e.type];
     var br = brandOf(e);
-    var hay = [e.title, e.notes, t && t.name, t && t.short, KIND_LABEL[groupOf(e.type)] || '', br ? br.n : ''];
+    var pe = personOf(e);
+    var hay = [e.title, e.notes, t && t.name, t && t.short, KIND_LABEL[groupOf(e.type)] || '', br ? br.n : '',
+      pe ? pe.name + ' ' + pe.rel : ''];
     if (t) t.fields.forEach(function (f) {
       var v = (e.f || {})[f.k];
       if (v && !f.secret) hay.push(f.date ? fmtDate(v) + ' ' + v : v);
@@ -2790,7 +2961,8 @@ select.input {
         (S.filter === t.k) + '">' + esc(t.n) + '<span class="n">' + c[t.k] + '</span></button>';
     }).join('');
 
-    var list = entries().filter(function (e) { return S.filter === 'all' || groupOf(e.type) === S.filter; });
+    renderWhos();
+    var list = entries().filter(function (e) { return inView(e) && (S.filter === 'all' || groupOf(e.type) === S.filter); });
     if (S.filter === 'race') {
       // Races read as a calendar: what's next first, then most recent results.
       list.sort(function (a, b) {
@@ -2803,7 +2975,7 @@ select.input {
       list.sort(function (a, b) { return String(a.title || '').localeCompare(String(b.title || ''), 'en'); });
     }
 
-    var hasAny = c.all > 0;
+    var hasAny = entries().length > 0;
     $('#empty').hidden = hasAny;
     $('#tabs').hidden = !hasAny;
     $('#search-wrap').hidden = !hasAny;
@@ -2822,10 +2994,12 @@ select.input {
 
     if (!list.length) {
       var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', race: 'races' };
-      var ONE = { login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', race: 'a race' };
+      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', race: 'a race' };
+      var forWho = personById(whoView);
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
-        esc(NONE[S.filter] || 'entries') + ' stored so far.</p>' +
-        (ONE[S.filter] ? '<button class="btn empty-add" data-addkind="' + esc(S.filter) + '">Add ' + esc(ONE[S.filter]) + '</button>' : '') +
+        esc(NONE[S.filter] || 'entries') + (forWho ? ' for ' + esc(forWho.name) : '') + ' stored so far.</p>' +
+        (ONE[S.filter] ? '<button class="btn empty-add" data-addkind="' + esc(S.filter) + '">Add ' + esc(ONE[S.filter]) +
+          (forWho ? ' for ' + esc(forWho.name) : '') + '</button>' : '') +
         '</div>';
       return;
     }
@@ -2844,11 +3018,16 @@ select.input {
         '<span class="row-text"><span class="row-title">' +
         (e.fav && e.type !== 'race' ? '<span class="row-star" aria-label="Pinned">' + STAR_SVG + '</span>' : '') +
         esc(e.title || 'Untitled') + '</span>' +
-        '<span class="row-meta">' + esc(rowMeta(e)) + '</span></span>' +
+        '<span class="row-meta">' + esc(metaFor(e)) + '</span></span>' +
         '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></span>' +
         '</button>';
     };
+    // Someone else's entry says whose it is, unless the list is already theirs.
+    function metaFor(e) {
+      var p = personOf(e), m = rowMeta(e);
+      return p && whoView !== p.id ? p.name + (m ? '  ·  ' + m : '') : m;
+    }
     $('#list').innerHTML = (pinned.length && rest.length
       ? '<div class="list-head">Pinned</div>' + pinned.map(rowHtml).join('') +
         '<div class="list-head">Others</div>' + rest.map(rowHtml).join('')
@@ -2936,6 +3115,7 @@ select.input {
     var type = SUBKINDS[kind] ? SUBKINDS[kind][0] : TYPES[kind] ? kind : 'login';
     S.isNew = true;
     S.draft = { id: uid(), type: type, title: '', f: {}, notes: '', updated: Date.now() };
+    if (personById(whoView)) S.draft.who = whoView;
     show('edit');
   }
   $('#btn-add').addEventListener('click', function () { startNew(S.filter); });
@@ -3127,7 +3307,7 @@ select.input {
     var html = (look ? brandCover(e, look) : '') + '<div class="detail-head">' +
       (look ? brandGlyph(look) : '<span class="glyph" aria-hidden="true">' + ICON[e.type] + '</span>') +
       '<span><h2 class="detail-title">' + esc(e.title || 'Untitled') + '</h2>' +
-      '<div class="detail-kind">' + esc(t.name) +
+      '<div class="detail-kind">' + esc(t.name) + (personOf(e) ? ' · ' + esc(personLabel(personOf(e))) : '') +
       (e.type === 'card' && network((e.f || {}).number) ? ' · ' + esc(network(e.f.number)) : '') +
       '</div></span></div>';
 
@@ -3378,6 +3558,21 @@ select.input {
       }
     }
 
+    if (people().length || whoAdding) {
+      html += '<div class="field"><span class="label">Whose is this?</span><div class="whopick" role="group" aria-label="Whose is this">' +
+        '<button type="button" data-who="" aria-pressed="' + !personOf(d) + '">Me</button>' +
+        people().map(function (p) {
+          return '<button type="button" data-who="' + esc(p.id) + '" aria-pressed="' + (d.who === p.id) + '">' + esc(p.name) + '</button>';
+        }).join('') +
+        (whoAdding ? '' : '<button type="button" class="whoadd" data-whoadd="1">+ Person</button>') + '</div>' +
+        (whoAdding ? '<div class="whonew"><input class="input" id="who-new" placeholder="Name" maxlength="40" autocapitalize="words" aria-label="Name">' +
+          '<select class="input" id="who-new-rel" aria-label="Relation">' + relOptions('Wife') + '</select>' +
+          '<button type="button" class="btn" data-whosave="1">Add</button></div>' : '') +
+        '</div>';
+    } else {
+      html += '<div class="field"><button type="button" class="iadd-open" data-whoadd="1">+ This is for someone else (wife, parent…)</button></div>';
+    }
+
     if (S.isNew && d.type === 'race') {
       var presetBtn = function (p) {
         return '<button type="button" class="preset" data-preset="' + esc(p.key) + '">' +
@@ -3517,6 +3712,26 @@ select.input {
   }
 
   $('#edit-body').addEventListener('click', function (ev) {
+    var wb = ev.target.closest('[data-who]');
+    if (wb) {
+      collectDraft();
+      if (wb.dataset.who) S.draft.who = wb.dataset.who; else delete S.draft.who;
+      renderEdit();
+      return;
+    }
+    if (ev.target.closest('[data-whoadd]')) { collectDraft(); whoAdding = true; renderEdit(); var wi = $('#who-new'); if (wi) wi.focus(); return; }
+    if (ev.target.closest('[data-whosave]')) {
+      collectDraft();
+      var np = addPerson($('#who-new').value, $('#who-new-rel').value);
+      if (!np) { $('#who-new').focus(); return; }
+      persist().then(function () {
+        whoAdding = false;
+        S.draft.who = np.id;
+        renderEdit();
+        toast(np.name + ' added');
+      });
+      return;
+    }
     var kind = ev.target.closest('[data-kind]');
     if (kind) {
       var want = kind.dataset.kind;
@@ -3940,7 +4155,9 @@ select.input {
         title: String(e.title || 'Untitled'),
         f: f,
         notes: String(e.notes || ''),
-        updated: typeof e.updated === 'number' ? e.updated : 0
+        updated: typeof e.updated === 'number' ? e.updated : 0,
+        who: typeof e.who === 'string' && /^p[0-9a-f]{6,16}$/.test(e.who) ? e.who : undefined,
+        fav: e.fav === true ? true : undefined
       };
     });
   }
@@ -4021,6 +4238,8 @@ select.input {
   function renderBackup() {
     updateBkStatus();
     renderFaceSection();
+    famEdit = null;
+    renderFamily();
     $('#bk-import-panel').hidden = true;
     $('#bk-dump-wrap').hidden = true;
     $('#bk-dump').value = '';
@@ -4163,6 +4382,7 @@ select.input {
           S.data.runs = sanitizeRuns(r.data && r.data.runs);
           S.data.oscp = sanitizeOscp(r.data && r.data.oscp);
           S.data.ias = sanitizeIas(r.data && r.data.ias);
+          S.data.people = sanitizePeople(r.data && r.data.people);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
       }
@@ -4173,6 +4393,7 @@ select.input {
       S.data.runs = runs().concat(sanitizeRuns(r.data && r.data.runs).filter(function (x) { return !have[x.id]; }));
       S.data.oscp = mergeOscp(S.data.oscp, sanitizeOscp(r.data && r.data.oscp));
       S.data.ias = mergeIas(S.data.ias, sanitizeIas(r.data && r.data.ias));
+      S.data.people = mergePeople(people(), sanitizePeople(r.data && r.data.people));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
       if (res.updated) parts.push('updated ' + res.updated);
@@ -4202,6 +4423,7 @@ select.input {
         claude: sanitizeClaude(r.data && r.data.claude),
         oscp: sanitizeOscp(r.data && r.data.oscp),
         ias: sanitizeIas(r.data && r.data.ias),
+        people: sanitizePeople(r.data && r.data.people),
         lastExport: (r.data && r.data.lastExport) || null
       };
       if (r.raw) {
@@ -4356,7 +4578,7 @@ select.input {
     $('#attn-body').innerHTML =
       (dated.length ? '<button class="btn ghost att-all" id="btn-cal-all">Add all ' + dated.length + ' to Calendar</button>' : '') +
       '<div class="att-list">' + items.map(function (a, i) {
-        var title = a.backup ? 'Back up the box' : (a.e.title || 'Untitled');
+        var title = a.backup ? 'Back up the box' : (a.e.title || 'Untitled') + (personOf(a.e) ? ' · ' + personOf(a.e).name : '');
         return '<div class="att">' +
           '<button class="att-main" data-att="' + i + '">' +
           '<span class="glyph" aria-hidden="true">' + (a.backup ? BACKUP_ICON : ICON[a.e.type]) + '</span>' +
@@ -4397,7 +4619,7 @@ select.input {
     items.forEach(function (a) {
       var start = a.date.replace(/-/g, '');
       var endD = new Date(+a.date.slice(0, 4), +a.date.slice(5, 7) - 1, +a.date.slice(8, 10) + 1);
-      var summary = (a.e.title || 'Untitled') + ' — ' + a.cal;
+      var summary = (a.e.title || 'Untitled') + (personOf(a.e) ? ' (' + personOf(a.e).name + ')' : '') + ' — ' + a.cal;
       L.push('BEGIN:VEVENT',
         'UID:' + a.e.id + '-' + a.date + '@deposit-box',
         'DTSTAMP:' + stamp,

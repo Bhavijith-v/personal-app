@@ -213,6 +213,16 @@ joining can't come after passing, and verification links must be `https://`.
   minutes.
 - The ↻ button next to any password field makes a strong password.
 
+### Family
+
+Keep your family's details in the same box. **Settings → Family** adds a
+person (name and relation), or tap **+ This is for someone else** on any new
+entry. Each entry then has a **Whose is this?** choice (Me, or a person), and
+the home screen gets a row to filter by **Everyone / Me / each person**. New
+entries made while a person is selected are theirs. Their entries show their
+name in the list, in Needs attention and in Calendar events. A person can only
+be removed once no entries are theirs. People and owners travel with backups.
+
 ### Share one item safely
 
 *Share safely* at the bottom of an entry. Tick what to send (passwords and PINs
