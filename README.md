@@ -9,7 +9,7 @@ passphrase only you know.
 | File | What it is |
 | --- | --- |
 | `index.html` | The whole app — UI, logic and encryption in one file |
-| `lib/` | Argon2id (hash-wasm, MIT), the QR code maker (qrcode-generator 1.4.4, MIT) and site logos (`brands.js`, from Simple Icons, CC0) — vendored, never fetched from a CDN |
+| `lib/` | Argon2id (hash-wasm, MIT), the QR code maker (qrcode-generator 1.4.4, MIT) site logos (`brands.js`, from Simple Icons, CC0) and pdf.js 5.7.284 (`pdf/`, Apache-2.0, loaded only when you open a PDF statement) — vendored, never fetched from a CDN |
 | `manifest.webmanifest` | Makes iOS treat it as an app, not a web page |
 | `sw.js` | Caches the app so it opens with no network |
 | `icons/` | Home Screen icon |
@@ -212,6 +212,33 @@ joining can't come after passing, and verification links must be `https://`.
   it holds the password, so it is drawn only when asked and cleared after two
   minutes.
 - The ↻ button next to any password field makes a strong password.
+
+### Money: statements as charts
+
+The **Money** tile on the home screen turns bank and credit-card statements into
+charts: bank balance over time, spending by month, where it went (by
+category), and each card's usage against its limit with the amount due and
+pay-by date.
+
+Live balances aren't possible. Indian banks give individuals no API, and the
+RBI Account Aggregator system is open only to regulated companies. Logging in
+to net banking on your behalf would mean storing your password where code uses
+it, so the app doesn't do that. Instead:
+
+1. Download a statement: from OnlineSBI or YONO as **Excel** (best) or PDF;
+   for SBI Card, the monthly e-statement PDF.
+2. **Money → Import a statement.** Password-protected PDFs ask for the password,
+   which only opens the file and is never stored.
+3. Check the summary (period, totals, and whether every running balance adds
+   up), pick the account, and import.
+
+Everything is read on the phone (Excel `.xlsx`, tab-separated `.xls`, CSV,
+HTML tables and PDF) and stored in the encrypted box. Importing the same
+statement twice adds nothing. Card bill payments are left out of spending so
+nothing counts twice, and a card bill shows as paid once a payment to the card
+appears after its statement date. Tap a transaction to change its category,
+optionally for everything from that payee. Removing a statement removes its
+transactions. Every chart has a "Show as a table" view.
 
 ### Family
 

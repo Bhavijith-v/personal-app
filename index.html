@@ -22,6 +22,7 @@
    primary action pinned above the home indicator. Identity: a steel deposit box —
    graphite surfaces, blue-steel neutrals, one brass accent, every figure set in mono. */
 :root {
+  --chart: #b98a3e;
   --bg: #15171a;
   --surface: #1d2024;
   --surface-2: #252931;
@@ -53,6 +54,7 @@
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
+    --chart: #946519;
     --bg: #f2f3f5;
     --surface: #ffffff;
     --surface-2: #e9ebee;
@@ -77,6 +79,7 @@
   }
 }
 :root[data-theme="light"] {
+  --chart: #946519;
   --bg: #f2f3f5;
   --surface: #ffffff;
   --surface-2: #e9ebee;
@@ -957,6 +960,85 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- money ---------- */
+.m-hero { padding: 16px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.m-big { display: block; font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin-top: 6px; }
+.m-sub { display: block; color: var(--fg-faint); font-size: 12.5px; margin-top: 4px; }
+.m-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.m-stats:empty { display: none; }
+.m-stats div { padding-top: 10px; border-top: 1px solid var(--line-soft); }
+.m-stats b, .m-facts b { display: block; font-size: 17px; font-weight: 600; margin-top: 2px; }
+.m-stats small, .m-facts small { color: var(--fg-faint); font-size: 12px; }
+.m-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+.m-actions .btn { width: auto; padding-inline: 20px; }
+.m-help { margin-top: 12px; line-height: 1.6; }
+.m-empty { padding-bottom: 10px; }
+.mcard { padding: 14px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.mcardc + .mcardc { margin-top: 10px; }
+.m-note { margin: 0 0 10px; color: var(--fg-faint); font-size: 12.5px; line-height: 1.5; }
+.cwrap { position: relative; width: 100%; min-width: 0; }
+.chart-svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.chart-svg:focus { outline: 2px solid var(--brass); outline-offset: 3px; border-radius: 4px; }
+.c-grid { stroke: var(--line-soft); stroke-width: 1; }
+.c-tick { fill: var(--fg-faint); font-size: 11px; font-family: var(--data); }
+.c-tick.on { fill: var(--fg); font-weight: 600; }
+.c-lab { fill: var(--fg-dim); font-size: 12.5px; }
+.c-lab.on { fill: var(--fg); font-weight: 600; }
+.c-val { fill: var(--fg); font-size: 11.5px; font-family: var(--data); }
+.c-line { fill: none; stroke: var(--chart); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.c-area { fill: var(--chart); opacity: 0.1; }
+.c-dot, .c-hover { fill: var(--chart); stroke: var(--surface); stroke-width: 2; }
+.c-cross { stroke: var(--fg-faint); stroke-width: 1; }
+.c-bar { fill: var(--chart); opacity: 0.4; }
+.c-bar.on { opacity: 1; }
+.c-hitbar { cursor: pointer; outline: none; }
+.c-hitbar:focus-visible { stroke: var(--brass); stroke-width: 1.5; }
+.ctip {
+  position: absolute; z-index: 5; pointer-events: none; padding: 7px 10px; border-radius: var(--r-sm);
+  background: var(--surface-3); border: 1px solid var(--line); box-shadow: var(--shadow); white-space: nowrap;
+}
+.ctip b { display: block; font-size: 14px; font-weight: 600; color: var(--fg); }
+.ctip span { display: block; font-size: 11.5px; color: var(--fg-dim); }
+.ctable { margin-top: 10px; font-size: 13px; }
+.ctable summary { color: var(--brass); font-weight: 600; cursor: pointer; padding: 4px 0; }
+.ctable table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+.ctable th, .ctable td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line-soft); }
+.ctable th { color: var(--fg-faint); font-weight: 600; font-size: 11.5px; }
+.ctable .num { text-align: right; font-family: var(--data); font-variant-numeric: tabular-nums; }
+.meter { height: 10px; border-radius: 5px; background: var(--brass-soft); overflow: hidden; margin: 12px 0 8px; }
+.meter i { display: block; height: 100%; border-radius: 5px; background: var(--chart); }
+.meter.warn { background: var(--warn-soft); } .meter.warn i { background: var(--warn); }
+.meter.bad { background: var(--danger-soft); } .meter.bad i { background: var(--danger); }
+.m-meter-l { margin: 0 0 4px; font-size: 13.5px; color: var(--fg-dim); }
+.m-meter-l b { color: var(--fg); }
+.m-cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.m-cardhead b { font-size: 16px; }
+.m-cardhead span { font-family: var(--data); color: var(--fg-faint); font-size: 13px; }
+.m-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px 14px; margin-top: 12px; }
+.m-paid { margin: 10px 0 0; color: var(--ok); font-weight: 600; font-size: 13.5px; }
+.m-link { margin-top: 12px; display: inline-block; }
+.mtx { display: flex; flex-direction: column; gap: 6px; }
+.mt { border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); overflow: hidden; }
+.mt-main { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 12px; background: none; border: none; color: var(--fg); min-width: 0; }
+.mt-text { flex: 1 1 auto; min-width: 0; }
+.mt-text b { display: block; font-weight: 500; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mt-text small { display: block; font-size: 12px; color: var(--fg-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mt-amt { flex: 0 0 auto; font-family: var(--data); font-size: 14px; font-variant-numeric: tabular-nums; }
+.mt.in .mt-amt { color: var(--ok); }
+.mt-edit { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.mt-desc { margin: 0; font-family: var(--data); font-size: 12px; color: var(--fg-faint); word-break: break-all; }
+.mt-all { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--fg-dim); }
+.mt-all input { width: 18px; height: 18px; accent-color: var(--brass); }
+.m-acct + .m-acct { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.m-acct-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.m-acct-h b { font-size: 15px; }
+.m-acct-h span { flex: 1 1 auto; color: var(--fg-faint); font-size: 12.5px; }
+.m-st { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; color: var(--fg-dim); margin-top: 6px; }
+.linkish.rm { color: var(--danger); }
+.m-review h2 { margin: 0 0 4px; font-size: 18px; }
+.m-ok { border-color: var(--ok); color: var(--ok); }
+.m-review .btn-row { margin-top: 16px; }
+
 /* ---------- family ---------- */
 .whos { padding-block: 12px 0; }
 .whos .tab { display: inline-flex; align-items: center; gap: 7px; }
@@ -1222,6 +1304,7 @@ select.input {
         <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
         <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
         <button class="hub-tile" id="hub-oscp"><b id="hub-oscp-n">0</b><span>OSCP labs rooted</span></button>
+        <button class="hub-tile wide" id="hub-money"><b id="hub-money-n">₹</b><span id="hub-money-sub">Money: import a statement for charts</span></button>
         <button class="hub-tile wide" id="hub-ias"><b id="hub-ias-n">0</b><span id="hub-ias-sub">IAS prelims chapters done</span></button>
       </div>
       <div class="tabs whos" role="tablist" aria-label="Whose entries" id="whos" hidden></div>
@@ -1361,6 +1444,10 @@ select.input {
   </section>
 
   <!-- ================= ONE LAB ================= -->
+  <section id="screen-money" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Money</h1></div></header>
+    <div class="col gutter page-body" id="money-body"></div>
+  </section>
   <section id="screen-ias" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>IAS prelims</h1></div></header>
     <div class="col gutter page-body" id="ias-body"></div>
@@ -1428,6 +1515,7 @@ select.input {
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*" hidden>
 <input type="file" id="scan-in" accept="image/*" hidden>
+<input type="file" id="stmt-in" accept=".pdf,.xls,.xlsx,.csv,.txt,.htm,.html,application/pdf,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 
 <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Card photo">
   <img id="lightbox-img" alt="">
@@ -2351,7 +2439,7 @@ select.input {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money'
   };
   function show(view) {
     S.view = view;
@@ -2369,6 +2457,7 @@ select.input {
     if (view === 'lab') renderLab();
     if (view === 'share') renderShare();
     if (view === 'ias') renderIas();
+    if (view === 'money') renderMoney();
     if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
@@ -2403,6 +2492,8 @@ select.input {
     oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };   // like the main list's tab
     $('#ias-body').textContent = ''; $('#chap-body').textContent = '';
     iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
+    moneyPending = null; moneyBusy = false; moneyEditTx = null; moneyAcctEdit = null;
+    moneyView = { acct: null, month: null, cat: null, help: false }; $('#money-body').textContent = '';
     whoView = 'all'; famEdit = null; whoAdding = false; $('#whos').textContent = ''; $('#fam-body').textContent = '';
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
@@ -2935,6 +3026,11 @@ select.input {
     $('#hub-run-n').textContent = km >= 100 ? Math.round(km) : km.toFixed(1).replace(/\.0$/, '');
     var ot = oscpTotals();
     $('#hub-oscp-n').textContent = ot.done + ' / ' + ot.all;
+    var ms = moneySummary();
+    $('#hub-money-n').textContent = ms.nb ? rupees(ms.bal) : ms.any ? 'Money' : '₹';
+    $('#hub-money-sub').textContent = ms.nb
+      ? 'In the bank' + (ms.due ? ' · card due ' + rupees(ms.due) + (ms.dueDate ? ' by ' + fmtDate(ms.dueDate) : '') : '') + ' · tap for charts'
+      : ms.any ? 'Spending and card charts' : 'Money: import a statement for charts';
     var it = iasTotals(), ex = iasExamDays();
     $('#hub-ias-n').textContent = it.done + ' / ' + it.all;
     $('#hub-ias-sub').textContent = 'IAS prelims chapters done' + (ex !== null && ex >= 0 ? ' · ' + (ex === 0 ? 'exam today' : ex + (ex === 1 ? ' day' : ' days') + ' to prelims') : '');
@@ -2946,6 +3042,7 @@ select.input {
   $('#hub-run').addEventListener('click', function () { show('run'); });
   $('#hub-oscp').addEventListener('click', function () { show('oscp'); });
   $('#hub-ias').addEventListener('click', function () { show('ias'); });
+  $('#hub-money').addEventListener('click', function () { show('money'); });
   document.addEventListener('click', function (ev) {
     if (ev.target.closest('[data-back]')) show('vault');
   });
@@ -4383,6 +4480,7 @@ select.input {
           S.data.oscp = sanitizeOscp(r.data && r.data.oscp);
           S.data.ias = sanitizeIas(r.data && r.data.ias);
           S.data.people = sanitizePeople(r.data && r.data.people);
+          S.data.money = sanitizeMoney(r.data && r.data.money);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
       }
@@ -4394,6 +4492,7 @@ select.input {
       S.data.oscp = mergeOscp(S.data.oscp, sanitizeOscp(r.data && r.data.oscp));
       S.data.ias = mergeIas(S.data.ias, sanitizeIas(r.data && r.data.ias));
       S.data.people = mergePeople(people(), sanitizePeople(r.data && r.data.people));
+      S.data.money = mergeMoney(S.data.money, sanitizeMoney(r.data && r.data.money));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
       if (res.updated) parts.push('updated ' + res.updated);
@@ -4424,6 +4523,7 @@ select.input {
         oscp: sanitizeOscp(r.data && r.data.oscp),
         ias: sanitizeIas(r.data && r.data.ias),
         people: sanitizePeople(r.data && r.data.people),
+        money: sanitizeMoney(r.data && r.data.money),
         lastExport: (r.data && r.data.lastExport) || null
       };
       if (r.raw) {
@@ -6190,6 +6290,1206 @@ select.input {
   $('#btn-lab-back').addEventListener('click', function () {
     saveLabNotes().then(function () { show('oscp'); window.scrollTo(0, oscpScroll); });
   });
+
+  /* ============ money ============
+     Bank and credit-card statements are read on this phone - Excel, CSV or
+     PDF, password-protected PDFs included - and the transactions are kept in
+     S.data.money inside the encrypted vault. No bank is contacted and nothing
+     is uploaded. Live balances are not possible: Indian banks give individuals
+     no API, and the RBI Account Aggregator system is only open to regulated
+     companies. */
+  // Phrases are matched as whole words in the transaction text.
+  var MCATS = [
+    ['food', 'Food & dining', 'swiggy,zomato,restaurant,cafe,coffee,dominos,domino s,mcdonalds,kfc,starbucks,bakery,eatsure,pizza,burger,biryani,juice,hotel'],
+    ['groc', 'Groceries', 'bigbasket,blinkit,zepto,instamart,dmart,avenue supermarts,jiomart,supermarket,hypermarket,grocery,grocers,margin free,supplyco,reliance fresh,reliance smart,milma,vegetables'],
+    ['shop', 'Shopping', 'amazon,flipkart,myntra,ajio,meesho,nykaa,decathlon,ikea,croma,reliance digital,lulu,tatacliq,tata cliq,westside,pantaloons,shoppers stop,lifestyle'],
+    ['travel', 'Travel & fuel', 'uber,ola,olacabs,rapido,irctc,makemytrip,redbus,ksrtc,indigo,air india,vistara,akasa,goibibo,yatra,fuel,petrol,diesel,hpcl,bpcl,iocl,indian oil,fastag,metro,parking,toll'],
+    ['fun', 'Entertainment', 'netflix,spotify,prime video,hotstar,jiohotstar,youtube,bookmyshow,apple com bill,google play,steam,cinema,pvr,inox'],
+    ['bills', 'Bills & recharges', 'electricity,kseb,water authority,jio,airtel,bsnl,vodafone,vi postpaid,recharge,broadband,dth,tata play,tataplay,lpg,indane,bharat gas,hp gas,bill payment,bbps,postpaid,insurance,premium,lic'],
+    ['health', 'Health', 'pharmacy,apollo,medplus,hospital,clinic,1mg,tata 1mg,pharmeasy,netmeds,diagnostic,diagnostics,laboratory,medical,dental'],
+    ['invest', 'Investments', 'zerodha,groww,upstox,mutual fund,sip,nps,ppf,iccl,indian clearing,bse ltd,nse clearing,recurring deposit,rd installment'],
+    ['emi', 'Loans & EMI', 'emi,loan,ach d,nach,ecs'],
+    ['cash', 'Cash', 'atm,cash withdrawal,cwdr,atm wdl,cash wdl'],
+    ['fees', 'Fees & charges', 'charges,charge,fee,fees,gst,sms alert,annual fee,amc,penalty,finance charges,late payment'],
+    ['cardpay', 'Card payment', 'sbi card,sbicard,sbi cards,card payment,credit card,cred club,cc payment,cardpay'],
+    ['xfer', 'Transfers', ''],
+    ['income', 'Income', ''],
+    ['refund', 'Refunds & cashback', 'refund,reversal,cashback,rev'],
+    ['other', 'Other', '']
+  ];
+  var MCAT = {};
+  MCATS.forEach(function (c) { MCAT[c[0]] = c[1]; });
+  var MON3 = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+  var MONTH_NAME = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var moneyView = { acct: null, month: null, cat: null, help: false };
+  var moneyPending = null, moneyBusy = false, moneyEditTx = null, moneyAcctEdit = null;
+
+  function money() {
+    S.data.money = S.data.money || {};
+    var m = S.data.money;
+    m.acc = m.acc || []; m.tx = m.tx || []; m.st = m.st || []; m.rules = m.rules || {};
+    return m;
+  }
+  function moneyData() { return (S.data && S.data.money) || { acc: [], tx: [], st: [], rules: {} }; }
+
+  /* --- formatting --- */
+  var INR = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+  var INR2 = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function rupees(v) { return INR.format(Math.round(v || 0)); }
+  function rupees2(v) { return INR2.format(v || 0); }
+  function rupeesShort(v) {
+    var a = Math.abs(v), s = v < 0 ? '−' : '';
+    if (a >= 1e7) return s + '₹' + (a / 1e7).toFixed(a >= 1e8 ? 0 : 1).replace(/\.0$/, '') + 'Cr';
+    if (a >= 1e5) return s + '₹' + (a / 1e5).toFixed(a >= 1e6 ? 0 : 1).replace(/\.0$/, '') + 'L';
+    if (a >= 1e3) return s + '₹' + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K';
+    return s + '₹' + Math.round(a);
+  }
+  function monthLabel(ym, long) {
+    var y = +ym.slice(0, 4), m = +ym.slice(5, 7);
+    return long ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][m - 1] + ' ' + y
+                : MONTH_NAME[m - 1] + ' ’' + String(y).slice(2);
+  }
+
+  /* --- reading values --- */
+  function ymdOf(y, m, d) {
+    if (y < 100) y += 2000;
+    var dt = new Date(y, m - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d || y < 1990 || y > 2100) return null;
+    return y + '-' + ('0' + m).slice(-2) + '-' + ('0' + d).slice(-2);
+  }
+  // Indian statements are day-first: 05/09/2026 is 5 September.
+  function parseDay(s) {
+    s = String(s == null ? '' : s).trim();
+    var m;
+    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})\b/.exec(s))) return ymdOf(+m[1], +m[2], +m[3]);
+    if ((m = /^(\d{1,2})[\s\/.\-]+([A-Za-z]{3,9})[\s\/.,\-]+(\d{2,4})\b/.exec(s))) {
+      var mo = MON3[m[2].toLowerCase().slice(0, 3)];
+      return mo ? ymdOf(+m[3], mo, +m[1]) : null;
+    }
+    if ((m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})\b/.exec(s))) return ymdOf(+m[3], +m[2], +m[1]);
+    if ((m = /^(\d{5})(\.\d+)?$/.exec(s)) && +m[1] > 30000 && +m[1] < 80000) {   // an Excel serial day
+      var dx = new Date(Date.UTC(1899, 11, 30) + (+m[1]) * 86400000);
+      return ymdOf(dx.getUTCFullYear(), dx.getUTCMonth() + 1, dx.getUTCDate());
+    }
+    return null;
+  }
+  // "1,23,456.78", "₹ 500.00 Dr", "-45.00", "10,000.00 C"
+  function parseAmt(s, strict) {
+    s = String(s == null ? '' : s).replace(/\u00a0/g, ' ').trim();
+    if (!s) return null;
+    var m = /^(?:₹|Rs\.?|INR)?\s*(-)?\s*(?:₹|Rs\.?|INR)?\s*(\d{1,3}(?:,\d{2,3})*|\d+)(\.\d{1,2})?\s*(Cr|Dr|CR|DR|C|D)?\.?$/.exec(s);
+    if (!m || (strict && !m[3])) return null;
+    var v = parseFloat(m[2].replace(/,/g, '') + (m[3] || ''));
+    if (!isFinite(v)) return null;
+    var side = m[4] ? (/^c/i.test(m[4]) ? 'cr' : 'dr') : null;
+    return { v: m[1] ? -v : v, side: side };
+  }
+  function lastFour(s) { var d = String(s || '').replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : ''; }
+
+  function payeeOf(desc) {
+    var s = String(desc || '').toUpperCase();
+    var m = /UPI\/(?:DR|CR)\/\d*\/([^\/]+)/.exec(s) || /UPI\/(?:P2[AM]|\d+)\/[^\/]*\/([^\/]+)/.exec(s);
+    if (m && /[A-Z]{2}/.test(m[1])) return m[1].replace(/\s+/g, ' ').trim().slice(0, 30);
+    if (/\bATM\b/.test(s) && /WDL|CASH|WITHDRAWAL/.test(s)) return 'ATM CASH';
+    m = /(?:NEFT|RTGS|IMPS)\*[^*]*\*[^*]*\*([^*\-]+)/.exec(s);
+    if (m && /[A-Z]{2}/.test(m[1])) return m[1].trim().slice(0, 30);
+    s = s.replace(/^(TO|BY)\s+TRANSFER[\s\-]*/, '').replace(/\b(NEFT|IMPS|RTGS|UPI|POS|ATM|ECOM|INB|DR|CR|TRANSFER|TO|BY|PRCR)\b/g, ' ');
+    s = s.replace(/[0-9*#:\/\\.,_\-@()]+/g, ' ').replace(/\s+/g, ' ').trim();
+    return s.split(' ').filter(function (w) { return w.length > 1; }).slice(0, 3).join(' ') || 'Unknown';
+  }
+  function titleCase(s) { return String(s).toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }); }
+  function autoCat(t) {
+    var s = ' ' + String(t.desc || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
+    var hit = function (id) {
+      var words = MCATS.filter(function (c) { return c[0] === id; })[0][2];
+      return !!words && words.split(',').some(function (w) { return s.indexOf(' ' + w + ' ') >= 0; });
+    };
+    if (hit('cardpay')) return 'cardpay';
+    if (t.kind === 'card' && t.dir === 'in' && /payment|thank you|autopay|neft|imps|upi/.test(s)) return 'cardpay';
+    if (t.dir === 'in') {
+      if (/ salary | sal /.test(s)) return 'income';
+      if (hit('refund')) return 'refund';
+      if (/ int(erest)? (pd|paid|credit)| interest /.test(s)) return 'income';
+      if (/ dividend /.test(s)) return 'income';
+      return t.kind === 'card' ? 'refund' : 'xfer';
+    }
+    var order = ['cash', 'food', 'groc', 'shop', 'travel', 'fun', 'bills', 'health', 'invest', 'emi', 'fees'];
+    for (var i = 0; i < order.length; i++) if (hit(order[i])) return order[i];
+    return t.kind === 'card' ? 'shop' : /upi|neft|imps|rtgs|transfer/.test(s) ? 'xfer' : 'other';
+  }
+  function catOf(t) {
+    if (t.cat && MCAT[t.cat]) return t.cat;
+    var r = moneyData().rules[payeeOf(t.desc)];
+    if (r && MCAT[r]) return r;
+    var a = acctById(t.a);
+    return autoCat({ desc: t.desc, dir: t.dir, kind: a ? a.kind : 'bank' });
+  }
+  function acctById(id) {
+    var l = moneyData().acc;
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i];
+    return null;
+  }
+
+  /* --- files to rows --- */
+  function u32(b, o) { return (b[o] | b[o + 1] << 8 | b[o + 2] << 16 | b[o + 3] << 24) >>> 0; }
+  function u16(b, o) { return b[o] | b[o + 1] << 8; }
+  function inflateRaw(bytes) {
+    if (typeof DecompressionStream === 'undefined') return Promise.reject(new Error('no-inflate'));
+    return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()
+      .then(function (ab) { return new Uint8Array(ab); });
+  }
+  function unzip(b, want) {
+    var eocd = -1;
+    for (var i = b.length - 22; i >= Math.max(0, b.length - 70000); i--) if (u32(b, i) === 0x06054b50) { eocd = i; break; }
+    if (eocd < 0) return Promise.reject(new Error('zip'));
+    var n = u16(b, eocd + 10), p = u32(b, eocd + 16), jobs = {};
+    for (var k = 0; k < n && u32(b, p) === 0x02014b50; k++) {
+      var method = u16(b, p + 10), csize = u32(b, p + 20), nl = u16(b, p + 28), el = u16(b, p + 30), cl = u16(b, p + 32), lo = u32(b, p + 42);
+      var name = dec.decode(b.subarray(p + 46, p + 46 + nl));
+      p += 46 + nl + el + cl;
+      if (!want(name)) continue;
+      var start = lo + 30 + u16(b, lo + 26) + u16(b, lo + 28), data = b.subarray(start, start + csize);
+      jobs[name] = method === 0 ? Promise.resolve(data) : method === 8 ? inflateRaw(data) : Promise.reject(new Error('zip-method'));
+    }
+    var names = Object.keys(jobs);
+    return Promise.all(names.map(function (nm) { return jobs[nm]; })).then(function (vals) {
+      var out = {};
+      names.forEach(function (nm, i) { out[nm] = dec.decode(vals[i]); });
+      return out;
+    });
+  }
+  function xlsxRows(b) {
+    return unzip(b, function (n) { return n === 'xl/sharedStrings.xml' || /^xl\/worksheets\/sheet\d+\.xml$/.test(n); }).then(function (files) {
+      var parse = function (x) { return new DOMParser().parseFromString(x, 'application/xml'); };
+      var shared = [];
+      if (files['xl/sharedStrings.xml']) {
+        Array.prototype.forEach.call(parse(files['xl/sharedStrings.xml']).getElementsByTagName('si'), function (si) {
+          var t = '';
+          Array.prototype.forEach.call(si.getElementsByTagName('t'), function (n) { t += n.textContent; });
+          shared.push(t);
+        });
+      }
+      var sheet = Object.keys(files).filter(function (n) { return n.indexOf('worksheets') > 0; }).sort()[0];
+      if (!sheet) throw new Error('no-sheet');
+      var rows = [];
+      Array.prototype.forEach.call(parse(files[sheet]).getElementsByTagName('row'), function (r) {
+        var row = [];
+        Array.prototype.forEach.call(r.getElementsByTagName('c'), function (c) {
+          var ref = c.getAttribute('r') || '', col = 0, letters = (/^[A-Z]+/.exec(ref) || [''])[0];
+          for (var i = 0; i < letters.length; i++) col = col * 26 + letters.charCodeAt(i) - 64;
+          col = letters ? col - 1 : row.length;
+          var t = c.getAttribute('t'), v = c.getElementsByTagName('v')[0], val = '';
+          if (t === 's' && v) val = shared[+v.textContent] || '';
+          else if (t === 'inlineStr') val = c.textContent;
+          else if (v) val = v.textContent;
+          row[col] = String(val).trim();
+        });
+        for (var j = 0; j < row.length; j++) if (row[j] == null) row[j] = '';
+        rows.push(row);
+      });
+      return rows;
+    });
+  }
+  function delimitedRows(text) {
+    var lines = text.split(/\r?\n/), sample = lines.slice(0, 60).join('\n');
+    var tabs = (sample.match(/\t/g) || []).length, commas = (sample.match(/,/g) || []).length, semis = (sample.match(/;/g) || []).length;
+    var d = tabs >= 3 ? '\t' : semis > commas ? ';' : ',';
+    if (d === '\t') return lines.map(function (l) { return l.split('\t').map(function (c) { return c.trim(); }); });
+    var rows = [], row = [], cell = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === d) { row.push(cell.trim()); cell = ''; }
+      else if (ch === '\n' || ch === '\r') {
+        if (ch === '\r' && text[i + 1] === '\n') i++;
+        row.push(cell.trim()); rows.push(row); row = []; cell = '';
+      } else cell += ch;
+    }
+    if (cell || row.length) { row.push(cell.trim()); rows.push(row); }
+    return rows;
+  }
+  function htmlRows(text) {
+    var doc = new DOMParser().parseFromString(text, 'text/html');
+    return Array.prototype.map.call(doc.querySelectorAll('tr'), function (tr) {
+      return Array.prototype.map.call(tr.querySelectorAll('th,td'), function (td) { return td.textContent.replace(/\s+/g, ' ').trim(); });
+    });
+  }
+
+  /* --- PDFs, through pdf.js (lazy: it only loads when a PDF is opened) --- */
+  var pdfLib = null;
+  function loadPdfJs() {
+    if (pdfLib) return Promise.resolve(pdfLib);
+    return import('./lib/pdf/pdf.min.mjs').then(function (lib) {
+      lib.GlobalWorkerOptions.workerSrc = 'lib/pdf/pdf.worker.min.mjs';
+      pdfLib = lib;
+      return lib;
+    });
+  }
+  function pdfLines(buf, password) {
+    return loadPdfJs().then(function (lib) {
+      var opts = { data: new Uint8Array(buf), isEvalSupported: false, disableFontFace: true, useSystemFonts: false, stopAtErrors: false };
+      if (password) opts.password = password;
+      return lib.getDocument(opts).promise;
+    }).then(function (doc) {
+      var pages = [];
+      for (var i = 1; i <= Math.min(doc.numPages, 60); i++) pages.push(doc.getPage(i).then(function (p) { return p.getTextContent(); }));
+      return Promise.all(pages).then(function (contents) {
+        var out = [];
+        contents.forEach(function (tc, pi) {
+          var items = tc.items.filter(function (it) { return it.str && it.str.trim(); }).map(function (it) {
+            return { x: it.transform[4], y: it.transform[5], w: it.width || 0, s: it.str };
+          }).sort(function (a, b) { return b.y - a.y || a.x - b.x; });
+          var lines = [];
+          items.forEach(function (it) {
+            var ln = lines.length && Math.abs(lines[lines.length - 1].y - it.y) <= 2.5 ? lines[lines.length - 1] : null;
+            if (!ln) { ln = { y: it.y, items: [], page: pi }; lines.push(ln); }
+            ln.items.push(it);
+          });
+          lines.forEach(function (ln) {
+            ln.items.sort(function (a, b) { return a.x - b.x; });
+            var cells = [];
+            ln.items.forEach(function (it) {
+              var c = cells[cells.length - 1];
+              var gap = c ? it.x - c.x2 : 99;
+              if (c && gap < 3.5 && gap > -2) { c.s += (gap > 0.8 ? ' ' : '') + it.s; c.x2 = Math.max(c.x2, it.x + it.w); }
+              else cells.push({ x: it.x, x2: it.x + it.w, s: it.s });
+            });
+            cells.forEach(function (c) { c.s = c.s.replace(/\s+/g, ' ').trim(); });
+            out.push({ cells: [].concat.apply([], cells.filter(function (c) { return c.s; }).map(splitAmounts)), page: pi, y: ln.y });
+          });
+        });
+        out.forEach(function (l) { l.text = l.cells.map(function (c) { return c.s; }).join('  '); });
+        return out;
+      });
+    });
+  }
+
+  /* --- rows to transactions --- */
+  function findHeader(rows) {
+    for (var i = 0; i < Math.min(rows.length, 80); i++) {
+      var lc = rows[i].map(function (c) { return String(c || '').toLowerCase().replace(/\s+/g, ' ').trim(); });
+      var col = function (re, avoid) {
+        for (var j = 0; j < lc.length; j++) if (re.test(lc[j]) && !(avoid && avoid.test(lc[j]))) return j;
+        return -1;
+      };
+      var h = {
+        date: col(/^(txn|tran|transaction|posting|trans)\.? ?date|^date$/),
+        vdate: col(/value ?date/),
+        desc: col(/description|narration|particulars|details|remarks|transaction details/),
+        debit: col(/debit|withdrawal|^dr\.?$|paid out|amount ?\(dr\)/),
+        credit: col(/credit|deposit|^cr\.?$|paid in|amount ?\(cr\)/, /debit/),
+        amount: col(/^amount|amount \(|^amt/, /debit|credit/),
+        side: col(/^(dr ?\/ ?cr|cr ?\/ ?dr|type|dr\/cr)$/),
+        bal: col(/balance/)
+      };
+      if (h.date < 0 && h.vdate >= 0) h.date = h.vdate;
+      if (h.date >= 0 && ((h.debit >= 0 && h.credit >= 0) || h.amount >= 0)) { h.row = i; return h; }
+    }
+    return null;
+  }
+  function metaFrom(text) {
+    var m, meta = {};
+    if ((m = /(?:account|a\/c)\s*(?:no|number)\.?\s*[:\-]?\s*[_\s]*([X*\d][X*\d \t]{5,})/i.exec(text))) meta.last4 = lastFour(m[1]);
+    if (!meta.last4 && (m = /card\s*(?:no|number)\.?\s*[:\-]?\s*([X*\d][X*\d \t\-]{10,})/i.exec(text))) meta.last4 = lastFour(m[1]);
+    if ((m = /(?:balance as on|opening balance|balance b\/f|brought forward)[^\n]*?(\-?[\d,]*\d\.\d{2})/i.exec(text))) meta.open = parseAmt(m[1]).v;
+    if ((m = /closing balance[^\n]*?(\-?[\d,]*\d\.\d{2})/i.exec(text))) meta.close = parseAmt(m[1]).v;
+    meta.sbi = /state bank|sbin\d|\bsbi\b|onlinesbi|yono/i.test(text);
+    meta.card = /credit card|card ?number|minimum amount due|total amount due|sbi card/i.test(text);
+    return meta;
+  }
+  function tableStatement(rows) {
+    var h = findHeader(rows);
+    if (!h) throw new Error('no-header');
+    var before = rows.slice(0, h.row).map(function (r) { return r.join(' '); }).join('\n');
+    var after = rows.slice(h.row + 1).map(function (r) { return r.join(' '); }).join('\n');
+    var meta = metaFrom(before + '\n' + after);
+    var txs = [];
+    rows.slice(h.row + 1).forEach(function (r) {
+      var d = parseDay(r[h.date]);
+      var desc = h.desc >= 0 ? String(r[h.desc] || '').replace(/\s+/g, ' ').trim() : '';
+      if (!d) {
+        var others = r.filter(function (c, j) { return j !== h.desc && String(c || '').trim(); }).length;
+        if (desc && !others && txs.length && txs[txs.length - 1].desc.length < 300) txs[txs.length - 1].desc += ' ' + desc;
+        return;
+      }
+      var amt = null, dir = null;
+      if (h.debit >= 0 || h.credit >= 0) {
+        var db = h.debit >= 0 ? parseAmt(r[h.debit]) : null, cr = h.credit >= 0 ? parseAmt(r[h.credit]) : null;
+        if (db && Math.abs(db.v) > 0) { amt = Math.abs(db.v); dir = 'out'; }
+        else if (cr && Math.abs(cr.v) > 0) { amt = Math.abs(cr.v); dir = 'in'; }
+      }
+      if (amt === null && h.amount >= 0) {
+        var a = parseAmt(r[h.amount]);
+        if (a) {
+          amt = Math.abs(a.v);
+          var sd = h.side >= 0 ? String(r[h.side] || '').toLowerCase() : '';
+          dir = a.side ? (a.side === 'cr' ? 'in' : 'out') : /^c/.test(sd) ? 'in' : /^d/.test(sd) ? 'out' : a.v < 0 ? 'out' : (meta.card ? 'out' : 'in');
+        }
+      }
+      if (amt === null || !(amt > 0)) return;
+      var bal = h.bal >= 0 ? parseAmt(r[h.bal]) : null;
+      txs.push({ d: d, amt: amt, dir: dir, desc: desc || 'Transaction', bal: bal ? (bal.side === 'dr' ? -Math.abs(bal.v) : bal.v) : null });
+    });
+    return finishStatement(txs, meta);
+  }
+  function isMoneyCell(s) { return /^(?:₹|Rs\.?|INR)?\s*-?\s*[\d,]*\d\.\d{2}\s*(?:Cr|Dr|CR|DR|C|D)?$/.test(s); }
+  function labelled(lines, re, pick) {
+    for (var i = 0; i < lines.length; i++) {
+      var cs = lines[i].cells;
+      for (var j = 0; j < cs.length; j++) {
+        if (!re.test(cs[j].s)) continue;
+        var inline = cs[j].s.replace(re, '').replace(/^[\s:\-–]+/, '');
+        var v = pick(inline);
+        if (v != null) return v;
+        for (var k = j + 1; k < cs.length && k <= j + 2; k++) { v = pick(cs[k].s); if (v != null) return v; }
+        for (var n = i + 1; n < Math.min(lines.length, i + 3); n++) {
+          var mid = (cs[j].x + cs[j].x2) / 2;
+          var best = null;
+          lines[n].cells.forEach(function (c) {
+            var cm = (c.x + c.x2) / 2;
+            if (Math.abs(cm - mid) < 70 || (c.x <= mid && c.x2 >= mid)) {
+              var got = pick(c.s);
+              if (got != null && (best === null || Math.abs(cm - mid) < best.dist)) best = { v: got, dist: Math.abs(cm - mid) };
+            }
+          });
+          if (best) return best.v;
+        }
+      }
+    }
+    return null;
+  }
+  function pickAmt(s) { var a = isMoneyCell(String(s).trim()) || /^(?:₹|Rs\.?)?\s*[\d,]+$/.test(String(s).trim()) ? parseAmt(s) : null; return a ? Math.abs(a.v) : null; }
+  function pickDay(s) { return parseDay(s); }
+
+  // pdf.js can hand back two neighbouring amounts as one run of text; split
+  // them, placing each by its share of the characters.
+  function splitAmounts(c) {
+    var toks = c.s.split(' ');
+    if (toks.length < 2) return [c];
+    var merged = [];
+    toks.forEach(function (t) {
+      if (/^(C|D|Cr|Dr|CR|DR)$/.test(t) && merged.length) merged[merged.length - 1] += ' ' + t; else merged.push(t);
+    });
+    if (merged.length < 2 || !merged.every(isMoneyCell)) return [c];
+    var out = [], at = 0, len = c.s.length, w = c.x2 - c.x;
+    merged.forEach(function (t) {
+      var i = c.s.indexOf(t, at);
+      out.push({ x: c.x + w * i / len, x2: c.x + w * (i + t.length) / len, s: t });
+      at = i + t.length;
+    });
+    return out;
+  }
+  var FOOTER = /computer generated|page \d+ of|end of statement|statement summary|important (message|information)|^\*+/i;
+  // A table row is anchored by the line holding its amounts. Lines without
+  // amounts just below it (a wrapped date or description) belong to it.
+  function pdfRows(lines, from) {
+    var rows = [], cur = null;
+    for (var i = from; i < lines.length; i++) {
+      var ln = lines[i];
+      if (FOOTER.test(ln.text)) { cur = null; continue; }
+      if (ln.cells.some(function (c) { return isMoneyCell(c.s); })) { cur = { lines: [ln] }; rows.push(cur); continue; }
+      var prev = cur && cur.lines[cur.lines.length - 1];
+      if (cur && cur.lines.length < 6 && ln.page === prev.page && prev.y - ln.y < 26) cur.lines.push(ln); else cur = null;
+    }
+    return rows;
+  }
+  function pdfStatement(lines) {
+    var text = lines.map(function (l) { return l.text; }).join('\n');
+    var meta = metaFrom(text), hi = -1, names = null;
+    // A header can wrap ("Txn" over "Date"), so read each line with the one below.
+    for (var i = 0; i < lines.length && hi < 0; i++) {
+      var ln = lines[i], nx = lines[i + 1];
+      var two = nx && nx.page === ln.page && ln.y - nx.y < 16 && !nx.cells.some(function (c) { return isMoneyCell(c.s); });
+      var nm = ln.cells.map(function (c) {
+        var below = two ? nx.cells.filter(function (d) { return Math.abs(d.x - c.x) < 4; }).map(function (d) { return d.s; }).join(' ') : '';
+        return (c.s + (below ? ' ' + below : '')).toLowerCase();
+      });
+      var lc = nm.join(' | ');
+      var words = (lc.match(/date|debit|withdrawal|credit|deposit|balance|amount|description|narration|particulars|details/g) || []).length;
+      if (words >= 3 && /date/.test(lc) && !/due date/.test(lc) &&
+          ((/debit|withdrawal/.test(lc) && /credit|deposit/.test(lc) && /balance/.test(lc)) || /amount/.test(lc))) { hi = i; names = nm; }
+    }
+    if (meta.card) cardMeta(lines, meta);
+    if (hi < 0) return meta.card ? cardLoose(lines, meta) : pdfLoose(lines, meta);
+    var hc = lines[hi].cells;
+    var find = function (re, avoid) { for (var j = 0; j < names.length; j++) if (re.test(names[j]) && !(avoid && avoid.test(names[j]))) return j; return -1; };
+    var dI = find(/date/), sI = find(/description|narration|particulars|details|remarks/), debI = find(/debit|withdrawal/),
+      crI = find(/credit|deposit/, /debit/), balI = find(/balance/), amtI = find(/amount/);
+    var mid = function (c) { return (c.x + c.x2) / 2; };
+    var colOf = function (c) { var k = 0; for (var j = 0; j < hc.length; j++) if (hc[j].x <= c.x + 4) k = j; return k; };
+    var txs = [];
+    pdfRows(lines, hi + 1).forEach(function (r) {
+      var txt = {}, money = [], side = null;
+      r.lines.forEach(function (ln) {
+        ln.cells.forEach(function (c) {
+          if (isMoneyCell(c.s)) money.push(c);
+          else if (/^(C|D|Cr|Dr|CR|DR)$/.test(c.s)) side = /^c/i.test(c.s) ? 'cr' : 'dr';
+          else { var k = colOf(c); txt[k] = (txt[k] ? txt[k] + ' ' : '') + c.s; }
+        });
+      });
+      var d = parseDay(txt[dI] || '');
+      if (!d) return;
+      var desc = (sI >= 0 && txt[sI]) || Object.keys(txt).filter(function (k) { return +k !== dI && !parseDay(txt[k]); }).map(function (k) { return txt[k]; }).join(' ');
+      desc = String(desc || '').replace(/\s+/g, ' ').trim();
+      if (/previous balance|opening balance|^total/i.test(desc)) return;
+      var tx = { d: d, desc: desc || 'Transaction', amt: null, dir: null, bal: null };
+      money.forEach(function (c) {
+        var a = parseAmt(c.s);
+        if (!a) return;
+        var dist = function (j) { return Math.abs(mid(c) - mid(hc[j])); };
+        var best = [[balI, 'bal'], [debI, 'out'], [crI, 'in'], [amtI, 'amt']].filter(function (p) { return p[0] >= 0; })
+          .sort(function (p, q) { return dist(p[0]) - dist(q[0]); })[0];
+        if (!best) return;
+        if (best[1] === 'bal') tx.bal = a.side === 'dr' ? -Math.abs(a.v) : a.v;
+        else if (best[1] === 'amt') {
+          tx.amt = Math.abs(a.v);
+          var sd = a.side || side;
+          tx.dir = sd === 'cr' || a.v < 0 ? 'in' : sd === 'dr' ? 'out' : null;
+        } else { tx.amt = Math.abs(a.v); tx.dir = best[1]; }
+      });
+      if (tx.amt > 0) txs.push(tx);
+    });
+    directions(txs, meta);
+    return finishStatement(txs, meta);
+  }
+  // Without a column to say which way money moved, the running balance decides.
+  function directions(txs, meta) {
+    var prev = meta.open != null ? meta.open : null;
+    txs.forEach(function (t) {
+      if (!t.dir && prev !== null && t.bal !== null) {
+        if (Math.abs(prev - t.amt - t.bal) < 0.011) t.dir = 'out';
+        else if (Math.abs(prev + t.amt - t.bal) < 0.011) t.dir = 'in';
+      }
+      if (!t.dir) t.dir = meta.card ? (/payment|refund|reversal|cashback/i.test(t.desc) ? 'in' : 'out')
+        : /\bby\b|\bcr\b|credit|deposit|salary|refund/i.test(t.desc) ? 'in' : 'out';
+      if (t.bal !== null) prev = t.bal;
+    });
+  }
+  // Statements with no recognisable header: one line per transaction.
+  function pdfLoose(lines, meta) {
+    var txs = [];
+    lines.forEach(function (ln) {
+      var cs = ln.cells;
+      if (!cs.length) return;
+      var d = parseDay(cs[0].s);
+      if (!d) return;
+      var nums = cs.filter(function (c, j) { return j > 0 && isMoneyCell(c.s); });
+      if (!nums.length) return;
+      var words = cs.filter(function (c, j) { return j > 0 && !isMoneyCell(c.s) && !parseDay(c.s); });
+      var tx = { d: d, desc: words.map(function (c) { return c.s; }).join(' ').trim() || 'Transaction', amt: null, dir: null, bal: null };
+      var b = parseAmt(nums[nums.length - 1].s);
+      tx.bal = b.side === 'dr' ? -Math.abs(b.v) : b.v;
+      if (nums.length >= 2) tx.amt = Math.abs(parseAmt(nums[nums.length - 2].s).v);
+      if (tx.amt > 0) txs.push(tx);
+    });
+    directions(txs, meta);
+    return finishStatement(txs, meta);
+  }
+  function cardLoose(lines, meta) {
+    var txs = [];
+    lines.forEach(function (ln) {
+      var cs = ln.cells;
+      if (!cs.length) return;
+      var d = parseDay(cs[0].s);
+      if (!d) return;
+      var amtCell = null, side = null;
+      for (var j = cs.length - 1; j > 0; j--) {
+        if (/^(C|D|Cr|Dr|CR|DR)$/.test(cs[j].s) && !side) { side = /^c/i.test(cs[j].s) ? 'cr' : 'dr'; continue; }
+        if (isMoneyCell(cs[j].s)) { amtCell = cs[j]; break; }
+      }
+      if (!amtCell) return;
+      var a = parseAmt(amtCell.s);
+      if (!a || !(Math.abs(a.v) > 0)) return;
+      if (a.side) side = a.side;
+      var desc = cs.filter(function (c) { return c !== amtCell && c !== cs[0] && !isMoneyCell(c.s) && !parseDay(c.s) && !/^(C|D|Cr|Dr|CR|DR)$/.test(c.s); })
+        .map(function (c) { return c.s; }).join(' ').trim();
+      if (/previous balance|opening balance|total|minimum amount|payment due|credit limit/i.test(desc)) return;
+      txs.push({ d: d, amt: Math.abs(a.v), dir: side === 'cr' || a.v < 0 ? 'in' : 'out', desc: desc || 'Card transaction', bal: null });
+    });
+    return finishStatement(txs, meta);
+  }
+  function cardMeta(lines, meta) {
+    meta.total = labelled(lines, /total (amount )?due|total outstanding|amount payable/i, pickAmt);
+    meta.min = labelled(lines, /min(imum)? (amount )?due/i, pickAmt);
+    meta.due = labelled(lines, /payment due date|due date/i, pickDay);
+    meta.limit = labelled(lines, /^(total )?credit limit/i, pickAmt);
+    meta.avail = labelled(lines, /available (credit )?limit/i, pickAmt);
+    meta.stmt = labelled(lines, /statement date|statement generation date/i, pickDay);
+  }
+  function finishStatement(txs, meta) {
+    if (!txs.length) throw new Error('no-rows');
+    var kind = meta.card && !txs.some(function (t) { return t.bal !== null; }) ? 'card' : 'bank';
+    var days = txs.map(function (t) { return t.d; }).sort();
+    var res = { kind: kind, txs: txs, meta: meta, from: days[0], to: days[days.length - 1], last4: meta.last4 || '', sbi: !!meta.sbi };
+    if (kind === 'bank') {
+      // Does every running balance follow from the one before? A cheap,
+      // honest check that no row was missed or misread.
+      var prev = meta.open != null ? meta.open : null, bad = 0, checked = 0;
+      txs.forEach(function (t) {
+        if (prev !== null && t.bal !== null) {
+          checked++;
+          if (Math.abs(prev + (t.dir === 'in' ? t.amt : -t.amt) - t.bal) > 0.011) bad++;
+        }
+        if (t.bal !== null) prev = t.bal;
+      });
+      res.check = { checked: checked, bad: bad };
+      res.close = txs[txs.length - 1].bal;
+    }
+    return res;
+  }
+
+  function readStatement(file, password) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () { res(new Uint8Array(fr.result)); };
+      fr.onerror = function () { rej(new Error('read')); };
+      fr.readAsArrayBuffer(file);
+    }).then(function (b) {
+      if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return pdfLines(b.buffer, password).then(pdfStatement);
+      if (b[0] === 0x50 && b[1] === 0x4b) return xlsxRows(b).then(tableStatement);
+      if (b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0) throw new Error('old-xls');
+      var text = new TextDecoder('utf-8').decode(b);
+      if (text.indexOf('\ufffd') >= 0) text = new TextDecoder('windows-1252').decode(b);
+      return tableStatement(/<table/i.test(text) ? htmlRows(text) : delimitedRows(text));
+    });
+  }
+
+  /* --- importing --- */
+  function fnv(s) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return ('0000000' + h.toString(16)).slice(-8);
+  }
+  function guessAcct(p) {
+    var accs = moneyData().acc;
+    for (var i = 0; i < accs.length; i++) if (accs[i].kind === p.kind && p.last4 && accs[i].last4 === p.last4) return accs[i].id;
+    return '';
+  }
+  function importPending() {
+    var p = moneyPending, m = money();
+    var acctId = p.target;
+    var a = acctById(acctId);
+    if (!a) {
+      var nm = ($('#mi-name') ? $('#mi-name').value.trim() : '') || p.defaultName;
+      a = { id: 'a' + uid().slice(0, 10), kind: p.kind, name: nm.slice(0, 40), last4: p.last4 || '' };
+      m.acc.push(a);
+    }
+    if (p.kind === 'card') {
+      if (p.meta.limit) a.limit = p.meta.limit;
+    }
+    var st = { id: 's' + uid().slice(0, 10), a: a.id, file: String(p.file || '').slice(0, 80), from: p.from, to: p.to, at: Date.now(), n: 0 };
+    ['total', 'min', 'due', 'limit', 'avail', 'stmt'].forEach(function (k) { if (p.meta[k] != null) st[k] = p.meta[k]; });
+    var have = {}, seq = m.tx.length ? Math.max.apply(null, m.tx.map(function (t) { return t.q || 0; })) : 0;
+    m.tx.forEach(function (t) { have[t.id] = 1; });
+    var seen = {}, added = 0;
+    p.txs.forEach(function (t) {
+      var key = [a.id, t.d, t.amt.toFixed(2), t.dir, t.bal == null ? '' : t.bal.toFixed(2), t.desc.toUpperCase().replace(/\s+/g, ' ').slice(0, 60)].join('|');
+      seen[key] = (seen[key] || 0) + 1;
+      var id = 't' + fnv(key + '#' + seen[key]) + fnv('x' + key + seen[key]);
+      if (have[id]) return;
+      have[id] = 1;
+      var row = { id: id, a: a.id, d: t.d, amt: Math.round(t.amt * 100) / 100, dir: t.dir, desc: t.desc.slice(0, 160), s: st.id, q: ++seq };
+      if (t.bal != null) row.bal = Math.round(t.bal * 100) / 100;
+      m.tx.push(row);
+      added++;
+    });
+    st.n = added;
+    m.st.push(st);
+    return persist().then(function () {
+      moneyPending = null;
+      moneyView.acct = a.kind === 'bank' ? a.id : moneyView.acct;
+      moneyView.month = null; moneyView.cat = null;
+      renderMoney();
+      window.scrollTo(0, 0);
+      toast(added ? added + ' transactions added' : 'Nothing new — already imported');
+    });
+  }
+
+  /* --- numbers the charts use --- */
+  function txSorted() {
+    return moneyData().tx.slice().sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : (a.q || 0) - (b.q || 0); });
+  }
+  function balanceSeries(acctId) {
+    var byDay = {};
+    txSorted().forEach(function (t) { if (t.a === acctId && t.bal != null) byDay[t.d] = t.bal; });
+    return Object.keys(byDay).sort().map(function (d) { return { d: d, v: byDay[d] }; });
+  }
+  function latestBalance(acctId) { var s = balanceSeries(acctId); return s.length ? s[s.length - 1] : null; }
+  function isSpend(t) { return t.dir === 'out' && catOf(t) !== 'cardpay'; }
+  function monthsWithData() {
+    var seen = {};
+    moneyData().tx.forEach(function (t) { seen[t.d.slice(0, 7)] = 1; });
+    return Object.keys(seen).sort();
+  }
+  function spendByMonth() {
+    var ms = monthsWithData();
+    if (!ms.length) return [];
+    // every month from the first to the last, so a quiet month shows as zero
+    var out = [], y = +ms[0].slice(0, 4), m = +ms[0].slice(5, 7), endY = +ms[ms.length - 1].slice(0, 4), endM = +ms[ms.length - 1].slice(5, 7);
+    while (y < endY || (y === endY && m <= endM)) { out.push(y + '-' + ('0' + m).slice(-2)); m++; if (m > 12) { m = 1; y++; } }
+    out = out.slice(-12);
+    var tot = {}, inc = {};
+    moneyData().tx.forEach(function (t) {
+      var k = t.d.slice(0, 7);
+      if (isSpend(t)) tot[k] = (tot[k] || 0) + t.amt;
+      else if (t.dir === 'in' && catOf(t) !== 'cardpay' && acctById(t.a) && acctById(t.a).kind === 'bank') inc[k] = (inc[k] || 0) + t.amt;
+    });
+    return out.map(function (k) { return { m: k, v: tot[k] || 0, inc: inc[k] || 0 }; });
+  }
+  function catsForMonth(ym) {
+    var sums = {};
+    moneyData().tx.forEach(function (t) { if (t.d.slice(0, 7) === ym && isSpend(t)) { var c = catOf(t); sums[c] = (sums[c] || 0) + t.amt; } });
+    var list = Object.keys(sums).map(function (c) { return { c: c, v: sums[c] }; }).sort(function (a, b) { return b.v - a.v; });
+    if (list.length > 8) {
+      var rest = list.slice(7).reduce(function (s, x) { return s + x.v; }, 0);
+      list = list.slice(0, 7).concat([{ c: 'rest', v: rest }]);
+    }
+    return list;
+  }
+  function latestCardStmt(acctId) {
+    var l = moneyData().st.filter(function (s) { return s.a === acctId; }).sort(function (a, b) { return (a.to || '') < (b.to || '') ? -1 : 1; });
+    return l[l.length - 1] || null;
+  }
+  // A card bill counts as paid once a payment to a card shows up after the
+  // statement: on the card's own next statement, or leaving a bank account.
+  function cardPaid(a, s) {
+    if (!s || s.total == null) return null;
+    var from = s.stmt || s.to, need = Math.min(s.total, s.min != null ? s.min : s.total) - 1, hit = null;
+    moneyData().tx.forEach(function (t) {
+      var ok = t.a === a.id ? t.dir === 'in' : t.dir === 'out' && acctById(t.a) && acctById(t.a).kind === 'bank';
+      if (ok && t.d >= from && t.amt >= need && catOf(t) === 'cardpay' && (!hit || t.d < hit.d)) hit = t;
+    });
+    return hit;
+  }
+  function moneySummary() {
+    var md = moneyData(), bal = 0, nb = 0, asOf = '', due = 0, dueDate = '';
+    md.acc.forEach(function (a) {
+      if (a.kind === 'bank') {
+        var lb = latestBalance(a.id);
+        if (lb) { bal += lb.v; nb++; if (lb.d > asOf) asOf = lb.d; }
+      } else {
+        var s = latestCardStmt(a.id);
+        if (s && s.total != null && !cardPaid(a, s) && (!s.due || daysUntil(s.due) >= -3)) {
+          due += s.total;
+          if (s.due && (!dueDate || s.due < dueDate)) dueDate = s.due;
+        }
+      }
+    });
+    return { bal: bal, nb: nb, asOf: asOf, due: due, dueDate: dueDate, any: md.tx.length > 0 };
+  }
+
+  /* --- charts (inline SVG; one accent hue, hairline grid, tooltips) --- */
+  // Axis steps of 1, 2 or 5 × 10^n, so ticks read ₹10K / ₹20K, never ₹12.5K.
+  function niceStep(v) {
+    if (!(v > 0)) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  }
+  function svgEl(w, h, inner, label) {
+    return '<svg class="chart-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="' + esc(label) + '">' + inner + '</svg>';
+  }
+  function lineChart(series, w) {
+    var h = 190, L = 46, R = 18, T = 14, B = 26;
+    var vs = series.map(function (p) { return p.v; });
+    var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs);
+    // Start at zero unless the balance never comes near it.
+    var base = lo >= 0 && lo < hi * 0.5 ? 0 : lo;
+    var step = niceStep(((hi - base) || Math.abs(hi) || 1) / 4);
+    var y0 = Math.floor(base / step) * step;
+    var ticks = Math.max(1, Math.ceil((hi - y0) / step - 1e-9));
+    var top = y0 + ticks * step;
+    var t0 = new Date(series[0].d).getTime(), t1 = new Date(series[series.length - 1].d).getTime();
+    var X = function (d) { return t1 === t0 ? L + (w - L - R) / 2 : L + (new Date(d).getTime() - t0) / (t1 - t0) * (w - L - R); };
+    var Y = function (v) { return T + (1 - (v - y0) / (top - y0 || 1)) * (h - T - B); };
+    var g = '';
+    for (var i = 0; i <= ticks; i++) {
+      var tv = y0 + step * i, yy = Y(tv);
+      g += '<line class="c-grid" x1="' + L + '" x2="' + (w - R) + '" y1="' + yy + '" y2="' + yy + '"/>' +
+        '<text class="c-tick" x="' + (L - 6) + '" y="' + (yy + 4) + '" text-anchor="end">' + esc(rupeesShort(tv)) + '</text>';
+    }
+    var first = series[0].d, lastD = series[series.length - 1].d;
+    g += '<text class="c-tick" x="' + L + '" y="' + (h - 6) + '">' + esc(fmtDate(first)) + '</text>' +
+      '<text class="c-tick" x="' + (w - R) + '" y="' + (h - 6) + '" text-anchor="end">' + esc(fmtDate(lastD)) + '</text>';
+    var pts = series.map(function (p) { return X(p.d).toFixed(1) + ',' + Y(p.v).toFixed(1); });
+    var area = 'M' + pts.join(' L') + ' L' + X(lastD).toFixed(1) + ',' + Y(y0).toFixed(1) +
+      ' L' + X(first).toFixed(1) + ',' + Y(y0).toFixed(1) + 'Z';
+    var end = series[series.length - 1];
+    g += '<path class="c-area" d="' + area + '"/><polyline class="c-line" points="' + pts.join(' ') + '"/>' +
+      '<circle class="c-dot" cx="' + X(end.d) + '" cy="' + Y(end.v) + '" r="4"/>' +
+      '<line class="c-cross" x1="0" x2="0" y1="' + T + '" y2="' + (h - B) + '" hidden/>' +
+      '<circle class="c-hover" r="4" hidden/>' +
+      '<rect class="c-hit" x="' + L + '" y="0" width="' + (w - L - R) + '" height="' + h + '" fill="transparent"/>';
+    return { svg: svgEl(w, h, g, 'Balance over time, from ' + fmtDate(first) + ' to ' + fmtDate(lastD)), X: X, Y: Y };
+  }
+  function colPath(x, y, w, hh, r) {
+    if (hh <= 0) return '';
+    r = Math.min(r, hh, w / 2);
+    return 'M' + x + ',' + (y + hh) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + w - r) +
+      'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + hh) + 'Z';
+  }
+  function barPath(x, y, w, hh, r) {
+    if (w <= 0) return '';
+    r = Math.min(r, w, hh / 2);
+    return 'M' + x + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + hh - r) +
+      'Q' + (x + w) + ',' + (y + hh) + ' ' + (x + w - r) + ',' + (y + hh) + 'H' + x + 'Z';
+  }
+  function columnChart(data, sel, w) {
+    var h = 180, L = 40, R = 6, T = 22, B = 24;
+    var hi = Math.max.apply(null, data.map(function (d) { return d.v; })) || 1;
+    var step = niceStep(hi / 4), ticks = Math.max(1, Math.ceil(hi / step - 1e-9)), top = ticks * step;
+    var slot = (w - L - R) / data.length, bw = Math.min(24, slot - 6);
+    var Y = function (v) { return T + (1 - v / top) * (h - T - B); };
+    var g = '';
+    for (var i = 0; i <= ticks; i++) {
+      var tv = step * i, yy = Y(tv);
+      g += '<line class="c-grid" x1="' + L + '" x2="' + (w - R) + '" y1="' + yy + '" y2="' + yy + '"/>' +
+        '<text class="c-tick" x="' + (L - 6) + '" y="' + (yy + 4) + '" text-anchor="end">' + esc(rupeesShort(tv)) + '</text>';
+    }
+    data.forEach(function (d, i) {
+      var cx = L + slot * i + slot / 2, x = cx - bw / 2, y = Y(d.v), on = d.m === sel;
+      g += '<path class="c-bar' + (on ? ' on' : '') + '" d="' + colPath(x, y, bw, Y(0) - y, 4) + '"/>';
+      if (on) g += '<text class="c-val" x="' + cx + '" y="' + (y - 7) + '" text-anchor="middle">' + esc(rupeesShort(d.v)) + '</text>';
+      if (data.length <= 6 || i % 2 === (data.length - 1) % 2 || on) {
+        g += '<text class="c-tick' + (on ? ' on' : '') + '" x="' + cx + '" y="' + (h - 7) + '" text-anchor="middle">' + esc(MONTH_NAME[+d.m.slice(5, 7) - 1]) + '</text>';
+      }
+      g += '<rect class="c-hitbar" data-month="' + esc(d.m) + '" data-i="' + i + '" x="' + (L + slot * i) + '" y="' + T + '" width="' + slot +
+        '" height="' + (h - T) + '" fill="transparent" tabindex="0" role="button" aria-label="' + esc(monthLabel(d.m, true) + ': spent ' + rupees(d.v)) + '"/>';
+    });
+    return svgEl(w, h, g, 'Money spent each month');
+  }
+  function hbarChart(list, w) {
+    var rowH = 34, h = list.length * rowH + 4, L = 118, R = 64;
+    var top = Math.max.apply(null, list.map(function (x) { return x.v; })) || 1;
+    var g = '';
+    list.forEach(function (x, i) {
+      var y = i * rowH + 8, bw = Math.max(2, (w - L - R) * x.v / top), name = x.c === 'rest' ? 'Everything else' : MCAT[x.c];
+      var on = moneyView.cat === x.c;
+      g += '<text class="c-lab' + (on ? ' on' : '') + '" x="0" y="' + (y + 13) + '">' + esc(name) + '</text>' +
+        '<path class="c-bar' + (on || !moneyView.cat ? ' on' : '') + '" d="' + barPath(L, y + 2, bw, 16, 4) + '"/>' +
+        '<text class="c-val" x="' + (L + bw + 6) + '" y="' + (y + 14) + '">' + esc(rupeesShort(x.v)) + '</text>' +
+        (x.c === 'rest' ? '' : '<rect class="c-hitbar" data-cat="' + esc(x.c) + '" x="0" y="' + (y - 4) + '" width="' + w + '" height="' + rowH +
+          '" fill="transparent" tabindex="0" role="button" aria-label="' + esc(name + ': ' + rupees(x.v) + '. Show these transactions') + '"/>');
+    });
+    return svgEl(w, h, g, 'Spending by category');
+  }
+  function tableHtml(head, rows) {
+    return '<details class="ctable"><summary>Show as a table</summary><table><thead><tr>' +
+      head.map(function (hh, i) { return '<th' + (i ? ' class="num"' : '') + '>' + esc(hh) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr>' + r.map(function (c, i) { return '<td' + (i ? ' class="num"' : '') + '>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') +
+      '</tbody></table></details>';
+  }
+
+  /* --- the screen --- */
+  function renderMoney() {
+    var el = $('#money-body');
+    if (!el || !S.data) return;
+    var md = moneyData(), html = '';
+    var importBtn = '<div class="m-actions"><button class="btn" id="m-import">Import a statement</button>' +
+      '<button type="button" class="linkish" id="m-help">' + (moneyView.help ? 'Hide' : 'How to get your SBI statements') + '</button></div>' +
+      (moneyView.help ? '<div class="notice m-help"><b>SBI savings:</b> in OnlineSBI or YONO, open your account statement, pick the dates and download it as <b>Excel</b> (best) or PDF.<br>' +
+        '<b>SBI Card:</b> use the monthly e-statement PDF from SBI Card’s email or the SBI Card app. If the PDF asks for a password, the app will ask you for it; the password is used only to open the file here and is not stored.<br>' +
+        'Other banks’ Excel, CSV and PDF statements usually work too. Each file is read on this phone; nothing is uploaded.</div>' : '');
+
+    if (moneyPending) { el.innerHTML = reviewHtml(); return; }
+    if (moneyBusy) { el.innerHTML = '<div class="empty"><h2>Reading the statement…</h2><p>This happens on your phone.</p></div>'; return; }
+    if (!md.tx.length) {
+      el.innerHTML = '<div class="empty m-empty"><h2>No statements yet</h2><p>Import an SBI account or SBI Card statement to see your balance, spending and card usage as charts. ' +
+        'Live balances aren’t possible: Indian banks give individuals no access to live data, so the app reads the statements you download.</p></div>' + importBtn;
+      return;
+    }
+
+    var sum = moneySummary(), months = spendByMonth();
+    if (!moneyView.month || !months.some(function (x) { return x.m === moneyView.month; })) moneyView.month = months.length ? months[months.length - 1].m : null;
+    var selM = moneyView.month, selSpend = (months.filter(function (x) { return x.m === selM; })[0] || {}).v || 0;
+    html += '<div class="m-hero"><span class="label">' + (sum.nb ? 'Bank balance' : 'Spent in ' + esc(monthLabel(selM, true))) + '</span>' +
+      '<b class="m-big">' + esc(sum.nb ? rupees(sum.bal) : rupees(selSpend)) + '</b>' +
+      (sum.nb ? '<span class="m-sub">' + (sum.nb > 1 ? sum.nb + ' accounts · ' : '') + 'as of ' + esc(fmtDate(sum.asOf)) + ', from your last statement</span>' : '') +
+      '<div class="m-stats">' +
+      (sum.due ? '<div><span class="label">Card due</span><b>' + esc(rupees(sum.due)) + '</b>' + (sum.dueDate ? '<small>by ' + esc(fmtDate(sum.dueDate)) + '</small>' : '') + '</div>' : '') +
+      (sum.nb ? '<div><span class="label">Spent in ' + esc(monthLabel(selM)) + '</span><b>' + esc(rupees(selSpend)) + '</b><small>bank + card</small></div>' : '') +
+      '</div></div>' + importBtn;
+
+    // balance over time
+    var banks = md.acc.filter(function (a) { return a.kind === 'bank' && balanceSeries(a.id).length; });
+    if (banks.length) {
+      if (!banks.some(function (a) { return a.id === moneyView.acct; })) moneyView.acct = banks[0].id;
+      var ser = balanceSeries(moneyView.acct);
+      html += '<div class="section-label">Balance over time</div>' +
+        (banks.length > 1 ? '<div class="tabs fchips">' + banks.map(function (a) {
+          return '<button class="tab" data-macct="' + esc(a.id) + '" aria-pressed="' + (a.id === moneyView.acct) + '">' + esc(a.name) + '</button>';
+        }).join('') + '</div>' : '') +
+        '<div class="mcard"><div class="cwrap" id="c-bal" data-n="' + ser.length + '"></div>' +
+        tableHtml(['Date', 'Balance'], ser.slice().reverse().slice(0, 120).map(function (p) { return [fmtDate(p.d), rupees2(p.v)]; })) + '</div>';
+    }
+
+    // spending per month
+    html += '<div class="section-label">Spending by month</div><div class="mcard"><p class="m-note">Bank and card spending. Card bill payments are left out so nothing counts twice. Tap a month.</p>' +
+      '<div class="cwrap" id="c-months"></div>' +
+      tableHtml(['Month', 'Spent', 'Money in'], months.slice().reverse().map(function (x) { return [monthLabel(x.m, true), rupees(x.v), rupees(x.inc)]; })) + '</div>';
+
+    // categories
+    var cats = selM ? catsForMonth(selM) : [];
+    html += '<div class="section-label">Where it went · ' + esc(monthLabel(selM, true)) + '</div><div class="mcard">' +
+      (cats.length ? '<div class="cwrap" id="c-cats"></div>' + tableHtml(['Category', 'Spent'], cats.map(function (x) { return [x.c === 'rest' ? 'Everything else' : MCAT[x.c], rupees(x.v)]; }))
+        : '<p class="m-note">No spending recorded this month.</p>') + '</div>';
+
+    // cards
+    var cards = md.acc.filter(function (a) { return a.kind === 'card'; });
+    if (cards.length) {
+      html += '<div class="section-label">Credit cards</div>' + cards.map(function (a) {
+        var s = latestCardStmt(a.id) || {}, limit = a.limit || s.limit || null;
+        var used = s.limit && s.avail != null ? s.limit - s.avail : s.total != null ? s.total : null;
+        var pct = limit && used != null ? Math.max(0, Math.min(100, Math.round(used / limit * 100))) : null;
+        var lvl = pct === null ? '' : pct <= 30 ? 'ok' : pct <= 75 ? 'warn' : 'bad';
+        var dd = s.due ? daysUntil(s.due) : null, paid = cardPaid(a, s);
+        return '<div class="mcard mcardc"><div class="m-cardhead"><b>' + esc(a.name) + '</b>' + (a.last4 ? '<span>•••• ' + esc(a.last4) + '</span>' : '') + '</div>' +
+          (pct !== null
+            ? '<div class="meter ' + lvl + '" role="img" aria-label="' + pct + ' percent of the limit used"><i style="width:' + Math.max(pct, 1) + '%"></i></div>' +
+              '<p class="m-meter-l"><b>' + pct + '% used</b> · ' + esc(rupees(used)) + ' of ' + esc(rupees(limit)) + (lvl === 'ok' ? ' · healthy' : lvl === 'warn' ? ' · getting high' : ' · near the limit') + '</p>'
+            : '<p class="m-note">Add the credit limit to see how much of it you use.</p>') +
+          '<div class="m-facts">' +
+          (s.total != null ? '<div><span class="label">Total due</span><b>' + esc(rupees2(s.total)) + '</b></div>' : '') +
+          (s.min != null ? '<div><span class="label">Minimum due</span><b>' + esc(rupees2(s.min)) + '</b></div>' : '') +
+          (s.due ? '<div><span class="label">Pay by</span><b>' + esc(fmtDate(s.due)) + '</b>' + (!paid && dd !== null && dd >= 0 ? '<small>' + (dd === 0 ? 'today' : 'in ' + dd + (dd === 1 ? ' day' : ' days')) + '</small>' : '') + '</div>' : '') +
+          '</div>' +
+          (paid ? '<p class="m-paid">✓ Paid ' + esc(rupees2(paid.amt)) + ' on ' + esc(fmtDate(paid.d)) + '</p>' : '') +
+          (moneyAcctEdit === a.id + ':limit'
+            ? '<div class="whonew"><input class="input" id="m-limit" inputmode="numeric" placeholder="Credit limit, e.g. 100000" value="' + esc(limit || '') + '">' +
+              '<button type="button" class="btn" data-msavelimit="' + esc(a.id) + '">Save</button></div>'
+            : '<button type="button" class="linkish m-link" data-mlimit="' + esc(a.id) + '">' + (limit ? 'Change the limit' : 'Add the credit limit') + '</button>') +
+          '</div>';
+      }).join('');
+    }
+
+    // transactions for the month (and category)
+    var list = txSorted().filter(function (t) { return t.d.slice(0, 7) === selM && (!moneyView.cat || (isSpend(t) && catOf(t) === moneyView.cat)); }).reverse();
+    html += '<div class="section-label lab-group">Transactions · ' + esc(monthLabel(selM)) + (moneyView.cat ? ' · ' + esc(MCAT[moneyView.cat]) : '') +
+      (moneyView.cat ? ' <button type="button" class="linkish" id="m-allcats">Show all</button>' : '') + '</div>' +
+      '<div class="mtx">' + (list.length ? list.slice(0, 200).map(txRow).join('') : '<p class="m-note">None.</p>') + '</div>';
+
+    // accounts & statements
+    html += '<div class="section-label">Accounts and statements</div><div class="mcard">' + md.acc.map(function (a) {
+      var sts = md.st.filter(function (s) { return s.a === a.id; });
+      return '<div class="m-acct">' +
+        (moneyAcctEdit === a.id + ':name'
+          ? '<div class="whonew"><input class="input" id="m-aname" value="' + esc(a.name) + '" maxlength="40"><button type="button" class="btn" data-msavename="' + esc(a.id) + '">Save</button></div>'
+          : '<div class="m-acct-h"><b>' + esc(a.name) + '</b><span>' + (a.kind === 'card' ? 'Credit card' : 'Bank account') + (a.last4 ? ' · ' + esc(a.last4) : '') + '</span>' +
+            '<button type="button" class="linkish" data-mrename="' + esc(a.id) + '">Rename</button></div>') +
+        sts.map(function (s) {
+          return '<div class="m-st"><span>' + esc(fmtDate(s.from)) + ' – ' + esc(fmtDate(s.to)) + ' · ' + s.n + ' added</span>' +
+            '<button type="button" class="linkish rm" data-mdelst="' + esc(s.id) + '">Remove</button></div>';
+        }).join('') + '</div>';
+    }).join('') + '<p class="m-note">Removing a statement removes the transactions it added.</p></div>';
+
+    el.innerHTML = html;
+    drawMoneyCharts(months, cats);
+  }
+
+  function txRow(t) {
+    var c = catOf(t), a = acctById(t.a);
+    var editing = moneyEditTx === t.id, payee = payeeOf(t.desc);
+    return '<div class="mt' + (t.dir === 'in' ? ' in' : '') + '">' +
+      '<button type="button" class="mt-main" data-mtx="' + esc(t.id) + '">' +
+      '<span class="mt-text"><b>' + esc(titleCase(payee)) + '</b><small>' + esc(fmtDate(t.d)) + ' · ' + esc(a ? a.name : '') + ' · ' + esc(MCAT[c]) + '</small></span>' +
+      '<span class="mt-amt">' + (t.dir === 'in' ? '+' : '−') + esc(rupees2(t.amt)) + '</span></button>' +
+      (editing ? '<div class="mt-edit"><p class="mt-desc">' + esc(t.desc) + '</p>' +
+        '<label class="label" for="mt-cat">Category</label><select class="input" id="mt-cat">' +
+        MCATS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === c ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>' +
+        '<label class="mt-all"><input type="checkbox" id="mt-rule" checked> Also for everything from “' + esc(titleCase(payee)) + '”</label>' +
+        '<button type="button" class="btn" data-mtsave="' + esc(t.id) + '">Save</button></div>' : '') +
+      '</div>';
+  }
+
+  function reviewHtml() {
+    var p = moneyPending;
+    if (p.needPass) {
+      return '<div class="mcard m-review"><h2>This PDF is locked</h2><p class="m-note">“' + esc(p.file) + '” needs its password. SBI’s email with the statement says what it is. ' +
+        'The password is only used to open the file on this phone and is not saved.</p>' +
+        '<input class="input" id="m-pass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Statement password">' +
+        '<p class="err" id="m-err" role="alert">' + esc(p.err || '') + '</p>' +
+        '<div class="btn-row"><button class="btn ghost" id="m-cancel">Cancel</button><button class="btn" id="m-unlock">Open</button></div></div>';
+    }
+    var inSum = 0, outSum = 0;
+    p.txs.forEach(function (t) { if (t.dir === 'in') inSum += t.amt; else outSum += t.amt; });
+    var accs = moneyData().acc.filter(function (a) { return a.kind === p.kind; });
+    var chk = p.check;
+    return '<div class="mcard m-review"><h2>Check this statement</h2>' +
+      '<p class="m-note">' + esc(p.file) + '</p>' +
+      '<div class="m-facts">' +
+      '<div><span class="label">Looks like</span><b>' + (p.kind === 'card' ? 'Credit card' : 'Bank account') + (p.last4 ? ' ••' + esc(p.last4) : '') + '</b></div>' +
+      '<div><span class="label">Period</span><b>' + esc(fmtDate(p.from)) + ' – ' + esc(fmtDate(p.to)) + '</b></div>' +
+      '<div><span class="label">Transactions</span><b>' + p.txs.length + '</b></div>' +
+      '<div><span class="label">Money in</span><b>' + esc(rupees2(inSum)) + '</b></div>' +
+      '<div><span class="label">Money out</span><b>' + esc(rupees2(outSum)) + '</b></div>' +
+      (p.close != null ? '<div><span class="label">Closing balance</span><b>' + esc(rupees2(p.close)) + '</b></div>' : '') +
+      (p.meta.total != null ? '<div><span class="label">Total due</span><b>' + esc(rupees2(p.meta.total)) + '</b></div>' : '') +
+      (p.meta.due ? '<div><span class="label">Pay by</span><b>' + esc(fmtDate(p.meta.due)) + '</b></div>' : '') +
+      (p.meta.limit ? '<div><span class="label">Credit limit</span><b>' + esc(rupees(p.meta.limit)) + '</b></div>' : '') +
+      '</div>' +
+      (chk && chk.checked ? (chk.bad ? '<div class="notice alarm">' + chk.bad + ' of ' + chk.checked + ' running balances don’t add up, so some rows may have been misread. Check the list below before importing.</div>'
+        : '<div class="notice m-ok">✓ All ' + chk.checked + ' running balances add up.</div>') : '') +
+      '<div class="field" style="margin-top:14px"><label class="label" for="m-target">Add to</label><select class="input" id="m-target">' +
+      accs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === p.target ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('') +
+      '<option value=""' + (!p.target ? ' selected' : '') + '>A new ' + (p.kind === 'card' ? 'card' : 'account') + '…</option></select></div>' +
+      (!p.target ? '<div class="field"><label class="label" for="mi-name">Name it</label><input class="input" id="mi-name" value="' + esc(p.defaultName) + '" maxlength="40"></div>' : '') +
+      '<div class="section-label">First rows</div><div class="mtx">' + p.txs.slice(0, 6).map(function (t) {
+        return '<div class="mt' + (t.dir === 'in' ? ' in' : '') + '"><div class="mt-main"><span class="mt-text"><b>' + esc(titleCase(payeeOf(t.desc))) + '</b><small>' + esc(fmtDate(t.d)) +
+          (t.bal != null ? ' · balance ' + esc(rupees2(t.bal)) : '') + '</small></span><span class="mt-amt">' + (t.dir === 'in' ? '+' : '−') + esc(rupees2(t.amt)) + '</span></div></div>';
+      }).join('') + '</div>' +
+      '<div class="btn-row"><button class="btn ghost" id="m-cancel">Cancel</button><button class="btn" id="m-go">Import ' + p.txs.length + '</button></div></div>';
+  }
+
+  function drawMoneyCharts(months, cats) {
+    var tip = function (wrap) {
+      var t = wrap.querySelector('.ctip');
+      if (!t) { t = document.createElement('div'); t.className = 'ctip'; t.hidden = true; wrap.appendChild(t); }
+      return t;
+    };
+    var showTip = function (wrap, x, y, value, label) {
+      var t = tip(wrap);
+      t.textContent = '';
+      var b = document.createElement('b'); b.textContent = value;
+      var s = document.createElement('span'); s.textContent = label;
+      t.appendChild(b); t.appendChild(s);
+      t.hidden = false;
+      var w = wrap.clientWidth, tw = t.offsetWidth;
+      t.style.left = Math.max(0, Math.min(w - tw, x - tw / 2)) + 'px';
+      t.style.top = Math.max(0, y - t.offsetHeight - 10) + 'px';
+    };
+    var bal = $('#c-bal');
+    if (bal) {
+      var ser = balanceSeries(moneyView.acct), w = bal.clientWidth || 340;
+      if (ser.length) {
+        var lc = lineChart(ser, w);
+        bal.innerHTML = lc.svg;
+        var svg = bal.querySelector('svg'), cross = svg.querySelector('.c-cross'), hov = svg.querySelector('.c-hover');
+        var pick = function (clientX) {
+          var r = svg.getBoundingClientRect(), x = (clientX - r.left) * (w / r.width), best = 0, bd = 1e9;
+          ser.forEach(function (p, i) { var d = Math.abs(lc.X(p.d) - x); if (d < bd) { bd = d; best = i; } });
+          return best;
+        };
+        var place = function (i) {
+          var p = ser[i], x = lc.X(p.d), y = lc.Y(p.v);
+          cross.setAttribute('x1', x); cross.setAttribute('x2', x); cross.hidden = false;
+          hov.setAttribute('cx', x); hov.setAttribute('cy', y); hov.hidden = false;
+          showTip(bal, x, y, rupees2(p.v), fmtDate(p.d));
+          bal.dataset.at = i;
+        };
+        svg.addEventListener('pointermove', function (ev) { place(pick(ev.clientX)); });
+        svg.addEventListener('pointerdown', function (ev) { place(pick(ev.clientX)); });
+        svg.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') { cross.hidden = true; hov.hidden = true; tip(bal).hidden = true; } });
+        svg.setAttribute('tabindex', '0');
+        svg.addEventListener('keydown', function (ev) {
+          var i = bal.dataset.at ? +bal.dataset.at : ser.length - 1;
+          if (ev.key === 'ArrowLeft') { place(Math.max(0, i - 1)); ev.preventDefault(); }
+          if (ev.key === 'ArrowRight') { place(Math.min(ser.length - 1, i + 1)); ev.preventDefault(); }
+        });
+      }
+    }
+    var mc = $('#c-months');
+    if (mc && months.length) {
+      var w2 = mc.clientWidth || 340;
+      mc.innerHTML = columnChart(months, moneyView.month, w2);
+      var hover = function (ev) {
+        var r = ev.target.closest('.c-hitbar');
+        if (!r) return;
+        var d = months[+r.dataset.i], rr = r.getBoundingClientRect(), wr = mc.getBoundingClientRect();
+        showTip(mc, rr.left - wr.left + rr.width / 2, 30, rupees(d.v) + ' spent', monthLabel(d.m, true) + (d.inc ? ' · ' + rupees(d.inc) + ' in' : ''));
+      };
+      mc.addEventListener('pointermove', hover);
+      mc.addEventListener('focusin', hover);
+      mc.addEventListener('pointerleave', function () { tip(mc).hidden = true; });
+    }
+    var cc = $('#c-cats');
+    if (cc && cats.length) {
+      cc.innerHTML = hbarChart(cats, cc.clientWidth || 340);
+      var hv = function (ev) {
+        var r = ev.target.closest('.c-hitbar');
+        if (!r) return;
+        var x = cats.filter(function (c) { return c.c === r.dataset.cat; })[0];
+        if (!x) return;
+        var rr = r.getBoundingClientRect(), wr = cc.getBoundingClientRect(), total = cats.reduce(function (s, c) { return s + c.v; }, 0);
+        showTip(cc, wr.width / 2, rr.top - wr.top + 4, rupees(x.v), MCAT[x.c] + ' · ' + Math.round(x.v / total * 100) + '% of the month');
+      };
+      cc.addEventListener('pointermove', hv);
+      cc.addEventListener('focusin', hv);
+      cc.addEventListener('pointerleave', function () { tip(cc).hidden = true; });
+    }
+  }
+
+  function startImport() {
+    var inp = $('#stmt-in');
+    inp.value = '';
+    guardSheet();
+    inp.click();
+  }
+  function openStatement(file, password) {
+    moneyBusy = true;
+    if (!password) renderMoney();
+    return readStatement(file, password).then(function (p) {
+      moneyBusy = false;
+      p.file = file.name;
+      p.target = guessAcct(p);
+      p.defaultName = (p.sbi || /sbi/i.test(file.name) ? (p.kind === 'card' ? 'SBI Card' : 'SBI Savings') : (p.kind === 'card' ? 'Credit card' : 'Bank account')) +
+        (p.last4 ? ' ••' + p.last4 : '');
+      moneyPending = p;
+      renderMoney();
+      window.scrollTo(0, 0);
+    }).catch(function (err) {
+      moneyBusy = false;
+      if (err && err.name === 'PasswordException') {
+        moneyPending = { needPass: true, fileObj: file, file: file.name, err: password ? 'That password didn’t open it. Try again.' : '' };
+        renderMoney();
+        var pi = $('#m-pass'); if (pi) pi.focus();
+        return;
+      }
+      moneyPending = null;
+      renderMoney();
+      var msg = {
+        'old-xls': 'That is an old-style Excel file this app can’t read. Download the statement as PDF instead, or open it in Numbers and export a CSV.',
+        'no-header': 'Couldn’t find the transaction table in that file. Try the Excel or PDF statement from net banking.',
+        'no-rows': 'Found no transactions in that file.'
+      }[err && err.message] || 'Couldn’t read that file. Try the Excel or PDF statement from net banking.';
+      toast(msg);
+    });
+  }
+  $('#stmt-in').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f || !S.key) return;
+    if (f.size > 25 * 1024 * 1024) { toast('That file is too large for a statement'); return; }
+    openStatement(f);
+  });
+
+  $('#money-body').addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (t.closest('#m-import')) { startImport(); return; }
+    if (t.closest('#m-help')) { moneyView.help = !moneyView.help; renderMoney(); return; }
+    if (t.closest('#m-cancel')) { moneyPending = null; renderMoney(); return; }
+    if (t.closest('#m-unlock')) {
+      var pw = $('#m-pass').value;
+      if (!pw) { $('#m-pass').focus(); return; }
+      var file = moneyPending.fileObj;
+      t.closest('#m-unlock').disabled = true;
+      openStatement(file, pw);
+      return;
+    }
+    if (t.closest('#m-go')) {
+      var tg = $('#m-target');
+      if (tg) moneyPending.target = tg.value;
+      t.closest('#m-go').disabled = true;
+      importPending();
+      return;
+    }
+    var ac = t.closest('[data-macct]');
+    if (ac) { moneyView.acct = ac.dataset.macct; renderMoney(); return; }
+    var mb = t.closest('[data-month]');
+    if (mb) { moneyView.month = mb.dataset.month; moneyView.cat = null; var y = window.scrollY; renderMoney(); window.scrollTo(0, y); return; }
+    var cb = t.closest('[data-cat]');
+    if (cb) {
+      moneyView.cat = moneyView.cat === cb.dataset.cat ? null : cb.dataset.cat;
+      var y2 = window.scrollY; renderMoney(); window.scrollTo(0, y2);
+      return;
+    }
+    if (t.closest('#m-allcats')) { moneyView.cat = null; renderMoney(); return; }
+    var tx = t.closest('[data-mtx]');
+    if (tx) { moneyEditTx = moneyEditTx === tx.dataset.mtx ? null : tx.dataset.mtx; var y3 = window.scrollY; renderMoney(); window.scrollTo(0, y3); return; }
+    var sv = t.closest('[data-mtsave]');
+    if (sv) {
+      var row = moneyData().tx.filter(function (x) { return x.id === sv.dataset.mtsave; })[0];
+      if (!row) return;
+      var cat = $('#mt-cat').value, rule = $('#mt-rule').checked;
+      if (rule) { money().rules[payeeOf(row.desc)] = cat; delete row.cat; } else row.cat = cat;
+      persist().then(function () { moneyEditTx = null; moneyView.cat = null; var y4 = window.scrollY; renderMoney(); window.scrollTo(0, y4); toast('Category saved'); });
+      return;
+    }
+    var lim = t.closest('[data-mlimit]');
+    if (lim) { moneyAcctEdit = lim.dataset.mlimit + ':limit'; renderMoney(); var li = $('#m-limit'); if (li) li.focus(); return; }
+    var sl = t.closest('[data-msavelimit]');
+    if (sl) {
+      var v = parseAmt($('#m-limit').value);
+      var a = acctById(sl.dataset.msavelimit);
+      if (!a) return;
+      if (v && v.v > 0) a.limit = Math.abs(v.v); else delete a.limit;
+      persist().then(function () { moneyAcctEdit = null; renderMoney(); });
+      return;
+    }
+    var rn = t.closest('[data-mrename]');
+    if (rn) { moneyAcctEdit = rn.dataset.mrename + ':name'; renderMoney(); return; }
+    var sn = t.closest('[data-msavename]');
+    if (sn) {
+      var a2 = acctById(sn.dataset.msavename), nm = $('#m-aname').value.trim();
+      if (a2 && nm) a2.name = nm.slice(0, 40);
+      persist().then(function () { moneyAcctEdit = null; renderMoney(); });
+      return;
+    }
+    var ds = t.closest('[data-mdelst]');
+    if (ds) {
+      var sid = ds.dataset.mdelst, m = money(), st = m.st.filter(function (s) { return s.id === sid; })[0];
+      if (!st) return;
+      askConfirm({ title: 'Remove this statement?', body: 'Its ' + st.n + ' transactions will be removed from the charts.', yes: 'Remove' }).then(function (ok) {
+        if (!ok) return;
+        m.tx = m.tx.filter(function (x) { return x.s !== sid; });
+        m.st = m.st.filter(function (s) { return s.id !== sid; });
+        var used = {};
+        m.st.forEach(function (s) { used[s.a] = 1; });
+        m.acc = m.acc.filter(function (a3) { return used[a3.id]; });
+        persist().then(function () { renderMoney(); toast('Statement removed'); });
+      });
+    }
+  });
+  $('#money-body').addEventListener('keydown', function (ev) {
+    if (ev.target.id === 'm-pass' && ev.key === 'Enter') { ev.preventDefault(); $('#m-unlock').click(); return; }
+    var r = (ev.key === 'Enter' || ev.key === ' ') && ev.target.closest && ev.target.closest('.c-hitbar');
+    if (r) { ev.preventDefault(); r.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  });
+  $('#money-body').addEventListener('change', function (ev) {
+    if (ev.target.id === 'm-target' && moneyPending) { moneyPending.target = ev.target.value; renderMoney(); }
+  });
+
+  function sanitizeMoney(o) {
+    var out = { acc: [], tx: [], st: [], rules: {} };
+    if (!o || typeof o !== 'object') return out;
+    var day = function (v) { return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null; };
+    var num = function (v) { return typeof v === 'number' && isFinite(v) ? v : null; };
+    (Array.isArray(o.acc) ? o.acc : []).slice(0, 50).forEach(function (a) {
+      if (!a || typeof a.id !== 'string' || !/^a[0-9a-f]{6,16}$/.test(a.id) || (a.kind !== 'bank' && a.kind !== 'card')) return;
+      var c = { id: a.id, kind: a.kind, name: String(a.name || 'Account').slice(0, 40), last4: /^\d{4}$/.test(a.last4) ? a.last4 : '' };
+      if (num(a.limit) > 0) c.limit = a.limit;
+      out.acc.push(c);
+    });
+    var accIds = {};
+    out.acc.forEach(function (a) { accIds[a.id] = 1; });
+    (Array.isArray(o.st) ? o.st : []).slice(0, 2000).forEach(function (s) {
+      if (!s || typeof s.id !== 'string' || !/^s[0-9a-f]{6,16}$/.test(s.id) || !accIds[s.a]) return;
+      var c = { id: s.id, a: s.a, file: String(s.file || '').slice(0, 80), from: day(s.from) || '', to: day(s.to) || '', at: num(s.at) || 0, n: num(s.n) || 0 };
+      ['total', 'min', 'limit', 'avail'].forEach(function (k) { if (num(s[k]) !== null) c[k] = s[k]; });
+      ['due', 'stmt'].forEach(function (k) { if (day(s[k])) c[k] = s[k]; });
+      out.st.push(c);
+    });
+    (Array.isArray(o.tx) ? o.tx : []).slice(0, 50000).forEach(function (t) {
+      if (!t || typeof t.id !== 'string' || !/^t[0-9a-f]{16}$/.test(t.id) || !accIds[t.a] || !day(t.d) || !(num(t.amt) > 0) || (t.dir !== 'in' && t.dir !== 'out')) return;
+      var c = { id: t.id, a: t.a, d: t.d, amt: t.amt, dir: t.dir, desc: String(t.desc || '').slice(0, 160), s: typeof t.s === 'string' ? t.s : '', q: num(t.q) || 0 };
+      if (num(t.bal) !== null) c.bal = t.bal;
+      if (MCAT[t.cat]) c.cat = t.cat;
+      out.tx.push(c);
+    });
+    if (o.rules && typeof o.rules === 'object') Object.keys(o.rules).slice(0, 2000).forEach(function (k) { if (MCAT[o.rules[k]]) out.rules[String(k).slice(0, 40)] = o.rules[k]; });
+    return out;
+  }
+  function mergeMoney(mine, theirs) {
+    mine = sanitizeMoney(mine);
+    var add = function (list, more) {
+      var have = {};
+      list.forEach(function (x) { have[x.id] = 1; });
+      return list.concat(more.filter(function (x) { return !have[x.id]; }));
+    };
+    var out = { acc: add(mine.acc, theirs.acc), st: add(mine.st, theirs.st), tx: add(mine.tx, theirs.tx), rules: {} };
+    Object.keys(theirs.rules).forEach(function (k) { out.rules[k] = theirs.rules[k]; });
+    Object.keys(mine.rules).forEach(function (k) { out.rules[k] = mine.rules[k]; });
+    return out;
+  }
 
   /* ============ IAS prelims ============
      The reading list (lib/ias-prelims.js) is public: subjects, NCERT books
