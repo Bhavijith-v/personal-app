@@ -250,6 +250,7 @@ select.input {
 .empty .mark { margin: 0 auto 18px; }
 .empty h2 { font-size: 18px; font-weight: 600; color: var(--fg); margin: 0 0 8px; }
 .empty p { margin: 0 auto; max-width: 32ch; font-size: 14px; line-height: 1.5; }
+.empty-add { width: auto; margin: 18px auto 0; padding-inline: 22px; }
 
 /* ---------- detail ---------- */
 .detail-head { padding-block: 22px 18px; display: flex; gap: 14px; align-items: flex-start; }
@@ -2505,8 +2506,11 @@ select.input {
 
     if (!list.length) {
       var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', id: 'ID documents', edu: 'education records', cert: 'certifications', race: 'races' };
+      var ONE = { login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', id: 'an ID document', edu: 'an education record', cert: 'a certification', race: 'a race' };
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
-        esc(NONE[S.filter] || 'entries') + ' stored so far.</p></div>';
+        esc(NONE[S.filter] || 'entries') + ' stored so far.</p>' +
+        (ONE[S.filter] ? '<button class="btn empty-add" data-addkind="' + esc(S.filter) + '">Add ' + esc(ONE[S.filter]) + '</button>' : '') +
+        '</div>';
       return;
     }
 
@@ -2531,17 +2535,23 @@ select.input {
     renderVault();
   });
   $('#list').addEventListener('click', function (e) {
+    var add = e.target.closest('[data-addkind]');
+    if (add) { startNew(add.dataset.addkind); return; }
     var b = e.target.closest('[data-id]');
     if (!b) return;
     S.id = b.dataset.id;
     show('detail');
   });
   $('#btn-lock').addEventListener('click', function () { lockNow('Locked'); });
-  $('#btn-add').addEventListener('click', function () {
+  // New entries start as the kind of the tab you're on, so + on the Certs
+  // tab opens a certification, not a login.
+  function startNew(kind) {
+    var type = SUBKINDS[kind] ? SUBKINDS[kind][0] : TYPES[kind] ? kind : 'login';
     S.isNew = true;
-    S.draft = { id: uid(), type: 'login', title: '', f: {}, notes: '', updated: Date.now() };
+    S.draft = { id: uid(), type: type, title: '', f: {}, notes: '', updated: Date.now() };
     show('edit');
-  });
+  }
+  $('#btn-add').addEventListener('click', function () { startNew(S.filter); });
 
   /* ============ detail ============ */
   function findEntry(id) {
