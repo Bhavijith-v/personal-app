@@ -1463,6 +1463,7 @@ select.input {
         <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
         <button class="hub-tile" id="hub-oscp"><b id="hub-oscp-n">0</b><span>OSCP labs rooted</span></button>
         <button class="hub-tile wide" id="hub-money"><b id="hub-money-n">₹</b><span id="hub-money-sub">Money: import a statement for charts</span></button>
+        <button class="hub-tile wide" id="hub-gx"><b id="hub-gx-n">0</b><span>Govt exam prep · aptitude, reasoning, English, GK</span></button>
         <button class="hub-tile wide" id="hub-ias"><b id="hub-ias-n">0</b><span id="hub-ias-sub">IAS prelims chapters done</span></button>
       </div>
       <div class="tabs whos" role="tablist" aria-label="Whose entries" id="whos" hidden></div>
@@ -1635,6 +1636,14 @@ select.input {
   <section id="screen-money" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Money</h1></div></header>
     <div class="col gutter page-body" id="money-body"></div>
+  </section>
+  <section id="screen-gx" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Govt exam prep</h1></div></header>
+    <div class="col gutter page-body" id="gx-body"></div>
+  </section>
+  <section id="screen-gxt" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-gxt-back" aria-label="Back to the topics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1 id="gxt-bar-title">Topic</h1></div></header>
+    <div class="col gutter page-body" id="gxt-body"></div>
   </section>
   <section id="screen-ias" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>IAS prelims</h1></div></header>
@@ -1948,7 +1957,7 @@ select.input {
       ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'life', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'govjob', 'life', 'race'];
 
   /* --- Indian government IDs ---
      One "ID document" kind and one tab, with a sub-type per document. Each
@@ -2222,6 +2231,59 @@ select.input {
     ]
   };
   ICON.ipo = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 20.5h17"/><path d="m4.5 16 5-5 3.5 3.5 6.5-7"/><path d="M14.5 7.5h5v5"/></svg>';
+
+  /* --- government job applications ---
+     One entry per exam you apply for: the dates that matter (last date to
+     apply, admit card, exam), the numbers you need on the day, and the
+     portal login. Reminders come before each date. */
+  var GOV_STATUS = ['Planning to apply', 'Applied', 'Admit card out', 'Exam written', 'Result awaited', 'Shortlisted / interview', 'Selected', 'Not selected'];
+  TYPES.govjob = {
+    name: 'Government job', short: 'Govt job', titleLabel: 'Exam / post', titlePh: 'Kerala PSC LDC 2026',
+    photos: true, sides: ['Admit card', 'Application'], photoNoun: 'admit card',
+    fields: [
+      { k: 'org', l: 'Recruiting body', onCard: true,
+        list: ['Kerala PSC', 'UPSC', 'SSC', 'IBPS', 'SBI', 'RBI', 'RRB (Railways)', 'LIC', 'Defence (Army / Navy / Air Force)', 'High Court', 'Other State PSC', 'Other'] },
+      { k: 'post', l: 'Post', ph: 'Lower Division Clerk', onCard: true },
+      { k: 'status', l: 'Status', opts: GOV_STATUS, onCard: true },
+      { k: 'notif', l: 'Notification / category number', mono: true, ph: 'Cat. No. 123/2026' },
+      { k: 'lastdate', l: 'Last date to apply', date: true, onCard: true },
+      { k: 'admit', l: 'Admit card available from', date: true, onCard: true },
+      { k: 'examdate', l: 'Exam date', date: true, onCard: true },
+      { k: 'examtime', l: 'Exam time (24-hour)', mono: true, ph: '07:30', onCard: true },
+      { k: 'centre', l: 'Exam centre', onCard: true },
+      { k: 'appno', l: 'Application / registration number', mono: true, upper: true },
+      { k: 'rollno', l: 'Roll / register number', mono: true, upper: true },
+      { k: 'userid', l: 'Portal user ID', ph: 'Thulasi / SSC login' },
+      { k: 'password', l: 'Portal password', secret: true, gen: true },
+      { k: 'fee', l: 'Fee paid (₹)', mono: true, num: true },
+      { k: 'result', l: 'Marks / rank' },
+      { k: 'link', l: 'Website', ph: 'https://www.keralapsc.gov.in' }
+    ]
+  };
+  ICON.govjob = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7.5" width="18" height="12.5" rx="2"/><path d="M8.5 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v2M3 12.5h18M10.5 12.5v1.5h3v-1.5"/></svg>';
+  function govDates(e) {
+    var f = e.f || {}, st = f.status || '', out = [];
+    if (f.lastdate && (!st || st === 'Planning to apply')) out.push({ k: 'lastdate', label: 'Last date to apply', date: f.lastdate, warn: 7 });
+    if (f.admit && (st === 'Applied' || !st)) out.push({ k: 'admit', label: 'Admit card out', date: f.admit, warn: 3 });
+    if (f.examdate && ['Applied', 'Admit card out', 'Planning to apply', ''].indexOf(st) >= 0) out.push({ k: 'examdate', label: 'Exam day', date: f.examdate, warn: 7 });
+    return out;
+  }
+  function govCard(e) {
+    var f = e.f || {}, st = f.status || 'Planning to apply';
+    var pill = st === 'Selected' ? 'ok' : st === 'Not selected' ? 'bad' : st === 'Planning to apply' ? 'warn' : '';
+    var dates = govDates(e).concat(f.examdate && govDates(e).every(function (x) { return x.k !== 'examdate'; }) ? [{ k: 'examdate', label: 'Exam date', date: f.examdate, warn: 0 }] : [])
+      .map(function (x) {
+        var d = daysUntil(x.date), lvl = d === null ? '' : d < 0 ? (x.warn ? 'bad' : '') : d <= x.warn ? 'warn' : 'ok';
+        var txt = d === null ? fmtDate(x.date) : d < 0 ? fmtDate(x.date) : d === 0 ? 'Today' + (x.k === 'examdate' && f.examtime ? ' at ' + f.examtime : '') : d === 1 ? 'Tomorrow' : 'In ' + d + ' days · ' + fmtDate(x.date);
+        return '<div class="life-date"><span>' + esc(x.label) + '</span><span class="pill ' + lvl + '">' + esc(txt) + '</span></div>';
+      }).join('');
+    var link = safeLink(f.link);
+    return '<div class="life"><div class="ipo-top"><span class="pill ' + pill + '">' + esc(st) + '</span><span>' + esc(f.org || '') + '</span></div>' +
+      '<b class="life-head" style="margin-top:10px">' + esc(f.post || e.title) + '</b>' +
+      '<p class="life-sub">' + esc([f.examtime ? 'Exam ' + f.examtime : '', f.centre].filter(Boolean).join(' · ')) + '</p>' +
+      (dates ? '<div class="life-dates">' + dates + '</div>' : '') +
+      (link ? '<a class="btn ghost" style="margin-top:12px;text-decoration:none" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">Open the website</a>' : '') + '</div>';
+  }
 
   /* --- life admin: insurance, vehicles, warranties, tickets ---
      Things with a renewal or a date to remember. Each can hold two photos
@@ -3600,7 +3662,7 @@ select.input {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week', notes: '#screen-notes'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week', notes: '#screen-notes', gx: '#screen-gx', gxt: '#screen-gxt'
   };
   function show(view) {
     S.view = view;
@@ -3621,6 +3683,8 @@ select.input {
     if (view === 'money') renderMoney();
     if (view === 'week') renderWeek();
     if (view === 'notes') renderNotes();
+    if (view === 'gx') renderGx();
+    if (view === 'gxt') renderGxt();
     if (view === 'vault' && !pushOnOpen) { pushOnOpen = true; schedulePushSync(); }
     if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
@@ -3659,7 +3723,7 @@ select.input {
     iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
     moneyPending = null; moneyBusy = false; moneyEditTx = null; moneyAcctEdit = null;
     moneyView = { acct: null, month: null, cat: null, help: false }; $('#money-body').textContent = '';
-    whoView = 'all'; famEdit = null; whoAdding = false; budgetEdit = false; $('#week-body').textContent = ''; $('#whos').textContent = ''; $('#fam-body').textContent = '';
+    whoView = 'all'; famEdit = null; whoAdding = false; budgetEdit = false; $('#week-body').textContent = ''; $('#gx-body').textContent = ''; $('#gxt-body').textContent = ''; gxOpen = {}; gxTopic = null; gxAdding = null; $('#whos').textContent = ''; $('#fam-body').textContent = '';
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -4124,7 +4188,7 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, life: 0, race: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, govjob: 0, life: 0, race: 0 };
     entries().filter(inView).forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
@@ -4145,6 +4209,10 @@ select.input {
     }
     if (e.type === 'wifi') {
       return [f.ssid, f.security === 'None (open)' ? 'Open' : f.security].filter(Boolean).join('  ·  ');
+    }
+    if (e.type === 'govjob') {
+      var gn = govDates(e).filter(function (x) { var dd = daysUntil(x.date); return dd !== null && dd >= 0; })[0];
+      return [f.org, f.status || 'Planning to apply', gn ? gn.label.toLowerCase() + ' ' + (daysUntil(gn.date) === 0 ? 'today' : 'in ' + daysUntil(gn.date) + 'd') : ''].filter(Boolean).join('  ·  ');
     }
     if (groupOf(e.type) === 'life') {
       var nx = lifeDates(e).filter(function (x) { var dd = daysUntil(x.date); return dd !== null && dd >= 0; })
@@ -4230,6 +4298,8 @@ select.input {
     $('#hub-money-sub').textContent = ms.nb
       ? 'In the bank' + (ms.due ? ' · card due ' + rupees(ms.due) + (ms.dueDate ? ' by ' + fmtDate(ms.dueDate) : '') : '') + ' · tap for charts'
       : ms.any ? 'Spending and card charts' : 'Money: import a statement for charts';
+    var gt = gxTotals();
+    $('#hub-gx-n').textContent = gt.done + ' / ' + gt.all;
     var it = iasTotals(), ex = iasExamDays();
     $('#hub-ias-n').textContent = it.done + ' / ' + it.all;
     $('#hub-ias-sub').textContent = 'IAS prelims chapters done' + (ex !== null && ex >= 0 ? ' · ' + (ex === 0 ? 'exam today' : ex + (ex === 1 ? ' day' : ' days') + ' to prelims') : '');
@@ -4241,6 +4311,7 @@ select.input {
   $('#hub-run').addEventListener('click', function () { show('run'); });
   $('#hub-oscp').addEventListener('click', function () { show('oscp'); });
   $('#hub-ias').addEventListener('click', function () { show('ias'); });
+  $('#hub-gx').addEventListener('click', function () { show('gx'); });
   $('#hub-money').addEventListener('click', function () { show('money'); });
   $('#hub-week').addEventListener('click', function () { show('week'); });
   $('#hub-notes').addEventListener('click', function () { show('notes'); });
@@ -4257,7 +4328,7 @@ select.input {
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', life: 'Life', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', govjob: 'Govt jobs', life: 'Life', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -4301,8 +4372,8 @@ select.input {
     }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', life: 'policies, vehicles, warranties or tickets', race: 'races' };
-      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', life: 'a policy, vehicle or ticket', race: 'a race' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', govjob: 'government job applications', life: 'policies, vehicles, warranties or tickets', race: 'races' };
+      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', govjob: 'a government job', life: 'a policy, vehicle or ticket', race: 'a race' };
       var forWho = personById(whoView);
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + (forWho ? ' for ' + esc(forWho.name) : '') + ' stored so far.</p>' +
@@ -4659,6 +4730,7 @@ select.input {
     if (e.type === 'cert') html += certCard(e) + idPhotos(e);
     if (e.type === 'wifi') html += wifiCard(e);
     if (e.type === 'ipo') html += ipoCard(e);
+    if (e.type === 'govjob') html += govCard(e) + idPhotos(e);
     if (groupOf(e.type) === 'life') html += lifeCard(e) + idPhotos(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
@@ -5466,6 +5538,12 @@ select.input {
       if (!ib && f.allot && f.listing && f.listing < f.allot) ib = 'The listing date is before the allotment date.';
       if (ib) { $('#edit-err').textContent = ib; return; }
     }
+    if (d.type === 'govjob') {
+      if (f.examtime && hhmm(f.examtime) === null) { $('#edit-err').textContent = 'Write the exam time as hours:minutes, 24-hour, for example 07:30.'; return; }
+      if (f.examtime) f.examtime = ('0' + Math.floor(hhmm(f.examtime) / 60)).slice(-2) + ':' + ('0' + hhmm(f.examtime) % 60).slice(-2);
+      if (f.link && !safeLink(f.link)) { $('#edit-err').textContent = 'The website should start with https://'; return; }
+      if (f.lastdate && f.examdate && f.examdate < f.lastdate) { $('#edit-err').textContent = 'The exam date is before the last date to apply.'; return; }
+    }
     if (d.type === 'wifi' && f.password && f.security !== 'WEP' && f.security !== 'None (open)' &&
         (f.password.length < 8 || f.password.length > 63)) {
       $('#edit-err').textContent = 'A WPA Wi-Fi password is 8 to 63 characters.';
@@ -5836,6 +5914,7 @@ select.input {
           S.data.ias = sanitizeIas(r.data && r.data.ias);
           S.data.people = sanitizePeople(r.data && r.data.people);
           S.data.goals = sanitizeGoals(r.data && r.data.goals);
+          S.data.gx = sanitizeGx(r.data && r.data.gx);
           S.data.money = sanitizeMoney(r.data && r.data.money);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
@@ -5849,6 +5928,7 @@ select.input {
       S.data.ias = mergeIas(S.data.ias, sanitizeIas(r.data && r.data.ias));
       S.data.people = mergePeople(people(), sanitizePeople(r.data && r.data.people));
       if (!S.data.goals) S.data.goals = sanitizeGoals(r.data && r.data.goals);
+      S.data.gx = mergeGx(S.data.gx, sanitizeGx(r.data && r.data.gx));
       S.data.money = mergeMoney(S.data.money, sanitizeMoney(r.data && r.data.money));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
@@ -5881,6 +5961,7 @@ select.input {
         ias: sanitizeIas(r.data && r.data.ias),
         people: sanitizePeople(r.data && r.data.people),
         goals: sanitizeGoals(r.data && r.data.goals),
+        gx: sanitizeGx(r.data && r.data.gx),
         money: sanitizeMoney(r.data && r.data.money),
         lastExport: (r.data && r.data.lastExport) || null
       };
@@ -6016,6 +6097,16 @@ select.input {
         if (d !== null && d >= 0 && d <= 14) {
           out.push({ e: e, date: f.listing, days: d, level: d <= 1 ? 'warn' : 'ok', what: 'IPO listing day', cal: 'IPO listing', alarms: ['PT9H'] });
         }
+      }
+      if (e.type === 'govjob') {
+        govDates(e).forEach(function (x) {
+          var dd = daysUntil(x.date);
+          if (dd === null || dd > 30 || dd < (x.k === 'lastdate' ? -2 : 0)) return;
+          var timed = x.k === 'examdate' && hhmm(f.examtime) !== null;
+          out.push({ e: e, date: x.date, days: dd, level: dd < 0 ? 'bad' : dd <= x.warn ? 'warn' : 'ok',
+            what: x.label + (x.k === 'examdate' && f.centre ? ' · ' + f.centre : '') + (timed ? ' · ' + f.examtime : ''),
+            cal: x.label, time: timed ? f.examtime : null, mins: 120, alarms: x.k === 'examdate' ? (timed ? ['-P1D', '-PT2H'] : ['-P3D', '-P1D']) : ['-P3D', '-P1D'] });
+        });
       }
       if (groupOf(e.type) === 'life') {
         lifeDates(e).forEach(function (x) {
@@ -6168,7 +6259,7 @@ select.input {
   /* ============ password health ============
      Looks only at real passwords, never PINs (those are short by design).
      Values are compared in memory and never shown on this screen. */
-  var PW_FIELDS = { login: ['password'], bank: ['nbpass', 'txnpass'], broker: ['password'], wifi: ['password', 'adminpass'] };
+  var PW_FIELDS = { login: ['password'], bank: ['nbpass', 'txnpass'], broker: ['password'], wifi: ['password', 'adminpass'], govjob: ['password'] };
   function healthReport() {
     var items = [], seen = {};
     entries().forEach(function (e) {
@@ -9432,6 +9523,202 @@ select.input {
     if ((b = ev.target.closest('[data-nidea]'))) { addNote(b.dataset.nidea, true); return; }
     if ((b = ev.target.closest('[data-nnew]'))) addNote('', b.dataset.nnew === 'rule');
   });
+
+  /* ============ Govt exam prep (PSC, SSC, banks, railways) ============
+     Subjects with the standard topic lists of these exams; add your own
+     topics too. Each topic has a status, a revision count and your notes,
+     all in S.data.gx inside the encrypted box. */
+  var GX = [
+    { id: 'apt', name: 'Quantitative aptitude', t: ['Number system', 'Simplification and approximation', 'HCF and LCM', 'Percentage', 'Profit and loss', 'Simple and compound interest',
+      'Ratio and proportion', 'Partnership', 'Averages', 'Problems on ages', 'Mixtures and alligation', 'Time and work', 'Pipes and cisterns', 'Time, speed and distance',
+      'Boats and streams', 'Trains', 'Mensuration (2D and 3D)', 'Algebra and equations', 'Quadratic equations', 'Number series', 'Permutation and combination', 'Probability',
+      'Data interpretation', 'Data sufficiency'] },
+    { id: 'rea', name: 'Reasoning', t: ['Analogy', 'Classification (odd one out)', 'Number and letter series', 'Coding and decoding', 'Blood relations', 'Direction sense',
+      'Order and ranking', 'Alphabet test', 'Seating arrangement', 'Puzzles', 'Syllogism', 'Inequality', 'Input and output', 'Statement and conclusion',
+      'Statement and assumption', 'Cause and effect', 'Data sufficiency', 'Clocks and calendars', 'Venn diagrams', 'Mirror and water images', 'Paper folding and cutting',
+      'Figure series and counting', 'Non-verbal reasoning'] },
+    { id: 'eng', name: 'English', t: ['Reading comprehension', 'Cloze test', 'Error spotting', 'Sentence improvement', 'Fill in the blanks', 'Para jumbles',
+      'Synonyms and antonyms', 'Idioms and phrases', 'One-word substitution', 'Spelling', 'Active and passive voice', 'Direct and indirect speech',
+      'Articles and prepositions', 'Tenses', 'Subject–verb agreement', 'Phrasal verbs'] },
+    { id: 'gk', name: 'General knowledge', t: ['Ancient Indian history', 'Medieval Indian history', 'Modern India and freedom struggle', 'Indian geography', 'World geography',
+      'Indian Constitution and polity', 'Indian economy', 'Physics', 'Chemistry', 'Biology', 'Science and technology', 'Static GK (firsts, capitals, currencies)',
+      'Books and authors', 'Awards and honours', 'Sports', 'Important days'] },
+    { id: 'ker', name: 'Kerala GK', t: ['Kerala history', 'Kerala renaissance and social reformers', 'Kerala geography (rivers, districts, hills)', 'Kerala art and culture',
+      'Kerala literature and writers', 'Kerala government schemes', 'Kerala firsts', 'Kerala economy and agriculture', 'Local self-government in Kerala'] },
+    { id: 'ca', name: 'Current affairs', t: ['National news', 'International news', 'Kerala news', 'Economy and banking news', 'Government schemes', 'Appointments',
+      'Awards', 'Sports', 'Science and defence', 'Reports and indices'] },
+    { id: 'comp', name: 'Computer knowledge', t: ['Computer basics and generations', 'Hardware and input/output devices', 'Memory and storage', 'Software and operating systems',
+      'MS Word', 'MS Excel', 'MS PowerPoint', 'Internet and email', 'Networking basics', 'Cyber security', 'Abbreviations and shortcuts'] },
+    { id: 'mal', name: 'Malayalam', t: ['Grammar (വ്യാകരണം)', 'Vocabulary and meanings', 'Synonyms and antonyms', 'Idioms and proverbs', 'Spelling and correct usage',
+      'Translation', 'Literature and authors'] },
+    { id: 'bank', name: 'Banking awareness', t: ['RBI and monetary policy', 'Types of banks', 'Banking terms', 'Financial inclusion schemes', 'Payment systems (UPI, NEFT, RTGS)',
+      'Insurance and capital markets', 'Budget and economic survey basics'] }
+  ];
+  var GX_BY = {};
+  GX.forEach(function (s) { GX_BY[s.id] = s; });
+  var gxOpen = {}, gxTopic = null, gxAdding = null, gxNoteTimer = null, gxScroll = 0;
+  function gxData() { return (S.data && S.data.gx) || {}; }
+  function gxEnsure() { S.data.gx = S.data.gx || {}; S.data.gx.c = S.data.gx.c || {}; S.data.gx.x = S.data.gx.x || {}; return S.data.gx; }
+  function gxTopics(s) {
+    return s.t.map(function (t, i) { return { id: s.id + '.' + (i + 1), t: t }; })
+      .concat(((gxData().x || {})[s.id] || []).map(function (x) { return { id: s.id + '.' + x.id, t: x.t, user: true }; }));
+  }
+  function gxState(id) { return (gxData().c || {})[id] || {}; }
+  function gxStatus(id) { return gxState(id).s || 'todo'; }
+  function gxSet(id, patch) {
+    var c = gxEnsure().c, cur = c[id] || {};
+    Object.keys(patch).forEach(function (k) { if (patch[k] === undefined || patch[k] === '' || patch[k] === 0) delete cur[k]; else cur[k] = patch[k]; });
+    cur.u = Date.now();
+    if (!cur.s && !cur.n && !cur.r) delete c[id]; else c[id] = cur;
+    return persist();
+  }
+  function gxTotals(list) {
+    var t = { all: 0, done: 0 };
+    (list || GX).forEach(function (s) { gxTopics(s).forEach(function (x) { t.all++; if (gxStatus(x.id) === 'done') t.done++; }); });
+    return t;
+  }
+  function gxFind(id) {
+    var s = GX_BY[String(id).split('.')[0]];
+    if (!s) return null;
+    var list = gxTopics(s);
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return { s: s, x: list[i], list: list, i: i };
+    return null;
+  }
+  function sanitizeGx(o) {
+    var out = { c: {}, x: {} };
+    if (!o || typeof o !== 'object') return out;
+    Object.keys(o.c || {}).forEach(function (id) {
+      var v = o.c[id];
+      if (!/^[a-z]{2,4}\.(\d{1,3}|u[a-z0-9]{4,16})$/.test(id) || !v || typeof v !== 'object' || !GX_BY[id.split('.')[0]]) return;
+      var k = {};
+      if (v.s === 'doing' || v.s === 'done') k.s = v.s;
+      if (typeof v.n === 'string' && v.n) k.n = v.n.slice(0, 50000);
+      if (typeof v.r === 'number' && v.r >= 1) k.r = Math.min(999, Math.floor(v.r));
+      if (typeof v.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.d)) k.d = v.d;
+      k.u = typeof v.u === 'number' ? v.u : 0;
+      if (k.s || k.n || k.r) out.c[id] = k;
+    });
+    Object.keys(o.x || {}).forEach(function (sid) {
+      if (!GX_BY[sid] || !Array.isArray(o.x[sid])) return;
+      var l = o.x[sid].filter(function (it) { return it && /^u[a-z0-9]{4,16}$/.test(it.id) && typeof it.t === 'string' && it.t.trim(); })
+        .slice(0, 300).map(function (it) { return { id: it.id, t: it.t.trim().slice(0, 200) }; });
+      if (l.length) out.x[sid] = l;
+    });
+    return out;
+  }
+  function mergeGx(mine, theirs) {
+    mine = mine || {};
+    var out = { c: mergeOscp(mine.c, theirs.c), x: {} };
+    [mine.x || {}, theirs.x || {}].forEach(function (src) {
+      Object.keys(src).forEach(function (sid) {
+        var have = out.x[sid] = out.x[sid] || [];
+        src[sid].forEach(function (it) { if (!have.some(function (h) { return h.id === it.id; })) have.push(it); });
+      });
+    });
+    return out;
+  }
+  function gxRow(x) {
+    var st = gxStatus(x.id), s = gxState(x.id);
+    var meta = [s.r ? 'Revised ×' + s.r : '', s.n ? 'notes' : '', x.user ? 'added by you' : ''].filter(Boolean).join(' · ');
+    return '<div class="lab ' + st + '"><button class="lab-st" data-gcycle="' + esc(x.id) + '" aria-label="' + esc(x.t) + ': ' + ISTATUS[st] + '. Tap to change.">' + STATUS_ICON[st] + '</button>' +
+      '<button class="lab-main" data-gtopic="' + esc(x.id) + '"><span class="lab-text"><b>' + esc(x.t) + '</b>' + (meta ? '<small>' + esc(meta) + '</small>' : '') + '</span></button></div>';
+  }
+  function renderGx() {
+    var el = $('#gx-body');
+    if (!el || !S.data) return;
+    var t = gxTotals(), pct = t.all ? Math.round(t.done / t.all * 100) : 0;
+    var jobs = entries().filter(function (e) { return e.type === 'govjob'; });
+    var nextExam = jobs.map(function (e) { return { e: e, d: (e.f || {}).examdate ? daysUntil(e.f.examdate) : null }; })
+      .filter(function (x) { return x.d !== null && x.d >= 0; }).sort(function (a, b) { return a.d - b.d; })[0];
+    el.innerHTML = '<div class="oscp-head"><div class="oscp-count"><b>' + t.done + '</b><span>of ' + t.all + ' topics done</span></div>' +
+      '<div class="oscp-bar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="ias-exam">' + (nextExam ? '<span>Next exam: <b>' + esc(nextExam.e.title) + '</b> · ' + (nextExam.d === 0 ? 'today' : nextExam.d + ' days') + '</span>'
+        : '<span>Add the exams you apply for under <b>Govt jobs</b> for a countdown.</span>') + '</div></div>' +
+      '<p class="hint" style="margin:12px 0 0">Tap a subject to open it, the circle to mark a topic, and a topic for your notes, shortcuts and formulas.</p>' +
+      '<div class="ibooks" style="margin-top:12px">' + GX.map(function (s) {
+        var list = gxTopics(s), done = list.filter(function (x) { return gxStatus(x.id) === 'done'; }).length, open = gxOpen[s.id] || gxAdding === s.id;
+        return '<div class="ibook' + (open ? ' open' : '') + '"><button class="ibook-head" data-gsub="' + s.id + '" aria-expanded="' + !!open + '">' +
+          '<span class="ibook-text"><b>' + esc(s.name) + '</b></span><span class="ibook-n' + (done === list.length ? ' full' : '') + '">' + done + ' / ' + list.length + '</span>' +
+          '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></span></button>' +
+          '<div class="ibook-bar"><i style="width:' + Math.round(done / list.length * 100) + '%"></i></div>' +
+          (open ? '<div class="ibook-body">' + list.map(gxRow).join('') +
+            (gxAdding === s.id
+              ? '<div class="iadd"><input class="input" id="gx-add-in" type="text" placeholder="Topic name" maxlength="200" autocapitalize="sentences"><button type="button" class="mini" data-gaddsave="' + s.id + '">Add</button></div>'
+              : '<button type="button" class="iadd-open" data-gadd="' + s.id + '">+ Add a topic</button>') + '</div>' : '') + '</div>';
+      }).join('') + '</div>';
+  }
+  $('#gx-body').addEventListener('click', function (ev) {
+    var b, y = window.scrollY;
+    if ((b = ev.target.closest('[data-gsub]'))) { gxOpen[b.dataset.gsub] = !gxOpen[b.dataset.gsub]; renderGx(); window.scrollTo(0, y); return; }
+    if ((b = ev.target.closest('[data-gcycle]'))) {
+      var id = b.dataset.gcycle, next = { todo: 'doing', doing: 'done', done: 'todo' }[gxStatus(id)];
+      gxSet(id, { s: next === 'todo' ? '' : next, d: next === 'done' ? toYmd(new Date()) : '' }).then(function () { renderGx(); window.scrollTo(0, y); });
+      return;
+    }
+    if ((b = ev.target.closest('[data-gtopic]'))) { gxTopic = b.dataset.gtopic; gxScroll = y; show('gxt'); return; }
+    if ((b = ev.target.closest('[data-gadd]'))) { gxAdding = b.dataset.gadd; renderGx(); window.scrollTo(0, y); var i = $('#gx-add-in'); if (i) i.focus(); return; }
+    if ((b = ev.target.closest('[data-gaddsave]'))) {
+      var name = ($('#gx-add-in').value || '').trim();
+      if (!name) return;
+      var x = gxEnsure().x, sid = b.dataset.gaddsave;
+      x[sid] = (x[sid] || []).concat([{ id: 'u' + uid().slice(0, 10), t: name.slice(0, 200) }]);
+      persist().then(function () { renderGx(); window.scrollTo(0, y); toast('Topic added'); var i2 = $('#gx-add-in'); if (i2) i2.focus(); });
+    }
+  });
+  $('#gx-body').addEventListener('keydown', function (ev) {
+    if (ev.target.id === 'gx-add-in' && ev.key === 'Enter') { ev.preventDefault(); var b = $('[data-gaddsave]'); if (b) b.click(); }
+  });
+  function renderGxt() {
+    var el = $('#gxt-body'), hit = gxFind(gxTopic);
+    if (!el || !hit || !S.data) { show('gx'); return; }
+    var x = hit.x, st = gxState(x.id), status = gxStatus(x.id), prev = hit.list[hit.i - 1], next = hit.list[hit.i + 1];
+    $('#gxt-bar-title').textContent = hit.s.name;
+    el.innerHTML = '<div class="lab-hero"><p class="chap-where">' + esc(hit.s.name) + '</p><h2>' + esc(x.t) + '</h2></div>' +
+      '<div class="seg" role="radiogroup" aria-label="Status">' + ['todo', 'doing', 'done'].map(function (k) {
+        return '<button type="button" role="radio" data-gst="' + k + '" aria-checked="' + (status === k) + '">' + STATUS_ICON[k] + ISTATUS[k] + '</button>';
+      }).join('') + '</div>' +
+      '<div class="chap-rev"><span>Revised <b>' + (st.r || 0) + '</b> ' + ((st.r || 0) === 1 ? 'time' : 'times') + '</span>' +
+      '<div><button type="button" class="mini" data-grev="-1"' + (st.r ? '' : ' disabled') + ' aria-label="One less revision">−</button><button type="button" class="mini" data-grev="1" aria-label="Add a revision">+</button></div></div>' +
+      '<div class="field lab-notes"><label class="label" for="gxt-n">Your notes</label>' +
+      '<textarea class="input" id="gxt-n" rows="10" placeholder="Formulas, shortcuts, tricks, examples, mistakes to avoid…">' + esc(st.n || '') + '</textarea>' +
+      '<p class="hint" id="gxt-saved">Saved automatically, encrypted in the box.</p></div>' +
+      '<div class="lab-links"><div class="chap-nav">' +
+      (prev ? '<button type="button" class="btn ghost" data-ggo="' + esc(prev.id) + '">← Previous</button>' : '') +
+      (next ? '<button type="button" class="btn ghost" data-ggo="' + esc(next.id) + '">Next →</button>' : '') + '</div>' +
+      (x.user ? '<button type="button" class="btn danger" id="gxt-del">Delete this topic</button>' : '') + '</div>';
+  }
+  function saveGxNotes() {
+    clearTimeout(gxNoteTimer);
+    var box = $('#gxt-n');
+    if (!box || !gxTopic || (gxState(gxTopic).n || '') === box.value) return Promise.resolve();
+    return gxSet(gxTopic, { n: box.value }).then(function () { var s2 = $('#gxt-saved'); if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', encrypted in the box.'; });
+  }
+  $('#gxt-body').addEventListener('input', function (ev) { if (ev.target.id === 'gxt-n') { clearTimeout(gxNoteTimer); gxNoteTimer = setTimeout(saveGxNotes, 700); } });
+  $('#gxt-body').addEventListener('click', function (ev) {
+    var b;
+    if ((b = ev.target.closest('[data-gst]'))) {
+      var k = b.dataset.gst;
+      saveGxNotes().then(function () { return gxSet(gxTopic, { s: k === 'todo' ? '' : k, d: k === 'done' ? (gxState(gxTopic).d || toYmd(new Date())) : '' }); }).then(renderGxt);
+      return;
+    }
+    if ((b = ev.target.closest('[data-grev]'))) {
+      var n = Math.max(0, (gxState(gxTopic).r || 0) + (+b.dataset.grev));
+      saveGxNotes().then(function () { return gxSet(gxTopic, { r: n }); }).then(renderGxt);
+      return;
+    }
+    if ((b = ev.target.closest('[data-ggo]'))) { saveGxNotes().then(function () { gxTopic = b.dataset.ggo; renderGxt(); window.scrollTo(0, 0); }); return; }
+    if (ev.target.closest('#gxt-del')) {
+      var hit = gxFind(gxTopic);
+      askConfirm({ title: 'Delete this topic?', body: '“' + hit.x.t + '” and its notes will be removed.', yes: 'Delete' }).then(function (ok) {
+        if (!ok) return;
+        var d = gxEnsure(), sid = hit.s.id, xid = hit.x.id.split('.')[1];
+        d.x[sid] = (d.x[sid] || []).filter(function (it) { return it.id !== xid; });
+        delete d.c[hit.x.id];
+        persist().then(function () { gxTopic = null; show('gx'); window.scrollTo(0, gxScroll); });
+      });
+    }
+  });
+  $('#btn-gxt-back').addEventListener('click', function () { saveGxNotes().then(function () { show('gx'); window.scrollTo(0, gxScroll); }); });
 
   /* ============ IAS prelims ============
      The reading list (lib/ias-prelims.js) is public: subjects, NCERT books

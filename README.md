@@ -331,6 +331,19 @@ opens, a reminder to run the system test (with a button to mark it done), and a
 timed event for the exam's length with alerts the day before and 45 minutes
 before.
 
+### Government jobs and exam prep
+
+- **Govt jobs** tab: one entry per exam you apply for (Kerala PSC, SSC, IBPS,
+  SBI, RRB, UPSC…): post, notification / category number, last date to apply,
+  admit card date, exam date and time, centre, application and roll numbers,
+  portal login (password hidden), fee, result, admit-card photos. Needs
+  attention and the weekly digest remind you of each date.
+- **Govt exam prep** (home tile): quantitative aptitude, reasoning, English,
+  GK, Kerala GK, current affairs, computer knowledge, Malayalam and banking
+  awareness, each with its standard topics. Mark topics, count revisions,
+  keep notes (formulas, shortcuts), add your own topics. Shows a countdown to
+  your next exam from Govt jobs.
+
 ### Notes & rules (no passphrase)
 
 Opens from the lock screen or the home tile without the passphrase. Notes and
