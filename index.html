@@ -931,6 +931,76 @@ select.input {
 .sheet-acts { display: flex; gap: 10px; }
 .sheet-acts .btn { flex: 1 1 0; }
 
+/* ---------- pinned + press-and-hold copy ---------- */
+.row { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.row img { pointer-events: none; }
+.row-star { color: var(--brass); margin-right: 5px; }
+.row-star svg { width: 12px; height: 12px; display: inline-block; vertical-align: -1px; fill: currentColor; }
+.list-head {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--fg-faint); padding: 6px 2px 0;
+}
+.list-tip { text-align: center; font-size: 12.5px; color: var(--fg-faint); margin: 6px 0 0; }
+.icon-btn[aria-pressed="true"] { color: var(--brass); border-color: var(--brass); }
+.icon-btn[aria-pressed="true"] svg { fill: currentColor; }
+.qlist { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; max-height: 55vh; overflow-y: auto; }
+.qbtn {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; min-width: 0;
+  padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--r-md); color: var(--fg);
+}
+.qbtn span { flex: 1 1 auto; min-width: 0; }
+.qbtn b { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--fg-faint); }
+.qbtn i {
+  display: block; font-style: normal; font-family: var(--data); font-size: 14px; color: var(--fg-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px;
+}
+.qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
+
+/* ---------- Wi-Fi card ---------- */
+.wifi {
+  background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+  padding: 18px 16px 16px; text-align: center; margin-bottom: 14px;
+}
+.wifi-ssid { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; word-break: break-word; }
+.wifi-sec { font-size: 12.5px; color: var(--fg-faint); margin: 0 0 14px; font-family: var(--data); }
+.wifi-qr { background: #fff; border-radius: var(--r-md); width: min(100%, 270px); margin: 0 auto 14px; overflow: hidden; }
+.wifi-qr svg { display: block; width: 100%; height: auto; }
+.wifi .btn { width: auto; margin: 0 auto; padding-inline: 22px; }
+.wifi .hint { max-width: 34ch; margin: 12px auto 0; }
+
+/* ---------- share safely ---------- */
+.lead { color: var(--fg-dim); font-size: 14.5px; line-height: 1.5; margin: 0 0 4px; }
+.chk { display: flex; align-items: center; gap: 12px; padding: 12px 13px; border-bottom: 1px solid var(--line-soft); min-width: 0; }
+.chk:last-child { border-bottom: none; }
+.chk input { flex: 0 0 auto; width: 20px; height: 20px; accent-color: var(--brass); }
+.chk span { flex: 1 1 auto; min-width: 0; }
+.chk b { display: block; font-weight: 500; font-size: 15px; }
+.chk i {
+  display: block; font-style: normal; font-size: 12.5px; color: var(--fg-faint); font-family: var(--data);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;
+}
+.seg { display: flex; gap: 6px; }
+.seg button {
+  flex: 1 1 0; padding: 11px 6px; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: transparent; color: var(--fg-dim); font-size: 14px;
+}
+.seg button[aria-pressed="true"] { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); font-weight: 600; }
+.share-pass {
+  font-family: var(--data); font-size: 25px; letter-spacing: 0.06em; text-align: center;
+  padding: 16px 10px; background: var(--surface); border: 1px dashed var(--brass);
+  border-radius: var(--r-md); color: var(--fg); word-break: break-all;
+}
+.share-link {
+  font-family: var(--data); font-size: 12px; color: var(--fg-faint); word-break: break-all;
+  max-height: 4.6em; overflow: hidden; margin: 0;
+}
+.btn-row { display: flex; gap: 10px; margin-top: 12px; }
+.btn-row .btn { flex: 1 1 0; }
+.share-foot { padding-block: 22px calc(28px + env(safe-area-inset-bottom, 0px)); }
+#screen-got { padding-block: calc(40px + env(safe-area-inset-top, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)); }
+#screen-got .card { margin-top: 18px; }
+
 /* ---------- toast ---------- */
 #toast {
   position: fixed; left: 50%; transform: translateX(-50%);
@@ -1074,6 +1144,9 @@ select.input {
           </svg>
         </button>
         <h1 id="detail-bar-title">Entry</h1>
+        <button class="icon-btn" id="btn-fav" aria-pressed="false" aria-label="Pin to the top of the list">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3.6 2.6 5.3 5.8.85-4.2 4.1 1 5.8L12 16.9l-5.2 2.75 1-5.8-4.2-4.1 5.8-.85Z"/></svg>
+        </button>
         <button class="txt-btn" id="btn-edit">Edit</button>
       </div>
     </header>
@@ -1178,6 +1251,37 @@ select.input {
     <div class="col gutter page-body" id="lab-body"></div>
   </section>
 
+  <!-- ================= SHARE SAFELY ================= -->
+  <section id="screen-share" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-share-back" aria-label="Back to the entry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Share safely</h1></div></header>
+    <div class="col gutter page-body" id="share-body"></div>
+  </section>
+
+  <!-- ================= OPEN A SHARED ITEM ================= -->
+  <section id="screen-got" class="screen gutter" hidden>
+    <div class="col">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2.5"/>
+          <circle cx="12" cy="11" r="2.6"/>
+          <path d="M12 13.6V16.5"/>
+        </svg>
+      </div>
+      <h1 class="lock-title">Shared with you</h1>
+      <div id="got-form">
+        <p class="lock-sub">Someone sent you a locked item from their Deposit Box. Type the password they gave you to open it. It opens only on this screen and is not saved anywhere.</p>
+        <div class="field">
+          <label class="label" for="got-pass">One-time password</label>
+          <input class="input mono" id="got-pass" type="text" placeholder="abcd-efgh-jkmn" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+        </div>
+        <p class="err" id="got-err" role="alert"></p>
+        <button class="btn" id="got-open">Open</button>
+      </div>
+      <div id="got-body"></div>
+      <button class="link-row" id="got-done">Close</button>
+    </div>
+  </section>
+
   <!-- ================= EDITOR ================= -->
   <section id="screen-edit" class="screen" hidden>
     <header class="topbar">
@@ -1207,6 +1311,15 @@ select.input {
   <button class="lightbox-close" id="lightbox-close">Close</button>
 </div>
 
+<div class="sheet-bg" id="qsheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="qsheet-title">
+    <h2 id="qsheet-title"></h2>
+    <p>Tap one to copy it. The clipboard is wiped after 30 seconds.</p>
+    <div class="qlist" id="qsheet-list"></div>
+    <button class="btn ghost" id="qsheet-close">Close</button>
+  </div>
+</div>
+
 <div class="sheet-bg" id="confirm" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
     <h2 id="confirm-title"></h2>
@@ -1221,6 +1334,8 @@ select.input {
 <!-- Argon2id (hash-wasm, MIT). Vendored rather than loaded from a CDN, so the
      app stays fully offline and no third party can alter key derivation. -->
 <script src="lib/argon2.umd.min.js"></script>
+<!-- QR Code Generator (Kazuhiko Arase, MIT), for the Wi-Fi join code. -->
+<script src="lib/qrcode.js"></script>
 <!-- TJ Null's OSCP list, generated by tools/oscp/build_labs.py. Lab names
      and ratings only; your progress and notes live in the encrypted vault. -->
 <script src="lib/oscp-labs.js"></script>
@@ -1234,7 +1349,7 @@ select.input {
   var IDLE_MS = 3 * 60 * 1000;   // lock after 3 min untouched
   var SHEET_GRACE_MS = 30 * 1000; // only while a share sheet / file picker is up
   var REVEAL_MS = 20 * 1000;     // re-mask a revealed value
-  var CLIP_MS = 45 * 1000;       // wipe the clipboard
+  var CLIP_MS = 30 * 1000;       // wipe the clipboard
 
   var enc = new TextEncoder();
   var dec = new TextDecoder();
@@ -1390,7 +1505,7 @@ select.input {
       ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'broker', 'id', 'edu', 'cert', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'race'];
 
   /* --- Indian government IDs ---
      One "ID document" kind and one tab, with a sub-type per document. Each
@@ -1599,6 +1714,22 @@ select.input {
     ]
   };
 
+  /* --- Wi-Fi ---
+     A network and its router login, with a join QR code guests can scan. */
+  TYPES.wifi = {
+    name: 'Wi-Fi network', short: 'Wi-Fi', titleLabel: 'Name', titlePh: 'Home Wi-Fi',
+    fields: [
+      { k: 'ssid', l: 'Network name (SSID)', ph: 'Bhavi-Home-5G' },
+      { k: 'password', l: 'Wi-Fi password', secret: true, gen: true, share: true },
+      { k: 'security', l: 'Security', opts: ['WPA2 / WPA3', 'WEP', 'None (open)'], onCard: true },
+      { k: 'hidden', l: 'Hidden network', opts: ['No', 'Yes'], onCard: true },
+      { k: 'router', l: 'Router admin page', ph: '192.168.1.1' },
+      { k: 'adminuser', l: 'Router admin username' },
+      { k: 'adminpass', l: 'Router admin password', secret: true, gen: true }
+    ]
+  };
+  ICON.wifi = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9a14 14 0 0 1 19 0"/><path d="M5.5 12.4a9.5 9.5 0 0 1 13 0"/><path d="M8.6 15.7a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19" r="1.1" fill="currentColor"/></svg>';
+
   ICON.edu = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9 12 4.5 21.5 9 12 13.5Z"/><path d="M6.5 11v4.5c1.6 1.6 3.6 2.4 5.5 2.4s3.9-.8 5.5-2.4V11"/><path d="M21.5 9v5.5"/></svg>';
   ICON.cert = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="m9 13.8-1.5 7 4.5-2.3 4.5 2.3-1.5-7"/><path d="m9.6 9 1.6 1.6 3.2-3.2"/></svg>';
   EDU_ORDER.forEach(function (k) { ICON[k] = ICON.edu; });
@@ -1627,6 +1758,11 @@ select.input {
     return /^[2-9]\d{11}$/.test(d) && verhoeffOk(d);
   }
 
+
+  var STAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3.6 2.6 5.3 5.8.85-4.2 4.1 1 5.8L12 16.9l-5.2 2.75 1-5.8-4.2-4.1 5.8-.85Z"/></svg>';
+  var COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
+    'stroke-linejoin="round"><rect x="9" y="9" width="11.5" height="11.5" rx="2"/>' +
+    '<path d="M6.5 15H5a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 5 3.5h8.5A1.5 1.5 0 0 1 15 5v1.5"/></svg>';
 
   /* ============ helpers ============ */
   function esc(s) {
@@ -1893,7 +2029,8 @@ select.input {
   var SCREENS = {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
-    attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab'
+    attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
+    share: '#screen-share', got: '#screen-got'
   };
   function show(view) {
     S.view = view;
@@ -1909,7 +2046,10 @@ select.input {
     if (view === 'coach') renderCoach();
     if (view === 'oscp') renderOscp();
     if (view === 'lab') renderLab();
-    if (view !== 'detail') { stopOtp(); closeLightbox(); }
+    if (view === 'share') renderShare();
+    if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); }
+    if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
+    if (view !== 'got') wipeGot();
     if (view !== 'edit') scanState = null;
     if (view !== 'lock') armIdle();
   }
@@ -1944,6 +2084,7 @@ select.input {
     $('#edit-body').textContent = '';
     $('#list').textContent = '';
     $('#confirm').hidden = true;
+    closeQuick();
     $('#bk-import-panel').hidden = true;
     $('#bk-dump-wrap').hidden = true;
     $('#bk-dump').value = '';
@@ -1981,25 +2122,35 @@ select.input {
     }
   });
 
-  /* ============ clipboard ============ */
+  /* ============ clipboard ============
+     iOS lets a page write the clipboard only during a tap, so the timed wipe
+     can be refused (and it never runs while the app is in the background).
+     When that happens the wipe stays due and runs on the next tap in the app. */
+  var clipDue = 0;
   function copyValue(text, what, btn) {
     if (!navigator.clipboard || !navigator.clipboard.writeText) {
       toast('This browser will not allow copying'); return;
     }
     navigator.clipboard.writeText(text).then(function () {
-      toast(what + ' copied — clipboard clears in 45 seconds');
+      toast(what + ' copied — clipboard clears in 30 seconds');
       if (btn) {
         btn.classList.add('done');
         setTimeout(function () { btn.classList.remove('done'); }, 1400);
       }
+      clipDue = Date.now() + CLIP_MS;
       clearTimeout(clipTimer);
       clipTimer = setTimeout(function () {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText('').catch(function () {});
-        }
+        navigator.clipboard.writeText('').then(function () { clipDue = 0; }, function () {});
       }, CLIP_MS);
     }).catch(function () { toast('Could not reach the clipboard'); });
   }
+  document.addEventListener('click', function (ev) {
+    if (!clipDue || Date.now() < clipDue) return;
+    clipDue = 0;
+    // A fresh copy replaces the clipboard anyway; wiping first could race it.
+    if (ev.target.closest && ev.target.closest('[data-copy], [data-qcopy], [data-gcopy], [data-scopy], #btn-otp-copy')) return;
+    navigator.clipboard.writeText('').catch(function () {});
+  }, true);
 
   /* ============ formatting ============ */
   function digits(v) { return String(v || '').replace(/\D/g, ''); }
@@ -2378,7 +2529,7 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, id: 0, edu: 0, cert: 0, race: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, race: 0 };
     entries().forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
@@ -2396,6 +2547,9 @@ select.input {
     }
     if (e.type === 'broker') {
       return [f.broker, f.clientid].filter(Boolean).join('  ·  ');
+    }
+    if (e.type === 'wifi') {
+      return [f.ssid, f.security === 'None (open)' ? 'Open' : f.security].filter(Boolean).join('  ·  ');
     }
     if (groupOf(e.type) === 'edu') {
       return [TYPES[e.type].short, f.degree || f.board || f.qual, f.year, f.result].filter(Boolean).join('  ·  ');
@@ -2465,7 +2619,7 @@ select.input {
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', id: 'IDs', edu: 'Education', cert: 'Certs', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -2505,8 +2659,8 @@ select.input {
     }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', id: 'ID documents', edu: 'education records', cert: 'certifications', race: 'races' };
-      var ONE = { login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', id: 'an ID document', edu: 'an education record', cert: 'a certification', race: 'a race' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', race: 'races' };
+      var ONE = { login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', race: 'a race' };
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + ' stored so far.</p>' +
         (ONE[S.filter] ? '<button class="btn empty-add" data-addkind="' + esc(S.filter) + '">Add ' + esc(ONE[S.filter]) + '</button>' : '') +
@@ -2514,19 +2668,87 @@ select.input {
       return;
     }
 
-    $('#list').innerHTML = list.map(function (e) {
+    // Pinned entries sit on top. Races keep their calendar order.
+    var pinned = S.filter === 'race' ? [] : list.filter(function (e) { return e.fav; });
+    var rest = pinned.length ? list.filter(function (e) { return !e.fav; }) : list;
+    var rowHtml = function (e) {
       var cov = (e.type === 'race' && (e.f || {}).cover) || (hasPhotos(e.type) && (e.f || {}).img1);
       return '<button class="row" data-id="' + esc(e.id) + '">' +
         (cov
           ? '<img class="row-cover" src="' + esc(cov) + '" alt="">'
           : '<span class="glyph" aria-hidden="true">' + ICON[e.type] + '</span>') +
-        '<span class="row-text"><span class="row-title">' + esc(e.title || 'Untitled') + '</span>' +
+        '<span class="row-text"><span class="row-title">' +
+        (e.fav && e.type !== 'race' ? '<span class="row-star" aria-label="Pinned">' + STAR_SVG + '</span>' : '') +
+        esc(e.title || 'Untitled') + '</span>' +
         '<span class="row-meta">' + esc(rowMeta(e)) + '</span></span>' +
         '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></span>' +
         '</button>';
-    }).join('');
+    };
+    $('#list').innerHTML = (pinned.length && rest.length
+      ? '<div class="list-head">Pinned</div>' + pinned.map(rowHtml).join('') +
+        '<div class="list-head">Others</div>' + rest.map(rowHtml).join('')
+      : pinned.concat(rest).map(rowHtml).join('')) +
+      '<p class="list-tip">Press and hold an entry to copy from it.</p>';
   }
+
+  /* --- press and hold a row: copy a value without opening it --- */
+  var holdTimer = null, held = false, holdX = 0, holdY = 0, qsheetId = null, qOpenedAt = 0;
+  function canCopy(type, k) { return type !== 'race' || k === 'bib' || k === 'link'; }
+  function openQuick(id) {
+    var e = findEntry(id);
+    if (!e || !$('#qsheet').hidden) return;
+    var fs = TYPES[e.type].fields.filter(function (f) { return (e.f || {})[f.k] && canCopy(e.type, f.k); });
+    $('#qsheet-title').textContent = 'Copy from ' + (e.title || 'Untitled');
+    $('#qsheet-list').innerHTML = fs.length ? fs.map(function (f) {
+      var raw = e.f[f.k];
+      var vis = f.secret ? maskOf(raw, f) : f.date ? fmtDate(raw) : shownValue(raw, f);
+      return '<button class="qbtn" data-qcopy="' + esc(f.k) + '"><span><b>' + esc(f.l) + '</b><i>' + esc(vis) +
+        '</i></span>' + COPY_SVG + '</button>';
+    }).join('') : '<p class="hint">Nothing to copy yet. Open it and tap Edit to add details.</p>';
+    qsheetId = id;
+    qOpenedAt = Date.now();
+    $('#qsheet').hidden = false;
+  }
+  function closeQuick() {
+    $('#qsheet').hidden = true;
+    $('#qsheet-list').textContent = '';
+    qsheetId = null;
+  }
+  $('#list').addEventListener('pointerdown', function (ev) {
+    held = false;
+    clearTimeout(holdTimer);
+    var row = ev.target.closest('.row[data-id]');
+    if (!row || ev.button > 0) return;
+    holdX = ev.clientX; holdY = ev.clientY;
+    holdTimer = setTimeout(function () { held = true; openQuick(row.dataset.id); }, 500);
+  });
+  $('#list').addEventListener('pointermove', function (ev) {
+    if (Math.abs(ev.clientX - holdX) > 10 || Math.abs(ev.clientY - holdY) > 10) clearTimeout(holdTimer);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (n) {
+    $('#list').addEventListener(n, function () { clearTimeout(holdTimer); });
+  });
+  $('#list').addEventListener('contextmenu', function (ev) {
+    var row = ev.target.closest('.row[data-id]');
+    if (!row) return;
+    ev.preventDefault();
+    clearTimeout(holdTimer);
+    held = true;
+    openQuick(row.dataset.id);
+  });
+  $('#qsheet').addEventListener('click', function (ev) {
+    // The finger that opened the sheet lifts on top of it; ignore that tap.
+    if (Date.now() - qOpenedAt < 450) return;
+    if (ev.target === $('#qsheet') || ev.target.closest('#qsheet-close')) { closeQuick(); return; }
+    var b = ev.target.closest('[data-qcopy]');
+    var e = b && findEntry(qsheetId);
+    var f = e && fieldDef(e.type, b.dataset.qcopy);
+    if (!f) return;
+    var raw = e.f[f.k];
+    copyValue(f.card ? digits(raw) : String(raw), f.l, null);
+    closeQuick();
+  });
 
   $('#tabs').addEventListener('click', function (e) {
     var b = e.target.closest('[data-filter]');
@@ -2535,6 +2757,7 @@ select.input {
     renderVault();
   });
   $('#list').addEventListener('click', function (e) {
+    if (held) { held = false; e.preventDefault(); return; }   // the end of a press-and-hold
     var add = e.target.closest('[data-addkind]');
     if (add) { startNew(add.dataset.addkind); return; }
     var b = e.target.closest('[data-id]');
@@ -2747,6 +2970,7 @@ select.input {
     if (groupOf(e.type) === 'id') html += idCard(e) + idPhotos(e);
     if (groupOf(e.type) === 'edu') html += eduCard(e) + idPhotos(e);
     if (e.type === 'cert') html += certCard(e) + idPhotos(e);
+    if (e.type === 'wifi') html += wifiCard(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
       html += '<div class="otp">' +
@@ -2780,11 +3004,8 @@ select.input {
           'stroke-linejoin="round"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/>' +
           '<circle cx="12" cy="12" r="3"/></svg></button>';
       }
-      var copyable = e.type !== 'race' || f.k === 'bib' || f.k === 'link';
-      if (copyable) acts += '<button class="mini" data-copy="' + esc(f.k) + '" aria-label="Copy ' + esc(f.l) + '">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
-        'stroke-linejoin="round"><rect x="9" y="9" width="11.5" height="11.5" rx="2"/>' +
-        '<path d="M6.5 15H5a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 5 3.5h8.5A1.5 1.5 0 0 1 15 5v1.5"/></svg></button>';
+      if (canCopy(e.type, f.k)) acts += '<button class="mini" data-copy="' + esc(f.k) + '" aria-label="Copy ' + esc(f.l) + '">' +
+        COPY_SVG + '</button>';
 
       return '<div class="frow"><span class="frow-text"><span class="label">' + esc(f.l) + '</span>' +
         '<span class="' + cls + '" data-field="' + esc(f.k) + '" data-masked="' + (f.secret ? '1' : '0') + '">' +
@@ -2800,10 +3021,73 @@ select.input {
     }
 
     html += '<div class="stamp">Last changed ' + esc(stampOf(e.updated)) + '</div>' +
-      '<div class="detail-foot"><button class="btn danger" id="btn-delete">Delete entry</button></div>';
+      '<div class="detail-foot"><button class="btn ghost" id="btn-share">Share safely</button>' +
+      '<button class="btn danger" id="btn-delete">Delete entry</button></div>';
 
     $('#detail-body').innerHTML = html;
     if (hasOtp) startOtp(e.f.totp); else stopOtp();
+    paintFav(e);
+  }
+
+  function paintFav(e) {
+    var b = $('#btn-fav');
+    b.hidden = e.type === 'race';
+    b.setAttribute('aria-pressed', e.fav ? 'true' : 'false');
+    b.setAttribute('aria-label', e.fav ? 'Unpin from the top' : 'Pin to the top of the list');
+  }
+  $('#btn-fav').addEventListener('click', function () {
+    var e = findEntry(S.id);
+    if (!e) return;
+    var was = !!e.fav;
+    if (was) delete e.fav; else e.fav = true;
+    persist().then(function (ok) {
+      if (!ok) { if (was) e.fav = true; else delete e.fav; return; }
+      paintFav(e);
+      toast(e.fav ? 'Pinned to the top of the list' : 'Unpinned');
+    });
+  });
+
+  /* --- Wi-Fi join code ---
+     The format phone cameras read: WIFI:T:WPA;S:name;P:password;H:true;;
+     with \ ; , : and " escaped by a backslash. The code holds the password,
+     so it is drawn only on request and cleared after two minutes. */
+  var WIFI_QR_MS = 2 * 60 * 1000, wifiTimer = null;
+  function wifiPayload(f) {
+    var q = function (s) { return String(s || '').replace(/([\\;,:"])/g, '\\$1'); };
+    var open = f.security === 'None (open)';
+    return 'WIFI:T:' + (open ? 'nopass' : f.security === 'WEP' ? 'WEP' : 'WPA') + ';S:' + q(f.ssid) + ';' +
+      (open ? '' : 'P:' + q(f.password) + ';') + (f.hidden === 'Yes' ? 'H:true;' : '') + ';';
+  }
+  function qrSvg(text) {
+    var lib = window.qrcode;
+    if (!lib) return '';
+    lib.stringToBytes = lib.stringToBytesFuncs['UTF-8'];
+    var qr = lib(0, 'M');
+    qr.addData(text, 'Byte');
+    qr.make();
+    var n = qr.getModuleCount(), quiet = 4, size = n + quiet * 2, d = '';
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) if (qr.isDark(r, c)) d += 'M' + (c + quiet) + ' ' + (r + quiet) + 'h1v1h-1z';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges" role="img" aria-label="Wi-Fi join code">' +
+      '<rect width="' + size + '" height="' + size + '" fill="#fff"/><path fill="#000" d="' + d + '"/></svg>';
+  }
+  function wifiCard(e) {
+    var f = e.f || {};
+    if (!f.ssid) return '<div class="notice">Add the network name (and password) to get a QR code guests can scan to join.</div>';
+    var open = f.security === 'None (open)';
+    return '<div class="wifi"><p class="wifi-ssid">' + esc(f.ssid) + '</p>' +
+      '<p class="wifi-sec">' + esc((open ? 'Open network' : f.security || 'WPA2 / WPA3') + (f.hidden === 'Yes' ? ' · hidden' : '')) + '</p>' +
+      '<div class="wifi-qr" id="wifi-qr" hidden></div>' +
+      '<button class="btn ghost" id="btn-wifi-qr" type="button">Show QR code to join</button>' +
+      '<p class="hint">Guests point their phone camera at the code and tap Join. ' +
+      (open ? '' : 'It contains the password, so show it only to people you would tell it to.') + '</p></div>';
+  }
+  function hideWifiQr() {
+    clearTimeout(wifiTimer);
+    var box = $('#wifi-qr'), b = $('#btn-wifi-qr');
+    if (box) { box.hidden = true; box.textContent = ''; }
+    if (b) b.textContent = 'Show QR code to join';
   }
 
   $('#detail-body').addEventListener('click', function (ev) {
@@ -2853,6 +3137,21 @@ select.input {
       }
       return;
     }
+
+    if (ev.target.closest('#btn-wifi-qr')) {
+      var box = $('#wifi-qr');
+      if (!box.hidden) { hideWifiQr(); return; }
+      var svg = qrSvg(wifiPayload(e.f || {}));
+      if (!svg) { toast('The QR code maker did not load. Reload the app.'); return; }
+      box.innerHTML = svg;
+      box.hidden = false;
+      ev.target.closest('#btn-wifi-qr').textContent = 'Hide QR code';
+      clearTimeout(wifiTimer);
+      wifiTimer = setTimeout(hideWifiQr, WIFI_QR_MS);
+      return;
+    }
+
+    if (ev.target.closest('#btn-share')) { startShare(e); return; }
 
     if (ev.target.closest('#btn-otp-copy')) {
       if (otpCode) copyValue(otpCode, 'Code', ev.target.closest('#btn-otp-copy'));
@@ -3336,6 +3635,11 @@ select.input {
           return;
         }
       }
+    }
+    if (d.type === 'wifi' && f.password && f.security !== 'WEP' && f.security !== 'None (open)' &&
+        (f.password.length < 8 || f.password.length > 63)) {
+      $('#edit-err').textContent = 'A WPA Wi-Fi password is 8 to 63 characters.';
+      return;
     }
     if (d.type === 'race' && f.time && parseTime(f.time) === null) {
       $('#edit-err').textContent = 'Write the finish time as h:mm:ss or mm:ss, for example 2:14:36.';
@@ -3972,7 +4276,7 @@ select.input {
   /* ============ password health ============
      Looks only at real passwords, never PINs (those are short by design).
      Values are compared in memory and never shown on this screen. */
-  var PW_FIELDS = { login: ['password'], bank: ['nbpass', 'txnpass'], broker: ['password'] };
+  var PW_FIELDS = { login: ['password'], bank: ['nbpass', 'txnpass'], broker: ['password'], wifi: ['password', 'adminpass'] };
   function healthReport() {
     var items = [], seen = {};
     entries().forEach(function (e) {
@@ -3993,7 +4297,7 @@ select.input {
   function renderHealth() {
     var items = healthReport();
     if (!items.length) {
-      $('#health-body').innerHTML = '<div class="empty"><h2>No passwords yet</h2><p>Add a login, bank or trading account and its password will be checked here.</p></div>';
+      $('#health-body').innerHTML = '<div class="empty"><h2>No passwords yet</h2><p>Add a login, bank, trading or Wi-Fi account and its password will be checked here.</p></div>';
       return;
     }
     var bad = items.filter(function (i) { return i.reused || i.weak || i.old; });
@@ -5497,6 +5801,230 @@ select.input {
     saveLabNotes().then(function () { show('oscp'); window.scrollTo(0, oscpScroll); });
   });
 
+  /* ============ share one item safely ============
+     The chosen fields are sealed with a fresh random password (Argon2id, the
+     vault's own cost, then AES-256-GCM) and the ciphertext rides in the link's
+     #fragment, which browsers never send to a server. GitHub Pages only serves
+     the app; it never sees the item or the password. There is no server, so a
+     sent link can't be revoked: it carries an expiry the app enforces. */
+  var SHARE_ABC = 'abcdefghjkmnpqrstuvwxyz23456789';   // no i, l, o, 0, 1
+  var SHARE_TTL = [[1, '1 hour'], [24, '1 day'], [168, '7 days']];
+  function sharePass() {
+    var s = '';
+    for (var i = 0; i < 12; i++) s += SHARE_ABC[randInt(SHARE_ABC.length)];   // ~59 bits
+    return s.slice(0, 4) + '-' + s.slice(4, 8) + '-' + s.slice(8);
+  }
+  function normShare(p) { return String(p || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function b64u(bytes) { return b64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function ub64u(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    return ub64(s);
+  }
+  function shareKey(pass, salt) {
+    return deriveFromKdf(normShare(pass), { name: 'argon2id', m: ARGON.m, t: ARGON.t, p: ARGON.p, salt: b64(salt) });
+  }
+  // Link payload: version byte 1, 16-byte salt, 12-byte IV, AES-GCM ciphertext.
+  function sealShare(payload, pass) {
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return shareKey(pass, salt).then(function (k) {
+      return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, enc.encode(JSON.stringify(payload)));
+    }).then(function (ct) {
+      var out = new Uint8Array(29 + ct.byteLength);
+      out[0] = 1; out.set(salt, 1); out.set(iv, 17); out.set(new Uint8Array(ct), 29);
+      return b64u(out);
+    });
+  }
+  function openShare(blob, pass) {
+    var b;
+    try { b = ub64u(blob); } catch (e) { return Promise.reject(new Error('format')); }
+    if (b[0] !== 1 || b.length < 29 + 16) return Promise.reject(new Error('format'));
+    return shareKey(pass, b.slice(1, 17)).then(function (k) {
+      return crypto.subtle.decrypt({ name: 'AES-GCM', iv: b.slice(17, 29) }, k, b.slice(29));
+    }).then(function (pt) { return JSON.parse(dec.decode(pt)); });
+  }
+  function fmtWhen(ms) {
+    var d = new Date(ms);
+    return fmtDate(toYmd(d)) + ', ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+
+  // Passwords, PINs and 2FA keys start unticked; account and card numbers,
+  // which people do pass to family, start ticked.
+  function startShare(e) {
+    var picks = {};
+    TYPES[e.type].fields.forEach(function (f) {
+      if ((e.f || {})[f.k]) picks[f.k] = !!f.share || !(f.secret && !f.tail);
+    });
+    S.share = { id: e.id, picks: picks, notes: false, ttl: 24, out: null, busy: false };
+    show('share');
+  }
+
+  function renderShare() {
+    var sh = S.share, e = sh && findEntry(sh.id);
+    if (!e) { show('vault'); return; }
+    var html;
+    if (!sh.out) {
+      var fs = TYPES[e.type].fields.filter(function (f) { return sh.picks[f.k] != null; });
+      html = '<p class="lead">Pick what to send from <b>' + esc(e.title || 'Untitled') + '</b>. It is locked with a one-time password before it leaves your phone.</p>' +
+        '<div class="section-label">Include</div>' +
+        (fs.length || e.notes ? '<div class="card">' + fs.map(function (f) {
+          var raw = e.f[f.k];
+          var vis = f.secret ? maskOf(raw, f) : f.date ? fmtDate(raw) : shownValue(raw, f);
+          return '<label class="chk"><input type="checkbox" data-pick="' + esc(f.k) + '"' + (sh.picks[f.k] ? ' checked' : '') +
+            '><span><b>' + esc(f.l) + '</b><i>' + esc(vis) + '</i></span></label>';
+        }).join('') +
+        (e.notes ? '<label class="chk"><input type="checkbox" data-pick="__notes"' + (sh.notes ? ' checked' : '') +
+          '><span><b>Notes</b><i>' + esc(String(e.notes).slice(0, 80)) + '</i></span></label>' : '') +
+        '</div>' : '<div class="notice">This entry has no details to send yet.</div>') +
+        (hasPhotos(e.type) || e.type === 'race' ? '<p class="hint">Photos are never included.</p>' : '') +
+        '<div class="section-label">The link stops opening after</div>' +
+        '<div class="seg">' + SHARE_TTL.map(function (t) {
+          return '<button type="button" data-ttl="' + t[0] + '" aria-pressed="' + (sh.ttl === t[0]) + '">' + esc(t[1]) + '</button>';
+        }).join('') + '</div>' +
+        '<p class="err" id="share-err" role="alert" style="margin-top:16px"></p>' +
+        '<button class="btn" id="btn-share-make"' + (sh.busy ? ' disabled' : '') + '>' + (sh.busy ? 'Locking it…' : 'Create secure link') + '</button>';
+    } else {
+      html = '<div class="notice" style="margin-top:4px"><b>Ready.</b> Send these two things <b>separately</b>: the link one way, the password another.</div>' +
+        '<div class="section-label">1 · The link</div>' +
+        '<p class="share-link">' + esc(sh.out.url) + '</p>' +
+        '<div class="btn-row">' + (navigator.share ? '<button class="btn" id="btn-share-send">Send link…</button>' : '') +
+        '<button class="btn ghost" data-scopy="link">Copy link</button></div>' +
+        '<div class="section-label">2 · The one-time password</div>' +
+        '<div class="share-pass">' + esc(sh.out.pass) + '</div>' +
+        '<div class="btn-row"><button class="btn ghost" data-scopy="pass">Copy password</button></div>' +
+        '<p class="hint">Say the password on a call, or text it if the link went on WhatsApp. Anyone with both can open it until <b>' +
+        esc(fmtWhen(sh.out.exp)) + '</b>; after that the app refuses it. A sent link cannot be taken back, and this password is not stored anywhere, so note it before you leave this screen.</p>' +
+        '<div class="share-foot"><button class="btn ghost" id="btn-share-new">Make another link</button></div>';
+    }
+    $('#share-body').innerHTML = html;
+  }
+
+  $('#share-body').addEventListener('change', function (ev) {
+    var k = ev.target.dataset && ev.target.dataset.pick;
+    if (!k || !S.share) return;
+    if (k === '__notes') S.share.notes = ev.target.checked; else S.share.picks[k] = ev.target.checked;
+  });
+  $('#share-body').addEventListener('click', function (ev) {
+    var sh = S.share, e = sh && findEntry(sh.id);
+    if (!e) return;
+    var ttl = ev.target.closest('[data-ttl]');
+    if (ttl) { sh.ttl = +ttl.dataset.ttl; renderShare(); return; }
+
+    if (ev.target.closest('#btn-share-make')) {
+      if (sh.busy) return;
+      var rows = TYPES[e.type].fields.filter(function (f) { return sh.picks[f.k]; }).map(function (f) {
+        var raw = e.f[f.k];
+        return [f.l, f.date ? fmtDate(raw) : shownValue(raw, f), f.card ? digits(raw) : String(raw)];
+      });
+      if (!rows.length && !(sh.notes && e.notes)) { $('#share-err').textContent = 'Tick at least one thing to send.'; return; }
+      var now = Date.now(), pass = sharePass();
+      var payload = { v: 1, title: e.title || 'Untitled', kind: TYPES[e.type].name, rows: rows,
+        notes: sh.notes ? e.notes || '' : '', made: now, exp: now + sh.ttl * 3600 * 1000 };
+      sh.busy = true;
+      renderShare();
+      paint().then(function () { return sealShare(payload, pass); }).then(function (blob) {
+        if (S.share !== sh) return;
+        sh.busy = false;
+        sh.out = { url: location.href.split('#')[0].split('?')[0] + '#s=' + blob, pass: pass, exp: payload.exp };
+        renderShare();
+      }, function () {
+        if (S.share !== sh) return;
+        sh.busy = false;
+        renderShare();
+        $('#share-err').textContent = 'Could not lock it. Reload the app and try again.';
+      });
+      return;
+    }
+
+    var sc = ev.target.closest('[data-scopy]');
+    if (sc && sh.out) {
+      var link = sc.dataset.scopy === 'link';
+      copyValue(link ? sh.out.url : sh.out.pass, link ? 'Link' : 'Password', sc);
+      return;
+    }
+    if (ev.target.closest('#btn-share-send') && sh.out) {
+      guardSheet();
+      navigator.share({ title: 'Shared from Deposit Box', url: sh.out.url }).catch(function () {});
+      return;
+    }
+    if (ev.target.closest('#btn-share-new')) { startShare(e); }
+  });
+  $('#btn-share-back').addEventListener('click', function () { show('detail'); });
+
+  /* --- opening a shared link --- */
+  var got = null, gotTimer = null;
+  function shareBlob() {
+    var m = /^#s=([A-Za-z0-9_-]+)$/.exec(location.hash);
+    return m ? m[1] : '';
+  }
+  function wipeGot() {
+    got = null;
+    clearTimeout(gotTimer);
+    $('#got-body').textContent = '';
+    $('#got-pass').value = '';
+    $('#got-err').textContent = '';
+    $('#got-form').hidden = false;
+  }
+  function showGot() {
+    show('got');
+    wipeGot();
+  }
+  function armGot() {
+    clearTimeout(gotTimer);
+    if (got) gotTimer = setTimeout(function () { wipeGot(); toast('Closed after 3 minutes idle'); }, IDLE_MS);
+  }
+  function renderGot() {
+    $('#got-form').hidden = true;
+    $('#got-body').innerHTML =
+      '<h2 class="detail-title">' + esc(got.title) + '</h2><div class="detail-kind">' + esc(got.kind || '') + '</div>' +
+      (got.rows.length ? '<div class="card">' + got.rows.map(function (r, i) {
+        return '<div class="frow"><span class="frow-text"><span class="label">' + esc(r[0]) + '</span>' +
+          '<span class="val">' + esc(r[1]) + '</span></span><span class="frow-acts">' +
+          '<button class="mini" data-gcopy="' + i + '" aria-label="Copy ' + esc(r[0]) + '">' + COPY_SVG + '</button></span></div>';
+      }).join('') + '</div>' : '') +
+      (got.notes ? '<div class="section-label">Notes</div><div class="card"><div class="frow"><span class="frow-text">' +
+        '<span class="val note">' + esc(got.notes) + '</span></span></div></div>' : '') +
+      '<p class="hint">Shared on ' + esc(fmtWhen(got.made)) + '. This link stops opening after ' + esc(fmtWhen(got.exp)) +
+      '. Nothing is saved on this phone; copy what you need, then close.</p>';
+    armGot();
+  }
+  $('#got-body').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-gcopy]');
+    if (!b || !got) return;
+    var r = got.rows[+b.dataset.gcopy];
+    if (r) copyValue(r[2], r[0], b);
+    armGot();
+  });
+  $('#got-open').addEventListener('click', function () {
+    var btn = this, pass = normShare($('#got-pass').value);
+    if (pass.length < 12) { $('#got-err').textContent = 'Type the 12-letter password you were sent, like abcd-efgh-jkmn.'; return; }
+    $('#got-err').textContent = '';
+    btn.disabled = true; btn.textContent = 'Opening…';
+    paint().then(function () { return openShare(shareBlob(), pass); }).then(function (p) {
+      if (!p || !Array.isArray(p.rows)) throw new Error('format');
+      if (p.exp && Date.now() > p.exp) {
+        $('#got-err').textContent = 'This link expired on ' + fmtWhen(p.exp) + '. Ask for a new one.';
+        return;
+      }
+      got = p;
+      renderGot();
+    }).catch(function () {
+      $('#got-err').textContent = 'That password does not open this link. Check it with the person who sent it.';
+    }).then(function () { btn.disabled = false; btn.textContent = 'Open'; });
+  });
+  $('#got-pass').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') $('#got-open').click(); });
+  $('#got-done').addEventListener('click', function () {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    renderLock();
+    show('lock');
+  });
+  window.addEventListener('hashchange', function () {
+    if (!shareBlob()) return;
+    if (S.key) lockNow(null);
+    showGot();
+  });
+
   /* ============ confirm sheet ============ */
   var confirmResolve = null;
   function askConfirm(opts) {
@@ -5515,6 +6043,7 @@ select.input {
   $('#confirm').addEventListener('click', function (e) { if (e.target === $('#confirm')) closeConfirm(false); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !$('#confirm').hidden) closeConfirm(false);
+    if (e.key === 'Escape' && !$('#qsheet').hidden) closeQuick();
   });
 
   /* ============ boot ============ */
@@ -5531,7 +6060,7 @@ select.input {
   } else {
     S.rec = readRec();
     renderLock();
-    show('lock');
+    if (shareBlob()) showGot(); else show('lock');
   }
 
   if ('serviceWorker' in navigator) {

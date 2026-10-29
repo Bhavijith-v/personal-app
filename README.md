@@ -9,7 +9,7 @@ passphrase only you know.
 | File | What it is |
 | --- | --- |
 | `index.html` | The whole app — UI, logic and encryption in one file |
-| `lib/` | Argon2id (hash-wasm, MIT) — vendored, never fetched from a CDN |
+| `lib/` | Argon2id (hash-wasm, MIT) and the QR code maker (qrcode-generator 1.4.4, MIT) — vendored, never fetched from a CDN |
 | `manifest.webmanifest` | Makes iOS treat it as an app, not a web page |
 | `sw.js` | Caches the app so it opens with no network |
 | `icons/` | Home Screen icon |
@@ -196,6 +196,36 @@ Both can hold photos of the real certificate and mark sheet (or score
 report), shrunk and encrypted like ID photos. Years must be four digits,
 joining can't come after passing, and verification links must be `https://`.
 
+### Quick copy, pins and Wi-Fi
+
+- **Press and hold** any entry in the list to copy its UPI ID, IFSC, account
+  number, password and so on without opening it.
+- **Star** (top right of an entry) pins it to the top of the list.
+- **Wi-Fi** entries hold the network, its password and the router login.
+  *Show QR code to join* draws the standard Wi-Fi code that phone cameras read;
+  it holds the password, so it is drawn only when asked and cleared after two
+  minutes.
+- The ↻ button next to any password field makes a strong password.
+
+### Share one item safely
+
+*Share safely* at the bottom of an entry. Tick what to send (passwords and PINs
+start unticked), pick when the link should stop opening (1 hour, 1 day or
+7 days), and the app makes:
+
+1. a link, and
+2. a 12-character one-time password (`abcd-efgh-jkmn`).
+
+The ticked fields are locked with that password (Argon2id + AES-256-GCM) on your
+phone. The locked data rides in the link after the `#`, which browsers never
+send to a server, so GitHub never sees it. Send the link and the password by
+different routes (link on WhatsApp, password on a call). The other person opens
+the link in any browser, types the password and can copy each value; nothing is
+saved on their phone.
+
+There is no server, so a sent link can't be revoked. Its expiry is enforced by
+the app. Photos are never included.
+
 ### OSCP labs
 
 Home → **OSCP labs rooted**. All 196 machines from TJ Null's NetSecFocus
@@ -310,7 +340,9 @@ it issues can place trades, not just read.
   share sheet and the file picker (which also hide the page); those get 30
   seconds so saving a backup doesn't lock you out mid-way.
 - A revealed password re-hides after 20 seconds.
-- Anything you copy is wiped from the clipboard after 45 seconds.
+- Anything you copy is wiped from the clipboard after 30 seconds. iOS only lets
+  a page touch the clipboard during a tap, so if you've left the app the wipe
+  happens on your next tap inside it.
 
 ## Backups
 
