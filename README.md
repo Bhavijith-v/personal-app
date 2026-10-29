@@ -9,7 +9,7 @@ passphrase only you know.
 | File | What it is |
 | --- | --- |
 | `index.html` | The whole app — UI, logic and encryption in one file |
-| `lib/` | Argon2id (hash-wasm, MIT) and the QR code maker (qrcode-generator 1.4.4, MIT) — vendored, never fetched from a CDN |
+| `lib/` | Argon2id (hash-wasm, MIT), the QR code maker (qrcode-generator 1.4.4, MIT) and site logos (`brands.js`, from Simple Icons, CC0) — vendored, never fetched from a CDN |
 | `manifest.webmanifest` | Makes iOS treat it as an app, not a web page |
 | `sw.js` | Caches the app so it opens with no network |
 | `icons/` | Home Screen icon |
@@ -198,6 +198,12 @@ joining can't come after passing, and verification links must be `https://`.
 
 ### Quick copy, pins and Wi-Fi
 
+- **Logos and covers.** Logins, bank and trading accounts show their site's
+  logo and a cover in the brand's colour, picked from the entry's name first,
+  then its website (about 170 popular sites, Indian ones included). Logos are
+  bundled in `lib/brands.js` (rebuild with `tools/brands/build_brands.py`), so
+  no site or logo service learns which accounts you have. A login with no match
+  gets a lettered cover. Brand names and logos belong to their owners.
 - **Press and hold** any entry in the list to copy its UPI ID, IFSC, account
   number, password and so on without opening it.
 - **Star** (top right of an entry) pins it to the top of the list.
