@@ -960,6 +960,26 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- IPOs ---------- */
+.ipo { padding: 16px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); margin-bottom: 14px; }
+.ipo-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ipo-top span { font-size: 12.5px; color: var(--fg-faint); }
+.ipo-big { display: block; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 12px 0 2px; }
+.ipo-sub { color: var(--fg-dim); font-size: 13.5px; margin: 0; }
+.ipo-gain { margin: 12px 0 0; font-size: 15px; font-weight: 600; }
+.ipo-gain.up { color: var(--ok); }
+.ipo-gain.down { color: var(--danger); }
+.ipo-check { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.ipo-check .btn { text-decoration: none; }
+.ipo-alt { display: flex; gap: 8px; }
+.ipo-alt .btn { flex: 1 1 0; padding: 11px 10px; font-size: 14px; }
+.ipo-result { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.ipo-result .btn { flex: 1 1 130px; width: auto; padding: 11px 10px; font-size: 14.5px; }
+.ipo-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.ipo-sum div { min-width: 0; }
+.ipo-sum b { display: block; font-size: 17px; font-weight: 600; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ipo-sum small { display: block; color: var(--fg-faint); font-size: 11.5px; }
+
 /* ---------- money ---------- */
 .m-hero { padding: 16px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
 .m-big { display: block; font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin-top: 6px; }
@@ -1705,7 +1725,7 @@ select.input {
       ]
     },
     broker: {
-      name: 'Trading account', titleLabel: 'Name', titlePh: 'Zerodha',
+      name: 'Trading account', short: 'Account', titleLabel: 'Name', titlePh: 'Zerodha',
       fields: [
         { k: 'broker', l: 'Broker', ph: 'Zerodha' },
         { k: 'clientid', l: 'Client ID', mono: true, upper: true, ph: 'AB1234' },
@@ -1951,8 +1971,42 @@ select.input {
   EDU_ORDER.forEach(function (k) { ICON[k] = ICON.edu; });
 
   // Kinds that pick a sub-type, and how the picker names them.
-  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER };
-  var KIND_LABEL = { id: 'ID document', edu: 'Education' };
+  /* --- IPO applications ---
+     Tracked under Trading. Allotment is checked on the registrar's own site:
+     registrars publish no API, put a captcha in front of the result, and
+     the browser won't let this app read their pages anyway. So the app
+     copies your PAN and opens the right page; you mark the result here. */
+  var IPO_REG = {
+    'KFin Technologies': { short: 'KFintech', url: 'https://ipostatus.kfintech.com/' },
+    'MUFG Intime (Link Intime)': { short: 'MUFG Intime', url: 'https://in.mpms.mufg.com/Initial_Offer/public-issues.html' },
+    'Bigshare Services': { short: 'Bigshare', url: 'https://ipo.bigshareonline.com/IPO_Status.html' }
+  };
+  var IPO_BSE = 'https://www.bseindia.com/investors/appli_check';
+  var IPO_NSE = 'https://www.nseindia.com/invest/check-trades-bids-verify-ipo-bids';
+  TYPES.ipo = {
+    group: 'broker', name: 'IPO application', short: 'IPO', titleLabel: 'IPO', titlePh: 'Tata Capital IPO',
+    fields: [
+      { k: 'status', l: 'Status', opts: ['Applied', 'Allotted', 'Not allotted', 'Refund received', 'Listed', 'Sold'], onCard: true },
+      { k: 'registrar', l: 'Registrar', opts: Object.keys(IPO_REG).concat(['Other']), onCard: true },
+      { k: 'category', l: 'Category', opts: ['Retail', 'Shareholder', 'Employee', 'Small HNI (sNII)', 'Big HNI (bNII)'] },
+      { k: 'price', l: 'Issue price (₹ per share)', mono: true, num: true, ph: '310', onCard: true },
+      { k: 'lotsize', l: 'Shares per lot', mono: true, num: true, ph: '48', onCard: true },
+      { k: 'lots', l: 'Lots applied', mono: true, num: true, ph: '1', onCard: true },
+      { k: 'close', l: 'Bidding closes', date: true },
+      { k: 'allot', l: 'Allotment date', date: true, onCard: true },
+      { k: 'listing', l: 'Listing date', date: true, onCard: true },
+      { k: 'allotted', l: 'Shares allotted', mono: true, num: true, onCard: true },
+      { k: 'listprice', l: 'Listing price (₹ per share)', mono: true, num: true, onCard: true },
+      { k: 'appno', l: 'Application number', mono: true },
+      { k: 'upi', l: 'UPI ID used', ph: 'name@okhdfcbank' },
+      { k: 'via', l: 'Applied through', ph: 'Zerodha' },
+      { k: 'pan', l: 'PAN (for the status check)', secret: true, mono: true, upper: true, tail: true, ph: 'Taken from your PAN card entry if blank' }
+    ]
+  };
+  ICON.ipo = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 20.5h17"/><path d="m4.5 16 5-5 3.5 3.5 6.5-7"/><path d="M14.5 7.5h5v5"/></svg>';
+
+  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER, broker: ['broker', 'ipo'] };
+  var KIND_LABEL = { id: 'ID document', edu: 'Education', broker: 'Trading' };
   function hasPhotos(type) { return !!(TYPES[type] && (TYPES[type].photos || TYPES[type].group === 'id')); }
 
   function groupOf(type) { return (TYPES[type] && TYPES[type].group) || type; }
@@ -2102,6 +2156,75 @@ select.input {
     }
   });
 
+  /* ============ IPOs ============ */
+  function ipoNum(v) { var n = parseFloat(String(v || '').replace(/[,₹\s]/g, '')); return isFinite(n) ? n : null; }
+  function ipoNums(f) {
+    var price = ipoNum(f.price), lot = ipoNum(f.lotsize), lots = ipoNum(f.lots), got = ipoNum(f.allotted), lp = ipoNum(f.listprice);
+    var shares = lot && lots ? lot * lots : null;
+    return { price: price, shares: shares, blocked: price && shares ? price * shares : null, got: got,
+      gain: price && got && lp ? (lp - price) * got : null, pct: price && lp ? (lp - price) / price * 100 : null };
+  }
+  // The PAN to paste: the IPO's own, else the same person's PAN card or trading account.
+  function ipoPan(e) {
+    if (e.f && e.f.pan) return e.f.pan;
+    var who = e.who || '', hit = '';
+    entries().forEach(function (x) {
+      if (hit || (x.who || '') !== who) return;
+      if (x.type === 'id_pan' && x.f && x.f.number) hit = x.f.number;
+      else if (x.type === 'broker' && x.f && x.f.pan) hit = x.f.pan;
+    });
+    return hit;
+  }
+  function ipoCard(e) {
+    var f = e.f || {}, n = ipoNums(f), reg = IPO_REG[f.registrar], st = f.status || 'Applied';
+    var pill = st === 'Allotted' || st === 'Listed' || st === 'Sold' ? 'ok' : st === 'Not allotted' ? 'bad' : st === 'Refund received' ? '' : 'warn';
+    var d = f.allot ? daysUntil(f.allot) : null, ld = f.listing ? daysUntil(f.listing) : null;
+    var when = st === 'Applied' && d !== null
+      ? (d > 0 ? 'Allotment in ' + d + (d === 1 ? ' day' : ' days') + ' · ' + fmtDate(f.allot) : d === 0 ? 'Allotment is today' : 'Allotment was on ' + fmtDate(f.allot) + ' · check now')
+      : (st === 'Allotted' && ld !== null && ld >= 0 ? 'Lists ' + (ld === 0 ? 'today' : 'in ' + ld + (ld === 1 ? ' day' : ' days') + ' · ' + fmtDate(f.listing)) : '');
+    var big = st === 'Allotted' || st === 'Listed' || st === 'Sold'
+      ? (n.got ? n.got + ' shares allotted' : 'Allotted')
+      : n.blocked ? rupees(n.blocked) + (st === 'Applied' ? ' blocked' : ' applied') : st;
+    var sub = [n.shares ? n.shares + ' shares' + (f.lots ? ' (' + f.lots + (f.lots === '1' ? ' lot' : ' lots') + ')' : '') : '', n.price ? 'at ₹' + n.price : '',
+      (st === 'Allotted' || st === 'Listed' || st === 'Sold') && n.got && n.price ? 'invested ' + rupees(n.got * n.price) : ''].filter(Boolean).join(' · ');
+    var gain = n.gain !== null
+      ? '<p class="ipo-gain ' + (n.gain >= 0 ? 'up' : 'down') + '">' + (n.gain >= 0 ? '▲ Listing gain ' : '▼ Listing loss ') + esc(rupees(Math.abs(n.gain))) +
+        ' (' + (n.pct >= 0 ? '+' : '−') + Math.abs(n.pct).toFixed(1) + '%) at ₹' + esc(f.listprice) + '</p>' : '';
+    var check = '';
+    if (st === 'Applied' || st === 'Not allotted' || st === 'Allotted') {
+      check = '<div class="ipo-check">' +
+        (reg ? '<a class="btn" href="' + esc(reg.url) + '" target="_blank" rel="noopener noreferrer" data-ipocheck="1">Check allotment on ' + esc(reg.short) + '</a>' : '') +
+        '<div class="ipo-alt"><a class="btn ghost" href="' + IPO_BSE + '" target="_blank" rel="noopener noreferrer" data-ipocheck="1">On BSE</a>' +
+        '<a class="btn ghost" href="' + IPO_NSE + '" target="_blank" rel="noopener noreferrer" data-ipocheck="1">On NSE</a></div>' +
+        '<p class="hint">' + (ipoPan(e) ? 'Your PAN is copied when you tap, so you can paste it there. ' : 'Add your PAN (here or as a PAN card entry) and it will be copied for you. ') +
+        (reg ? '' : 'Pick the registrar in Edit to get its page. ') + 'Then come back and mark the result.</p></div>';
+      if (st === 'Applied') {
+        check += ipoAllotting === e.id
+          ? '<div class="whonew"><input class="input" id="ipo-got" inputmode="numeric" value="' + esc(f.lotsize || '') + '" aria-label="Shares allotted"><button type="button" class="btn" data-iposet="allotted">Save</button></div>'
+          : '<div class="ipo-result"><button type="button" class="btn ghost" data-iporesult="yes">Allotted</button><button type="button" class="btn ghost" data-iporesult="no">Not allotted</button></div>';
+      }
+    }
+    return '<div class="ipo"><div class="ipo-top"><span class="pill ' + pill + '">' + esc(st) + '</span><span>' + esc(reg ? reg.short : f.registrar || '') + '</span></div>' +
+      '<b class="ipo-big">' + esc(big) + '</b>' + (sub ? '<p class="ipo-sub">' + esc(sub) + '</p>' : '') +
+      (when ? '<p class="ipo-sub">' + esc(when) + '</p>' : '') + gain + check + '</div>';
+  }
+  var ipoAllotting = null;
+  function ipoSummary(list) {
+    var applied = list.length, decided = 0, got = 0, blocked = 0, gains = 0, anyGain = false;
+    list.forEach(function (e) {
+      var f = e.f || {}, st = f.status || 'Applied', n = ipoNums(f);
+      if (st === 'Applied') blocked += n.blocked || 0;
+      if (st !== 'Applied') decided++;
+      if (st === 'Allotted' || st === 'Listed' || st === 'Sold') got++;
+      if (n.gain !== null) { gains += n.gain; anyGain = true; }
+    });
+    return '<div class="ipo-sum">' +
+      '<div><span class="label">IPOs</span><b>' + got + ' / ' + decided + '</b><small>' + (decided ? Math.round(got / decided * 100) + '% allotted' : applied + ' applied') + '</small></div>' +
+      '<div><span class="label">Blocked now</span><b>' + esc(rupees(blocked)) + '</b><small>awaiting allotment</small></div>' +
+      '<div><span class="label">Listing gains</span><b>' + (anyGain ? (gains >= 0 ? '+' : '−') + esc(rupees(Math.abs(gains))) : '—') + '</b><small>on allotted shares</small></div>' +
+      '</div>';
+  }
+
   /* ============ brand covers ============
      Logins, banks and trading accounts wear their site's logo, matched on the
      name first, then the website, from lib/brands.js. Nothing is fetched, so
@@ -2206,17 +2329,73 @@ select.input {
   }
 
   /* ============ storage ============ */
-  var storageOK = true;
+  /* The sealed vault lives in IndexedDB. localStorage caps a site at about
+     5 MB on iPhone, which a few card photos fill. A box still in
+     localStorage moves across the first time the app opens, and the old copy
+     is removed only once the new one is safely written. Reads come from
+     memory; writes go to disk one at a time, in order. If IndexedDB is not
+     available (some private modes), localStorage is used as before. */
+  var DB_NAME = 'depositbox', DB_STORE = 'vault';
+  var idb = null, memRec = null, writeChain = Promise.resolve();
+  var lsOK = true;
   try {
     localStorage.setItem('depositbox.probe', '1');
     localStorage.removeItem('depositbox.probe');
-  } catch (e) { storageOK = false; }
+  } catch (e) { lsOK = false; }
+  var storageOK = lsOK;
 
-  function readRec() {
+  function openDb() {
+    return new Promise(function (res) {
+      if (!window.indexedDB) { res(null); return; }
+      var rq;
+      try { rq = indexedDB.open(DB_NAME, 1); } catch (e) { res(null); return; }
+      rq.onupgradeneeded = function () { rq.result.createObjectStore(DB_STORE); };
+      rq.onsuccess = function () { res(rq.result); };
+      rq.onerror = function () { res(null); };
+      rq.onblocked = function () { res(null); };
+    });
+  }
+  function idbDo(mode, fn) {
+    return new Promise(function (res, rej) {
+      var tx = idb.transaction(DB_STORE, mode), rq = fn(tx.objectStore(DB_STORE)), out;
+      if (rq) rq.onsuccess = function () { out = rq.result; };
+      tx.oncomplete = function () { res(out); };
+      tx.onerror = tx.onabort = function () { rej(tx.error || new Error('idb')); };
+    });
+  }
+  function lsRead() {
     try { var r = localStorage.getItem(STORE); return r ? JSON.parse(r) : null; } catch (e) { return null; }
   }
+  function lsDrop() { try { localStorage.removeItem(STORE); } catch (e) {} }
+  function loadRec() {
+    return openDb().then(function (db) {
+      idb = db;
+      if (!idb) return lsRead();
+      return idbDo('readonly', function (st) { return st.get('rec'); }).then(function (rec) {
+        var old = lsRead();
+        if (rec) { if (old) lsDrop(); return rec; }
+        if (!old) return null;
+        return idbDo('readwrite', function (st) { st.put(old, 'rec'); })
+          .then(function () { lsDrop(); return old; }, function () { return old; });
+      });
+    }).catch(function () { idb = null; return lsRead(); }).then(function (rec) {
+      memRec = rec;
+      storageOK = !!idb || lsOK;
+      // Ask iOS to keep this data even when the phone is short of space.
+      if (idb && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+      return rec;
+    });
+  }
+  function readRec() { return memRec; }
   function writeRec(rec) {
-    try { localStorage.setItem(STORE, JSON.stringify(rec)); return true; } catch (e) { return false; }
+    var job = writeChain.then(function () {
+      if (idb) {
+        return idbDo('readwrite', function (st) { st.put(rec, 'rec'); }).then(function () { lsDrop(); return true; }, function () { return false; });
+      }
+      try { localStorage.setItem(STORE, JSON.stringify(rec)); return true; } catch (e) { return false; }
+    }).then(function (ok) { if (ok) memRec = rec; return ok; });
+    writeChain = job.catch(function () {});
+    return job;
   }
 
   /* ============ crypto ============ */
@@ -2307,9 +2486,11 @@ select.input {
               wraps: { pass: { kdf: kdf, iv: w.iv, ct: w.ct } },
               iv: sealed.iv, ct: sealed.ct
             };
-            if (!writeRec(rec)) return false;
-            S.mk = raw; S.key = k; S.rec = rec;
-            return true;
+            return writeRec(rec).then(function (ok) {
+              if (!ok) return false;
+              S.mk = raw; S.key = k; S.rec = rec;
+              return true;
+            });
           });
         });
       });
@@ -2420,9 +2601,11 @@ select.input {
       // Keep whatever scheme this vault was built with, PBKDF2 or Argon2id.
       // Carry the wraps across untouched; only the vault ciphertext changes.
       var rec = { v: 2, wraps: S.rec.wraps, iv: sealed.iv, ct: sealed.ct };
-      if (!writeRec(rec)) { toast('Could not save — device storage is full or blocked'); return false; }
-      S.rec = rec;
-      return true;
+      return writeRec(rec).then(function (ok) {
+        if (!ok) { toast('Could not save — device storage is full or blocked'); return false; }
+        S.rec = rec;
+        return true;
+      });
     });
   }
 
@@ -2459,7 +2642,7 @@ select.input {
     if (view === 'ias') renderIas();
     if (view === 'money') renderMoney();
     if (view === 'chap') renderChap();
-    if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); }
+    if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
     if (view !== 'edit') { scanState = null; whoAdding = false; }
@@ -2968,6 +3151,11 @@ select.input {
     if (e.type === 'wifi') {
       return [f.ssid, f.security === 'None (open)' ? 'Open' : f.security].filter(Boolean).join('  ·  ');
     }
+    if (e.type === 'ipo') {
+      var ist = f.status || 'Applied', idd = f.allot ? daysUntil(f.allot) : null, inn = ipoNums(f);
+      return ['IPO', ist === 'Applied' && idd !== null ? (idd > 0 ? 'allotment in ' + idd + 'd' : idd === 0 ? 'allotment today' : 'check allotment') : ist,
+        ist === 'Applied' && inn.blocked ? rupees(inn.blocked) + ' blocked' : inn.got ? inn.got + ' shares' : ''].filter(Boolean).join('  ·  ');
+    }
     if (groupOf(e.type) === 'edu') {
       return [TYPES[e.type].short, f.degree || f.board || f.qual, f.year, f.result].filter(Boolean).join('  ·  ');
     }
@@ -3125,7 +3313,8 @@ select.input {
       var p = personOf(e), m = rowMeta(e);
       return p && whoView !== p.id ? p.name + (m ? '  ·  ' + m : '') : m;
     }
-    $('#list').innerHTML = (pinned.length && rest.length
+    var ipos = S.filter === 'broker' && !query ? list.filter(function (e) { return e.type === 'ipo'; }) : [];
+    $('#list').innerHTML = (ipos.length ? ipoSummary(ipos) : '') + (pinned.length && rest.length
       ? '<div class="list-head">Pinned</div>' + pinned.map(rowHtml).join('') +
         '<div class="list-head">Others</div>' + rest.map(rowHtml).join('')
       : pinned.concat(rest).map(rowHtml).join('')) +
@@ -3413,6 +3602,7 @@ select.input {
     if (groupOf(e.type) === 'edu') html += eduCard(e) + idPhotos(e);
     if (e.type === 'cert') html += certCard(e) + idPhotos(e);
     if (e.type === 'wifi') html += wifiCard(e);
+    if (e.type === 'ipo') html += ipoCard(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
       html += '<div class="otp">' +
@@ -3594,6 +3784,31 @@ select.input {
     }
 
     if (ev.target.closest('#btn-share')) { startShare(e); return; }
+
+    if (ev.target.closest('[data-ipocheck]')) {
+      // The link opens normally; copying the PAN rides along with the same tap.
+      var pan = ipoPan(e);
+      if (pan) copyValue(pan, 'PAN');
+      guardSheet();
+      return;
+    }
+    var ir = ev.target.closest('[data-iporesult]');
+    if (ir) {
+      if (ir.dataset.iporesult === 'yes') { ipoAllotting = e.id; renderDetail(); var gi = $('#ipo-got'); if (gi) gi.focus(); return; }
+      e.f.status = 'Not allotted';
+      e.updated = Date.now();
+      persist().then(function () { renderDetail(); toast('Marked not allotted. The UPI block should be released within a few days.'); });
+      return;
+    }
+    if (ev.target.closest('[data-iposet]')) {
+      var got = parseInt(($('#ipo-got').value || '').replace(/\D/g, ''), 10);
+      if (!(got > 0)) { $('#ipo-got').focus(); return; }
+      e.f.status = 'Allotted';
+      e.f.allotted = String(got);
+      e.updated = Date.now();
+      persist().then(function () { ipoAllotting = null; renderDetail(); toast('Allotted: ' + got + ' shares'); });
+      return;
+    }
 
     if (ev.target.closest('#btn-otp-copy')) {
       if (otpCode) copyValue(otpCode, 'Code', ev.target.closest('#btn-otp-copy'));
@@ -3804,6 +4019,7 @@ select.input {
       if (old.img2) keep.img2 = old.img2;
     }
     if (from === 'race' && t === 'race' && old.cover) keep.cover = old.cover;
+    if (t === 'ipo' && !keep.status) keep.status = 'Applied';
     S.draft.f = keep;
     renderEdit();
   }
@@ -3971,8 +4187,8 @@ select.input {
     $('.gen-out', panel).textContent = makePassword(len, syms);
   }
 
-  // Photos are shrunk before they go in. The vault lives in localStorage,
-  // which is small, and a phone photo straight off the camera would fill it.
+  // Photos are shrunk before they go in, so the box stays quick to encrypt
+  // and back up; a phone photo straight off the camera is several MB.
   // Covers are scaled to 900px wide; card photos to 1400px on the long side
   // so small print stays readable. Quality steps down until the photo fits.
   var imgTarget = 'cover';
@@ -4112,6 +4328,17 @@ select.input {
           return;
         }
       }
+    }
+    if (d.type === 'ipo') {
+      var ib = '';
+      ['price', 'lotsize', 'lots', 'allotted', 'listprice'].forEach(function (k) {
+        if (!ib && f[k] && ipoNum(f[k]) === null) ib = TYPES.ipo.fields.filter(function (x) { return x.k === k; })[0].l + ' should be a number.';
+      });
+      if (!ib && f.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(f.pan)) ib = 'A PAN is 10 characters: five letters, four digits, one letter. For example ABCDE1234F.';
+      var iN = ipoNums(f);
+      if (!ib && iN.got && iN.shares && iN.got > iN.shares) ib = 'More shares allotted than you applied for. Check the lots and shares per lot.';
+      if (!ib && f.allot && f.listing && f.listing < f.allot) ib = 'The listing date is before the allotment date.';
+      if (ib) { $('#edit-err').textContent = ib; return; }
     }
     if (d.type === 'wifi' && f.password && f.security !== 'WEP' && f.security !== 'None (open)' &&
         (f.password.length < 8 || f.password.length > 63)) {
@@ -4310,12 +4537,12 @@ select.input {
     var n = entries().length;
     var last = S.data && S.data.lastExport;
     var used = 0;
-    try { used = (localStorage.getItem(STORE) || '').length; } catch (e) {}
+    try { used = memRec ? JSON.stringify(memRec).length : 0; } catch (e) {}
     var mb = used / 1048576;
     $('#bk-status').textContent = (last ? 'Last backup: ' + stampOf(last) : 'Never backed up') +
       '  ·  ' + n + ' ' + plural(n) + ' in the box  ·  ' + mb.toFixed(1) + ' MB used';
-    // Safari gives a site roughly 5 MB of this kind of storage. Warn early.
-    $('#bk-space').hidden = mb < 3;
+    // Only the localStorage fallback has the ~5 MB ceiling worth warning about.
+    $('#bk-space').hidden = !!idb || mb < 3;
   }
 
   function renderFaceSection() {
@@ -4639,6 +4866,19 @@ select.input {
           out.push({ e: e, date: cy, days: d, level: d < 0 ? 'bad' : 'warn',
             what: 'Card ' + (d < 0 ? 'expired' : 'expires'), cal: 'Card expires',
             alarms: ['-P30D', '-P7D'] });
+        }
+      }
+      if (e.type === 'ipo' && f.allot && (f.status || 'Applied') === 'Applied') {
+        d = daysUntil(f.allot);
+        if (d !== null && d >= -5 && d <= 14) {
+          out.push({ e: e, date: f.allot, days: d, level: d <= 0 ? 'bad' : d <= 2 ? 'warn' : 'ok',
+            what: d <= 0 ? 'Check IPO allotment' : 'IPO allotment', cal: 'IPO allotment: check status', alarms: ['PT9H', '-P1D'] });
+        }
+      }
+      if (e.type === 'ipo' && f.listing && f.status === 'Allotted') {
+        d = daysUntil(f.listing);
+        if (d !== null && d >= 0 && d <= 14) {
+          out.push({ e: e, date: f.listing, days: d, level: d <= 1 ? 'warn' : 'ok', what: 'IPO listing day', cal: 'IPO listing', alarms: ['PT9H'] });
         }
       }
       if (e.type === 'race' && isUpcoming(e)) {
@@ -8103,9 +8343,15 @@ select.input {
     $('#lock-action').disabled = true;
     $('#btn-restore-start').hidden = true;
   } else {
-    S.rec = readRec();
-    renderLock();
-    if (shareBlob()) showGot(); else show('lock');
+    // Wait for the stored box before deciding between "unlock" and "set up",
+    // so an existing box is never offered a fresh setup.
+    $('#lock-action').disabled = true;
+    loadRec().then(function (rec) {
+      S.rec = rec;
+      $('#lock-action').disabled = false;
+      renderLock();
+      if (shareBlob()) showGot(); else show('lock');
+    });
   }
 
   if ('serviceWorker' in navigator) {

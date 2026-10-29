@@ -120,7 +120,12 @@ logos**, and says it's a personal record, so it can't pass as the real thing.
 Add **photos of your real card**, front and back (photo page and address page
 for a passport). They're shrunk to 1400px and stored encrypted in the vault.
 Tap one to show it full screen, at a counter for example. Settings shows how
-much space the vault uses, and warns you before Safari's ~5 MB limit.
+much space the vault uses.
+
+The sealed vault is stored in IndexedDB, which on iPhone has room for far more
+than the ~5 MB Safari allows localStorage, so photos no longer run it out of
+space. A box saved by an older version moves across the first time the app
+opens; the old copy is deleted only after the new one is written.
 
 ### Home: search and three shortcuts
 
@@ -212,6 +217,19 @@ joining can't come after passing, and verification links must be `https://`.
   it holds the password, so it is drawn only when asked and cleared after two
   minutes.
 - The ↻ button next to any password field makes a strong password.
+
+### IPO applications
+
+Under **Trading**, add an **IPO** (the Account / IPO switch at the top of the
+form): registrar, price, lot size, lots, allotment and listing dates,
+application number, UPI ID. The card shows the amount blocked and a countdown.
+**Check allotment on KFintech** (or MUFG Intime, Bigshare, BSE, NSE) copies the
+PAN (the IPO's own, or the same person's PAN card or trading account entry) and
+opens the registrar's status page; registrars publish no API and put a captcha
+in front of the result, so the app doesn't check by itself. Then tap
+**Allotted** or **Not allotted**. Add the listing price for the listing gain.
+The Trading tab shows how many were allotted, money still blocked and total
+listing gains; Needs attention flags allotment and listing days.
 
 ### Money: statements as charts
 
