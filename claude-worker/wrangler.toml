@@ -6,8 +6,21 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # Only the app may call this worker. Add http://localhost:8080 while testing.
 ALLOWED_ORIGINS = "https://bhavijith-v.github.io"
+# Reminder notifications: the public half of the VAPID key (the private half is a secret).
+VAPID_PUBLIC = "BHEmCIBy80HNcsxHMK6akYwK-bvkinHHZsJDfRQIDDN8XWFgX1Nxvd9jDOud78zu1BdAgJVfiHLRgQWJ5vT6Nmw"
+VAPID_SUBJECT = "https://bhavijith-v.github.io/personal-app/"
 
 # Secrets, set once with:
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   npx wrangler secret put APP_TOKEN
+#   npx wrangler secret put VAPID_PRIVATE   (the JSON in .vapid-private.json)
 # Never put them in this file - it is public.
+
+# Push addresses and reminder times (never what is due).
+[[kv_namespaces]]
+binding = "PUSH"
+id = "9379a497a50d46ca80ab172a58b274ce"
+
+# Send due reminders every 15 minutes.
+[triggers]
+crons = ["*/15 * * * *"]

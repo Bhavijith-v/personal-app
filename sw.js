@@ -5,7 +5,7 @@
 
 /* Bump this whenever you change index.html so phones pick the new version up.
    Changing this string is what makes the browser reinstall the worker. */
-const CACHE = 'depositbox-v29';
+const CACHE = 'depositbox-v30';
 
 const SHELL = [
   './',
@@ -80,5 +80,26 @@ self.addEventListener('fetch', (event) => {
     caches.match(req, { ignoreSearch: sameOrigin }).then((hit) =>
       hit || fetch(req).then(save).catch(() => new Response('', { status: 504, statusText: 'Offline' }))
     )
+  );
+});
+
+// Reminders: the push carries nothing, so nothing private passes through the
+// push service. The app opens to show what is due.
+self.addEventListener('push', (event) => {
+  event.waitUntil(self.registration.showNotification('Deposit Box', {
+    body: 'Something is due. Open the box to see what.',
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-192.png',
+    tag: 'depositbox-due',
+    renotify: true
+  }));
+});
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) if ('focus' in c) return c.focus();
+      return self.clients.openWindow('./');
+    })
   );
 });

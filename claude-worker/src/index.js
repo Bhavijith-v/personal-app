@@ -9,6 +9,7 @@
 // or {t:"error",v}.
 
 import Anthropic from '@anthropic-ai/sdk';
+import { handlePush, runPushes } from './push.js';
 
 // Sonnet 5.5: strong enough for training plans at half Opus's price.
 // Change to 'claude-opus-5-5' for the most capable model ($4/$20 per MTok).
@@ -69,6 +70,16 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: cors.ok ? 204 : 403, headers: cors.headers });
     if (!cors.ok) return reply(403, { error: 'This server only answers the Deposit Box app.' }, cors.headers);
     if (request.method !== 'POST') return reply(405, { error: 'POST only.' }, cors.headers);
+
+    // Reminder notifications need no access token: they hold only a push
+    // address and some times, never anything from the box.
+    const path = new URL(request.url).pathname;
+    if (path.startsWith('/push/')) {
+      let pbody;
+      try { pbody = await request.json(); } catch { return reply(400, { error: 'Request was not JSON.' }, cors.headers); }
+      const [status, out] = await handlePush(path, pbody, env);
+      return reply(status, out, cors.headers);
+    }
 
     const token = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
     if (!env.APP_TOKEN || !sameSecret(token, env.APP_TOKEN)) return reply(401, { error: 'Wrong access token.' }, cors.headers);
@@ -145,5 +156,10 @@ export default {
     return new Response(readable, {
       headers: { ...cors.headers, 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store' }
     });
+  },
+
+  // Every 15 minutes: send the reminder notifications that have come due.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runPushes(env));
   }
 };

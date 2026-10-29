@@ -331,6 +331,26 @@ opens, a reminder to run the system test (with a button to mark it done), and a
 timed event for the exam's length with alerts the day before and 45 minutes
 before.
 
+### Automation
+
+- **Paste to fill:** on any new entry, *+ Paste an email or SMS* reads exam
+  bookings, IRCTC and flight tickets, IPO allotment / CDSL credit messages
+  (updating the IPO you track), insurance renewals and race registrations.
+- **Life admin** tab: insurance policies, vehicles (insurance, PUC, RC,
+  service), warranties (end date worked out from months) and tickets.
+- **Money:** bills and subscriptions spotted in statements with the next
+  expected date, and monthly budgets per category that flag overspending.
+- **This week:** a weekly digest of everything due in 7 days, plans, and the
+  last 7 days (km, IAS chapters, OSCP labs, spending).
+- **Planners:** IAS daily chapter target to the exam (re-plans daily, keeps 15
+  days for revision); OSCP weekly goal; a week-by-week plan to your next race;
+  run import from GPX, TCX or Garmin/Strava CSV.
+- **Reminders on this phone** (Settings): Web Push through the worker. The
+  phone sends only push address and times; the notification just says
+  something is due. Needs the app on the Home Screen (iOS 16.4+) and, once,
+  `cat .vapid-private.json | npx wrangler secret put VAPID_PRIVATE` in
+  `claude-worker/`.
+
 ### OSCP labs
 
 Home → **OSCP labs rooted**. All 196 machines from TJ Null's NetSecFocus

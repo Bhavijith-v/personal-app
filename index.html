@@ -960,6 +960,9 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- reminders ---------- */
+.push-st { margin: 0 0 12px; color: var(--fg); font-size: 14px; line-height: 1.5; }
+
 /* ---------- plans, budgets, digest ---------- */
 .plan { margin-top: 12px; padding: 14px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
 .plan-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
@@ -1503,6 +1506,14 @@ select.input {
         <h2>Family</h2>
         <p>Keep your family's IDs, bank accounts, cards and logins here too. Each entry is marked with whose it is, and the box can be filtered by person. It all stays in this one encrypted box, behind your passphrase.</p>
         <div id="fam-body"></div>
+      </div>
+
+      <div class="bk-rule"></div>
+
+      <div class="bk-sect" id="push-sect">
+        <h2>Reminders on this phone</h2>
+        <p>A notification on the morning something is due, the evening before, and ahead of timed things like exams and journeys, plus Sunday evening for the weekly digest. It only says something is due; what it is stays in the box. Only the times go to your reminder server.</p>
+        <div id="push-body"></div>
       </div>
 
       <div class="bk-rule"></div>
@@ -3529,6 +3540,7 @@ select.input {
       return writeRec(rec).then(function (ok) {
         if (!ok) { toast('Could not save — device storage is full or blocked'); return false; }
         S.rec = rec;
+        schedulePushSync();
         return true;
       });
     });
@@ -3567,6 +3579,7 @@ select.input {
     if (view === 'ias') renderIas();
     if (view === 'money') renderMoney();
     if (view === 'week') renderWeek();
+    if (view === 'vault' && !pushOnOpen) { pushOnOpen = true; schedulePushSync(); }
     if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
@@ -4171,6 +4184,9 @@ select.input {
   $('#hub-ias').addEventListener('click', function () { show('ias'); });
   $('#hub-money').addEventListener('click', function () { show('money'); });
   $('#hub-week').addEventListener('click', function () { show('week'); });
+  // The reminder times follow whatever is in the box; refresh them on opening.
+  var pushOnOpen = false;
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') pushOnOpen = false; });
   document.addEventListener('click', function (ev) {
     if (ev.target.closest('[data-back]')) show('vault');
   });
@@ -5607,6 +5623,7 @@ select.input {
 
   function renderBackup() {
     updateBkStatus();
+    renderPushSection();
     renderFaceSection();
     famEdit = null;
     renderFamily();
@@ -9146,6 +9163,120 @@ select.input {
     if (it) { var a = weekCache[+it.dataset.wkItem]; if (!a) return; if (a.go) show(a.go); else { S.id = a.e.id; show('detail'); } return; }
     var g = ev.target.closest('[data-go]');
     if (g) show(g.dataset.go);
+  });
+
+  /* ============ reminders on this phone (Web Push) ============
+     The phone works out when things are due and sends only those times to
+     the reminder worker, which pushes an empty notification at each one.
+     The service worker shows "Something is due" - never what. iPhone needs
+     the app on the Home Screen and iOS 16.4 or newer. */
+  var WORKER_URL = 'https://deposit-box-claude.deposit-box-claude.workers.dev';
+  var VAPID_PUBLIC = 'BHEmCIBy80HNcsxHMK6akYwK-bvkinHHZsJDfRQIDDN8XWFgX1Nxvd9jDOud78zu1BdAgJVfiHLRgQWJ5vT6Nmw';
+  var pushTimer = null, lastPushKey = '', pushState = null;
+  function pushAvailable() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function workerUrl() { var c = S.data && S.data.claude; return String((c && c.url) || WORKER_URL).replace(/\/+$/, ''); }
+  function b64uBytes(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function pushTimes() {
+    var t = [], now = Date.now();
+    var at = function (ymd, mins) { var d = ymdDate(ymd); d.setMinutes(mins); return d.getTime(); };
+    attentionItems().forEach(function (a) {
+      if (!a.date || a.days === null || a.days < 0 || a.days > 120) return;
+      t.push(at(a.date, 8 * 60));                 // the morning of the day
+      t.push(at(a.date, 19 * 60 - 24 * 60));      // the evening before
+      if (a.time && hhmm(a.time) !== null) t.push(at(a.date, hhmm(a.time) - 45));
+      if (a.days > 7 && a.level !== 'ok') t.push(at(a.date, 9 * 60 - 7 * 24 * 60));   // a week ahead for renewals
+    });
+    var sun = new Date(); sun.setHours(18, 0, 0, 0);
+    while (sun.getDay() !== 0 || sun.getTime() <= now) sun.setDate(sun.getDate() + 1);
+    for (var i = 0; i < 8; i++) t.push(sun.getTime() + i * 7 * 86400000);
+    var seen = {};
+    return t.filter(function (x) { if (x <= now || seen[x]) return false; seen[x] = 1; return true; }).sort(function (a, b) { return a - b; }).slice(0, 150);
+  }
+  function currentSub() {
+    return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription(); });
+  }
+  function syncPush(force) {
+    if (!S.data || !goals().push || !pushAvailable() || Notification.permission !== 'granted') return Promise.resolve(null);
+    return currentSub().then(function (sub) {
+      if (!sub) return null;
+      var times = pushTimes(), key = sub.endpoint + '|' + times.join(',');
+      if (!force && key === lastPushKey) return pushState;
+      return fetch(workerUrl() + '/push/subscribe', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint, times: times })
+      }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }).then(function (j) {
+        pushState = j;
+        if (j.ok) lastPushKey = key;
+        return j;
+      });
+    }).catch(function () { return { ok: false, error: 'No connection to the reminder server.' }; });
+  }
+  function schedulePushSync() {
+    clearTimeout(pushTimer);
+    if (!S.data || !goals().push) return;
+    pushTimer = setTimeout(function () { syncPush(false); }, 3000);
+  }
+  function renderPushSection() {
+    var el = $('#push-body');
+    if (!el) return;
+    if (!pushAvailable()) {
+      el.innerHTML = '<p class="hint">On iPhone, reminders work once Deposit Box is on your Home Screen (Safari → Share → Add to Home Screen) and opened from there, on iOS 16.4 or newer.</p>';
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      el.innerHTML = '<p class="hint">Notifications are blocked for this app. Turn them on in the iPhone’s Settings → Notifications → Deposit Box, then come back here.</p>';
+      return;
+    }
+    if (!goals().push) {
+      el.innerHTML = '<button class="btn" id="push-on">Turn on reminders</button><p class="err" id="push-err" role="alert"></p>';
+      return;
+    }
+    var st = pushState;
+    el.innerHTML = '<p class="push-st">' + (st && st.ok
+        ? '✓ On. ' + st.scheduled + ' reminders scheduled' + (st.next ? ', next ' + esc(new Date(st.next).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })) : '') + '.'
+        : st && st.error ? 'The reminder server said: ' + esc(st.error) : 'On.') + '</p>' +
+      '<div class="bk-acts"><button class="btn ghost" id="push-test">Send a test</button><button class="btn ghost" id="push-off">Turn off</button></div>' +
+      '<p class="err" id="push-err" role="alert"></p>';
+  }
+  function enablePush() {
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') { renderPushSection(); toast('Notifications were not allowed'); return; }
+      guardSheet();
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return reg.pushManager.getSubscription().then(function (s) {
+          return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(VAPID_PUBLIC) });
+        });
+      }).then(function () { return setGoal('push', true); }).then(function () { return syncPush(true); }).then(function (j) {
+        renderPushSection();
+        toast(j && j.ok ? 'Reminders are on' : 'Turned on here, but the reminder server isn’t ready yet');
+      });
+    }).catch(function () { $('#push-err').textContent = 'This phone wouldn’t set up notifications. Is the app opened from the Home Screen?'; });
+  }
+  $('#push-body').addEventListener('click', function (ev) {
+    if (ev.target.closest('#push-on')) { enablePush(); return; }
+    if (ev.target.closest('#push-test')) {
+      currentSub().then(function (sub) {
+        if (!sub) { $('#push-err').textContent = 'No subscription on this phone. Turn reminders off and on again.'; return; }
+        return fetch(workerUrl() + '/push/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) })
+          .then(function (r) { return r.json(); }).then(function (j) {
+            if (j.ok) toast('Test sent. It should arrive in a few seconds.');
+            else $('#push-err').textContent = 'The reminder server said: ' + (j.error || 'push failed (' + j.status + ')');
+          });
+      }).catch(function () { $('#push-err').textContent = 'No connection to the reminder server.'; });
+      return;
+    }
+    if (ev.target.closest('#push-off')) {
+      currentSub().then(function (sub) {
+        if (!sub) return;
+        fetch(workerUrl() + '/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(function () {});
+        return sub.unsubscribe();
+      }).catch(function () {}).then(function () { lastPushKey = ''; pushState = null; return setGoal('push', 0); }).then(function () { renderPushSection(); toast('Reminders are off'); });
+    }
   });
 
   /* ============ IAS prelims ============
