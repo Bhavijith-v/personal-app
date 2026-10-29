@@ -175,6 +175,35 @@ reading, so compare it with the card).
 The page's security policy now allows `connect-src 'self'`, so the app can
 fetch its own reader files. It still can't contact any other host.
 
+### OSCP labs
+
+Home → **OSCP labs rooted**. All 196 machines from TJ Null's NetSecFocus
+Trophy Room (PWK V3 tab, updated 18 July 2026): HackTheBox, Proving Grounds
+Practice and Play, Vulnlab, and self-hosted AD labs (GOAD, VulnAD, Ludus).
+
+- **Filter** by difficulty (Easy, Medium, Hard, Insane, Unrated), platform,
+  type (Linux, Windows, Active Directory, Post-OSCP, Pro Lab) and status, or
+  search by name.
+- **Tap the circle** to cycle To do → In progress → Rooted. The date you root
+  a box is recorded.
+- **Tap a lab** for its details and **your notes**, which save as you type and
+  are encrypted in the vault like everything else.
+
+Where the difficulty comes from: for HackTheBox (and Vulnlab boxes now on HTB)
+it's the official HTB rating, read from 0xdf's write-ups. For Proving Grounds
+it's OffSec's tier as listed in a community repository, because OffSec's own
+ratings need a login. Medium includes PG's Intermediate, and Insane includes
+Very Hard. Boxes with no public rating show as **Unrated**, and you can set
+your own rating on the lab's page.
+
+The list is public data in `lib/oscp-labs.js`, built by
+`tools/oscp/build_labs.py`. To refresh it when TJ Null updates the sheet:
+```
+python -I tools/oscp/build_labs.py <cache folder outside the repo> lib/oscp-labs.js
+```
+Then bump `CACHE` in `sw.js`. Your progress and notes are kept by lab ID, so
+they survive a refresh.
+
 ### Ask Claude
 
 **Running → Ask Claude about your running.** A chat with Claude Sonnet 5.5

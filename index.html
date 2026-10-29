@@ -510,7 +510,7 @@ select.input {
 .search svg { position: absolute; left: 13px; top: 50%; width: 17px; height: 17px; transform: translateY(-50%); color: var(--fg-faint); pointer-events: none; }
 .search .input { padding-left: 40px; }
 .search .input::-webkit-search-cancel-button { filter: grayscale(1); }
-.hub { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.hub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
 .hub-tile {
   min-width: 0; text-align: left; padding: 11px 12px; border-radius: var(--r-md);
   border: 1px solid var(--line-soft); background: var(--surface); color: var(--fg);
@@ -670,6 +670,67 @@ select.input {
 .coach-meta { margin-top: 6px; }
 .linkish { background: none; border: none; padding: 0; color: var(--brass); font-size: inherit; font-weight: 600; min-height: 0; }
 .coach-page { padding-bottom: 0; }
+
+/* ---------- OSCP labs ---------- */
+.oscp-head { padding: 14px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.oscp-count { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.oscp-count b { font-family: var(--data); font-size: 30px; font-weight: 500; color: var(--brass); line-height: 1; font-variant-numeric: tabular-nums; }
+.oscp-count span { color: var(--fg-dim); font-size: 14px; }
+.oscp-bar { height: 5px; border-radius: 3px; background: var(--surface-3); margin-top: 12px; overflow: hidden; }
+.oscp-bar i { display: block; height: 100%; background: var(--brass); }
+.oscp-search { margin-top: 12px; }
+.fgroup { margin-top: 12px; }
+.fgroup > .label { display: block; margin-bottom: 2px; }
+.fchips { padding-block: 4px 2px; }
+.fchips .tab[aria-pressed="true"] { background: var(--brass-soft); border-color: var(--brass); color: var(--brass); font-weight: 600; }
+.oscp-showing { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; font-size: 13px; color: var(--fg-dim); }
+.lab-group { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.lab-group span { font-family: var(--data); font-weight: 500; letter-spacing: 0; text-transform: none; }
+.labs { display: flex; flex-direction: column; gap: 6px; }
+.lab { display: flex; align-items: stretch; gap: 6px; min-width: 0; }
+.lab-st {
+  flex: 0 0 auto; width: 44px; border-radius: var(--r-md); border: 1px solid var(--line-soft);
+  background: var(--surface); color: var(--fg-faint); display: grid; place-items: center;
+}
+.lab-st svg { width: 22px; height: 22px; display: block; }
+.lab.doing .lab-st { color: var(--warn); }
+.lab.done .lab-st { color: var(--ok); border-color: var(--ok); }
+.lab-main {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left;
+  padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--surface); color: var(--fg);
+}
+.lab-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.lab-text b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lab-text small { font-size: 12px; color: var(--fg-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lab.done .lab-text b { color: var(--fg-dim); }
+.diff {
+  flex: 0 0 auto; font-size: 11px; font-weight: 600; letter-spacing: .03em; padding: 3px 8px;
+  border-radius: 999px; border: 1px solid var(--line); color: var(--fg-dim); white-space: nowrap;
+}
+.diff.d-easy { color: var(--ok); border-color: var(--ok); }
+.diff.d-medium { color: var(--warn); border-color: var(--warn); }
+.diff.d-hard { color: var(--danger); border-color: var(--danger); }
+.diff.d-insane { color: var(--bg); background: var(--danger); border-color: var(--danger); }
+.oscp-src { margin-top: 20px; }
+.lab-hero { padding-block: 6px 14px; }
+.lab-hero h2 { font-size: 24px; font-weight: 600; letter-spacing: -.015em; margin: 10px 0 4px; }
+.lab-hero p { margin: 0; color: var(--fg-faint); font-size: 13px; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.seg button {
+  min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px;
+  border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); color: var(--fg-dim);
+  font-size: 13.5px; font-weight: 500;
+}
+.seg button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.seg button[aria-checked="true"] { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); font-weight: 600; }
+.lab-when { margin-top: 8px; }
+.lab-rate { margin-top: 16px; }
+.lab-facts { margin-top: 16px; }
+.lab-notes { margin-top: 18px; }
+.lab-notes textarea { min-height: 180px; font-family: var(--data); font-size: 14px; line-height: 1.5; }
+.lab-links { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding-bottom: 20px; }
+.lab-links .btn { text-decoration: none; }
+.lab-links .spoiler { color: var(--warn); border-color: var(--warn); }
 
 /* ---------- 2FA code ---------- */
 .otp {
@@ -967,6 +1028,7 @@ select.input {
         <button class="hub-tile" id="hub-attn"><b id="hub-attn-n">0</b><span>Needs attention</span></button>
         <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
         <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
+        <button class="hub-tile" id="hub-oscp"><b id="hub-oscp-n">0</b><span>OSCP labs rooted</span></button>
       </div>
       <div class="tabs" role="tablist" id="tabs"></div>
       <div class="list" id="list"></div>
@@ -1086,6 +1148,18 @@ select.input {
     <div class="col gutter page-body coach-page" id="coach-body"></div>
   </section>
 
+  <!-- ================= OSCP LABS ================= -->
+  <section id="screen-oscp" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>OSCP labs</h1></div></header>
+    <div class="col gutter page-body" id="oscp-body"></div>
+  </section>
+
+  <!-- ================= ONE LAB ================= -->
+  <section id="screen-lab" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-lab-back" aria-label="Back to the lab list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1 id="lab-bar-title">Lab</h1></div></header>
+    <div class="col gutter page-body" id="lab-body"></div>
+  </section>
+
   <!-- ================= EDITOR ================= -->
   <section id="screen-edit" class="screen" hidden>
     <header class="topbar">
@@ -1129,6 +1203,9 @@ select.input {
 <!-- Argon2id (hash-wasm, MIT). Vendored rather than loaded from a CDN, so the
      app stays fully offline and no third party can alter key derivation. -->
 <script src="lib/argon2.umd.min.js"></script>
+<!-- TJ Null's OSCP list, generated by tools/oscp/build_labs.py. Lab names
+     and ratings only; your progress and notes live in the encrypted vault. -->
+<script src="lib/oscp-labs.js"></script>
 
 <script>
 (function () {
@@ -1699,7 +1776,7 @@ select.input {
   var SCREENS = {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
-    attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach'
+    attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab'
   };
   function show(view) {
     S.view = view;
@@ -1713,6 +1790,8 @@ select.input {
     if (view === 'health') renderHealth();
     if (view === 'run') renderRun();
     if (view === 'coach') renderCoach();
+    if (view === 'oscp') renderOscp();
+    if (view === 'lab') renderLab();
     if (view !== 'detail') { stopOtp(); closeLightbox(); }
     if (view !== 'edit') scanState = null;
     if (view !== 'lock') armIdle();
@@ -1740,6 +1819,8 @@ select.input {
     S.key = null; S.data = null; S.id = null; S.draft = null; S.isNew = false; S.filter = 'all';
     query = ''; $('#q').value = '';
     coachReset();
+    $('#oscp-body').textContent = ''; $('#lab-body').textContent = ''; oscpLab = null;
+    oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };   // like the main list's tab
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -2245,12 +2326,15 @@ select.input {
     $('#hub-attn-n').textContent = att;
     $('#hub-health-n').textContent = bad;
     $('#hub-run-n').textContent = km >= 100 ? Math.round(km) : km.toFixed(1).replace(/\.0$/, '');
+    var ot = oscpTotals();
+    $('#hub-oscp-n').textContent = ot.done + ' / ' + ot.all;
     $('#hub-attn').classList.toggle('alert', att > 0);
     $('#hub-health').classList.toggle('alert', bad > 0);
   }
   $('#hub-attn').addEventListener('click', function () { show('attn'); });
   $('#hub-health').addEventListener('click', function () { show('health'); });
   $('#hub-run').addEventListener('click', function () { show('run'); });
+  $('#hub-oscp').addEventListener('click', function () { show('oscp'); });
   document.addEventListener('click', function (ev) {
     if (ev.target.closest('[data-back]')) show('vault');
   });
@@ -3408,6 +3492,7 @@ select.input {
           if (!ok) { setImportBusy(false); return; }
           S.data.entries = incoming;
           S.data.runs = sanitizeRuns(r.data && r.data.runs);
+          S.data.oscp = sanitizeOscp(r.data && r.data.oscp);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
       }
@@ -3416,6 +3501,7 @@ select.input {
       var have = {};
       runs().forEach(function (x) { have[x.id] = 1; });
       S.data.runs = runs().concat(sanitizeRuns(r.data && r.data.runs).filter(function (x) { return !have[x.id]; }));
+      S.data.oscp = mergeOscp(S.data.oscp, sanitizeOscp(r.data && r.data.oscp));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
       if (res.updated) parts.push('updated ' + res.updated);
@@ -3443,6 +3529,7 @@ select.input {
         entries: sanitize(r.data && r.data.entries),
         runs: sanitizeRuns(r.data && r.data.runs),
         claude: sanitizeClaude(r.data && r.data.claude),
+        oscp: sanitizeOscp(r.data && r.data.oscp),
         lastExport: (r.data && r.data.lastExport) || null
       };
       if (r.raw) {
@@ -4949,6 +5036,249 @@ select.input {
     if (coach.abort) coach.abort.abort();
     coach.turns = []; coach.last = null; coach.lastModel = ''; coach.busy = false; coach.abort = null;
     renderCoach();
+  });
+
+  /* ============ OSCP labs ============
+     The catalogue (lib/oscp-labs.js) is public: lab names, platforms and
+     ratings from TJ Null's list. Your part - status, notes, your own rating
+     for unrated boxes - lives in S.data.oscp, inside the encrypted vault, and
+     travels with backups. */
+  var LABS = window.OSCP_LABS || [];
+  var LAB_META = window.OSCP_META || {};
+  var LAB_BY_ID = {};
+  LABS.forEach(function (l) { LAB_BY_ID[l.id] = l; });
+  var OSCP_PLATFORMS = ['HackTheBox', 'PG Practice', 'PG Play', 'Vulnlab', 'Self-hosted'];
+  var OSCP_TYPES = ['Linux', 'Windows', 'Active Directory', 'Post-OSCP', 'Pro Lab'];
+  // Platforms name tiers differently; filters group them.
+  var DIFF_BUCKET = { Easy: 'Easy', Medium: 'Medium', Intermediate: 'Medium', Hard: 'Hard', Insane: 'Insane', 'Very Hard': 'Insane' };
+  var DIFF_ORDER = { Easy: 1, Medium: 2, Hard: 3, Insane: 4 };
+  var STATUS_NAME = { todo: 'To do', doing: 'In progress', done: 'Rooted' };
+  var oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };
+  var oscpLab = null, oscpNoteTimer = null;
+
+  function labState(id) { return (S.data && S.data.oscp && S.data.oscp[id]) || {}; }
+  function labStatus(id) { return labState(id).s || 'todo'; }
+  function labDiff(l) { return l.difficulty || labState(l.id).diff || ''; }
+  function labBucket(l) { return DIFF_BUCKET[labDiff(l)] || 'Unrated'; }
+  function setLab(id, patch) {
+    S.data.oscp = S.data.oscp || {};
+    var cur = S.data.oscp[id] || {};
+    Object.keys(patch).forEach(function (k) {
+      if (patch[k] === undefined || patch[k] === '') delete cur[k]; else cur[k] = patch[k];
+    });
+    cur.u = Date.now();
+    if (!cur.s && !cur.n && !cur.diff) delete S.data.oscp[id]; else S.data.oscp[id] = cur;
+    return persist();
+  }
+  function oscpTotals() {
+    var t = { all: LABS.length, done: 0, doing: 0 };
+    LABS.forEach(function (l) { var st = labStatus(l.id); if (st === 'done') t.done++; else if (st === 'doing') t.doing++; });
+    return t;
+  }
+  function sanitizeOscp(o) {
+    var out = {};
+    if (!o || typeof o !== 'object') return out;
+    Object.keys(o).forEach(function (id) {
+      var v = o[id];
+      if (!/^[a-z]{2,4}-[a-z0-9]{1,48}$/.test(id) || !v || typeof v !== 'object') return;
+      var c = {};
+      if (v.s === 'doing' || v.s === 'done') c.s = v.s;
+      if (typeof v.n === 'string' && v.n) c.n = v.n.slice(0, 20000);
+      if (typeof v.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.d)) c.d = v.d;
+      if (DIFF_BUCKET[v.diff]) c.diff = v.diff;
+      c.u = typeof v.u === 'number' ? v.u : 0;
+      if (c.s || c.n || c.diff) out[id] = c;
+    });
+    return out;
+  }
+  function mergeOscp(mine, theirs) {
+    var out = {};
+    Object.keys(mine || {}).forEach(function (id) { out[id] = mine[id]; });
+    Object.keys(theirs || {}).forEach(function (id) {
+      if (!out[id] || (theirs[id].u || 0) > (out[id].u || 0)) out[id] = theirs[id];
+    });
+    return out;
+  }
+
+  function labMatches(l) {
+    var v = oscpView;
+    if (v.platform !== 'all' && l.platform !== v.platform) return false;
+    if (v.diff !== 'all' && labBucket(l) !== v.diff) return false;
+    if (v.type !== 'all' && (l.tracks || []).indexOf(v.type) < 0) return false;
+    if (v.status !== 'all' && labStatus(l.id) !== v.status) return false;
+    if (v.q) {
+      var hay = [l.name, l.platform, l.os, (l.tracks || []).join(' '), (l.tags || []).join(' '), labDiff(l)].join(' ').toLowerCase();
+      if (!v.q.split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; })) return false;
+    }
+    return true;
+  }
+
+  var STATUS_ICON = {
+    todo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/></svg>',
+    doing: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"/></svg>',
+    done: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8" fill="currentColor" stroke="none" opacity=".22"/><circle cx="12" cy="12" r="8"/><path d="m8.2 12.2 2.6 2.6 5-5.2"/></svg>'
+  };
+
+  function chipRow(label, key, options) {
+    return '<div class="fgroup"><span class="label">' + esc(label) + '</span><div class="tabs fchips">' +
+      [['all', 'All']].concat(options).map(function (o) {
+        return '<button class="tab" data-f="' + key + '" data-v="' + esc(o[0]) + '" aria-pressed="' + (oscpView[key] === o[0]) + '">' + esc(o[1]) + '</button>';
+      }).join('') + '</div></div>';
+  }
+
+  function labRow(l) {
+    var st = labStatus(l.id), d = labDiff(l), b = labBucket(l), state = labState(l.id);
+    var meta = [l.os, (l.tracks || []).filter(function (t) { return t !== l.os; }).join(', '), (l.tags || []).join(', ')]
+      .filter(Boolean).join(' · ');
+    return '<div class="lab ' + st + '">' +
+      '<button class="lab-st" data-cycle="' + esc(l.id) + '" aria-label="' + esc(l.name) + ': ' + STATUS_NAME[st] + '. Tap to change.">' + STATUS_ICON[st] + '</button>' +
+      '<button class="lab-main" data-lab="' + esc(l.id) + '">' +
+      '<span class="lab-text"><b>' + esc(l.name) + '</b><small>' + esc(meta) + (state.n ? ' · notes' : '') + '</small></span>' +
+      '<span class="diff d-' + b.toLowerCase() + '">' + esc(d || 'Unrated') + '</span></button></div>';
+  }
+
+  function renderOscp() {
+    var el = $('#oscp-body');
+    if (!el || !S.data) return;
+    if (!LABS.length) { el.innerHTML = '<div class="empty"><h2>Lab list missing</h2><p>lib/oscp-labs.js did not load.</p></div>'; return; }
+    var t = oscpTotals(), pct = Math.round(t.done / t.all * 100);
+    var shown = LABS.filter(labMatches);
+    var filtered = oscpView.q || ['platform', 'diff', 'type', 'status'].some(function (k) { return oscpView[k] !== 'all'; });
+    var groups = OSCP_PLATFORMS.map(function (p) {
+      var items = shown.filter(function (l) { return l.platform === p; }).sort(function (a, b) {
+        var da = DIFF_ORDER[labBucket(a)] || 9, db = DIFF_ORDER[labBucket(b)] || 9;
+        return da - db || a.name.localeCompare(b.name);
+      });
+      if (!items.length) return '';
+      var doneHere = items.filter(function (l) { return labStatus(l.id) === 'done'; }).length;
+      return '<div class="section-label lab-group">' + esc(p) + ' <span>' + doneHere + ' / ' + items.length + ' rooted</span></div>' +
+        '<div class="labs">' + items.map(labRow).join('') + '</div>';
+    }).join('');
+
+    el.innerHTML =
+      '<div class="oscp-head"><div class="oscp-count"><b>' + t.done + '</b><span>of ' + t.all + ' rooted' +
+      (t.doing ? ' · ' + t.doing + ' in progress' : '') + '</span></div>' +
+      '<div class="oscp-bar" role="img" aria-label="' + pct + ' percent rooted"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="search oscp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>' +
+      '<input class="input" id="oscp-q" type="search" placeholder="Search labs" value="' + esc(oscpView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search labs"></div>' +
+      chipRow('Difficulty', 'diff', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard'], ['Insane', 'Insane'], ['Unrated', 'Unrated']]) +
+      chipRow('Platform', 'platform', OSCP_PLATFORMS.map(function (p) { return [p, p]; })) +
+      chipRow('Type', 'type', OSCP_TYPES.map(function (p) { return [p, p]; })) +
+      chipRow('Status', 'status', [['todo', 'To do'], ['doing', 'In progress'], ['done', 'Rooted']]) +
+      '<div class="oscp-showing"><span>' + shown.length + ' of ' + t.all + ' labs</span>' +
+      (filtered ? '<button type="button" class="linkish" id="oscp-clear">Clear filters</button>' : '') + '</div>' +
+      (groups || '<div class="empty"><h2>No labs match</h2><p>Try fewer filters.</p></div>') +
+      '<p class="hint oscp-src">List: ' + esc(LAB_META.list || "TJ Null's NetSecFocus Trophy Room") +
+      (LAB_META.listUpdated ? ', updated ' + esc(LAB_META.listUpdated) : '') + '. ' +
+      'HackTheBox and Vulnlab difficulty: the official HTB rating, from 0xdf\'s write-ups. ' +
+      'Proving Grounds difficulty: OffSec\'s tiers as listed by the community; check the PG portal for the official one. ' +
+      'Medium includes Intermediate, and Insane includes Very Hard. Tap a lab to rate unrated ones yourself.</p>';
+  }
+
+  function cycleLab(id) {
+    var next = { todo: 'doing', doing: 'done', done: 'todo' }[labStatus(id)];
+    var patch = { s: next === 'todo' ? '' : next, d: next === 'done' ? toYmd(new Date()) : (next === 'todo' ? '' : labState(id).d) };
+    return setLab(id, patch).then(function () {
+      if (next === 'done') toast(LAB_BY_ID[id].name + ' rooted');
+    });
+  }
+
+  $('#oscp-body').addEventListener('click', function (ev) {
+    var f = ev.target.closest('[data-f]');
+    if (f) { oscpView[f.dataset.f] = f.dataset.v; renderOscp(); return; }
+    if (ev.target.closest('#oscp-clear')) {
+      oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };
+      renderOscp(); return;
+    }
+    var c = ev.target.closest('[data-cycle]');
+    if (c) { var y = window.scrollY; cycleLab(c.dataset.cycle).then(function () { renderOscp(); window.scrollTo(0, y); }); return; }
+    var open = ev.target.closest('[data-lab]');
+    if (open) { oscpLab = open.dataset.lab; oscpScroll = window.scrollY; show('lab'); }
+  });
+  $('#oscp-body').addEventListener('input', function (ev) {
+    if (ev.target.id !== 'oscp-q') return;
+    oscpView.q = ev.target.value.trim().toLowerCase();
+    var pos = ev.target.selectionStart;
+    renderOscp();
+    var q = $('#oscp-q');
+    if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (e) {} }
+  });
+  var oscpScroll = 0;
+
+  function renderLab() {
+    var el = $('#lab-body'), l = LAB_BY_ID[oscpLab];
+    if (!el || !l || !S.data) { show('oscp'); return; }
+    var st = labState(l.id), status = labStatus(l.id), d = labDiff(l);
+    $('#lab-bar-title').textContent = l.name;
+    var src = l.difficulty
+      ? (l.source === '0xdf' ? 'Official HackTheBox rating, via 0xdf' : 'OffSec tier, from a community list')
+      : (st.diff ? 'Your own rating' : 'No public rating');
+    var open = l.url ? l.url
+      : (l.platform === 'HackTheBox' || l.platform === 'Vulnlab') && (l.tracks || []).indexOf('Pro Lab') < 0
+        ? 'https://app.hackthebox.com/machines/' + encodeURIComponent(l.name)
+      : (l.platform === 'HackTheBox' ? 'https://app.hackthebox.com/prolabs'
+      : l.platform === 'PG Play' ? 'https://portal.offsec.com/labs/play'
+      : l.platform === 'PG Practice' ? 'https://portal.offsec.com/labs/practice' : '');
+    var facts = [
+      ['Platform', l.platform], ['OS', l.os || 'Not stated'],
+      ['Type', (l.tracks || []).filter(function (t) { return t !== l.os; }).join(', ')], ['Notes from the list', (l.tags || []).join(', ')]
+    ].filter(function (x) { return x[1]; });
+    el.innerHTML =
+      '<div class="lab-hero ' + status + '"><span class="diff d-' + labBucket(l).toLowerCase() + '">' + esc(d || 'Unrated') + '</span>' +
+      '<h2>' + esc(l.name) + '</h2><p>' + esc(src) + '</p></div>' +
+      '<div class="seg" role="radiogroup" aria-label="Status">' +
+      ['todo', 'doing', 'done'].map(function (k) {
+        return '<button type="button" role="radio" data-setst="' + k + '" aria-checked="' + (status === k) + '">' + STATUS_ICON[k] + STATUS_NAME[k] + '</button>';
+      }).join('') + '</div>' +
+      (status === 'done' && st.d ? '<p class="hint lab-when">Rooted on ' + esc(fmtDate(st.d)) + '</p>' : '') +
+      (!l.difficulty
+        ? '<div class="field lab-rate"><label class="label" for="lab-diff">Your rating</label><select class="input" id="lab-diff">' +
+          ['', 'Easy', 'Medium', 'Hard', 'Insane'].map(function (o) {
+            return '<option value="' + o + '"' + ((st.diff || '') === o ? ' selected' : '') + '>' + (o || 'Not rated') + '</option>';
+          }).join('') + '</select></div>'
+        : '') +
+      '<div class="card lab-facts">' + facts.map(function (x) {
+        return '<div class="frow"><span class="frow-text"><span class="label">' + esc(x[0]) + '</span><span class="val plain">' + esc(x[1]) + '</span></span></div>';
+      }).join('') + '</div>' +
+      '<div class="field lab-notes"><label class="label" for="lab-n">Your notes</label>' +
+      '<textarea class="input" id="lab-n" rows="8" placeholder="Enumeration, foothold, privesc, what you learned…" spellcheck="false">' + esc(st.n || '') + '</textarea>' +
+      '<p class="hint" id="lab-saved">Saved automatically, encrypted in the box.</p></div>' +
+      '<div class="lab-links">' +
+      (open ? '<a class="btn ghost" href="' + esc(open) + '" target="_blank" rel="noopener noreferrer">Open on ' + esc(l.url ? 'GitHub' : l.platform === 'Vulnlab' ? 'HackTheBox' : l.platform.replace(/^PG .*/, 'Proving Grounds')) + '</a>' : '') +
+      (l.writeup ? '<a class="btn ghost spoiler" href="' + esc(l.writeup) + '" target="_blank" rel="noopener noreferrer">0xdf write-up (spoilers)</a>' : '') +
+      '</div>';
+  }
+
+  function saveLabNotes() {
+    clearTimeout(oscpNoteTimer);
+    var box = $('#lab-n');
+    if (!box || !oscpLab) return Promise.resolve();
+    var v = box.value;
+    if ((labState(oscpLab).n || '') === v) return Promise.resolve();
+    return setLab(oscpLab, { n: v }).then(function () {
+      var s2 = $('#lab-saved');
+      if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', encrypted in the box.';
+    });
+  }
+  $('#lab-body').addEventListener('input', function (ev) {
+    if (ev.target.id === 'lab-n') { clearTimeout(oscpNoteTimer); oscpNoteTimer = setTimeout(saveLabNotes, 700); }
+  });
+  $('#lab-body').addEventListener('change', function (ev) {
+    if (ev.target.id === 'lab-diff') setLab(oscpLab, { diff: ev.target.value }).then(renderLab);
+  });
+  $('#lab-body').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-setst]');
+    if (!b) return;
+    var k = b.dataset.setst;
+    saveLabNotes().then(function () {
+      return setLab(oscpLab, { s: k === 'todo' ? '' : k, d: k === 'done' ? (labState(oscpLab).d || toYmd(new Date())) : '' });
+    }).then(function () {
+      if (k === 'done') toast(LAB_BY_ID[oscpLab].name + ' rooted');
+      renderLab();
+    });
+  });
+  $('#btn-lab-back').addEventListener('click', function () {
+    saveLabNotes().then(function () { show('oscp'); window.scrollTo(0, oscpScroll); });
   });
 
   /* ============ confirm sheet ============ */
