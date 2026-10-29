@@ -960,6 +960,16 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- booked exams ---------- */
+.exam { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.exam-when { margin: 0; }
+.exam-when b { display: block; font-size: 17px; }
+.exam-when span { display: block; color: var(--fg-dim); font-size: 13.5px; margin-top: 2px; }
+.exam-warn { margin: 10px 0 0; color: var(--warn); font-size: 13.5px; font-weight: 500; }
+.exam-ok { margin: 10px 0 0; color: var(--ok); font-size: 13.5px; font-weight: 600; }
+.exam-acts { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.exam-acts .btn { text-decoration: none; }
+
 /* ---------- photo capture and crop ---------- */
 .cam, .crop { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; }
 .cam { z-index: 56; }
@@ -2030,6 +2040,17 @@ select.input {
       { k: 'code', l: 'Exam code', mono: true, upper: true, ph: 'AZ-900', onCard: true },
       { k: 'status', l: 'Status', opts: ['Planning', 'Studying', 'Exam booked', 'Passed', 'Expired'], onCard: true },
       { k: 'examdate', l: 'Exam date', date: true, onCard: true },
+      { k: 'examtime', l: 'Exam time (24-hour)', mono: true, ph: '07:00', onCard: true },
+      { k: 'duration', l: 'Length (minutes)', mono: true, num: true, ph: '135', onCard: true },
+      { k: 'mode', l: 'Where', opts: ['Online proctored', 'Test centre'], onCard: true },
+      { k: 'provider', l: 'Exam delivered by', ph: 'Pearson VUE', onCard: true,
+        list: ['Pearson VUE', 'PSI', 'Kryterion (Webassessor)', 'Certiverse', 'Prometric', 'Examity'] },
+      { k: 'sysdone', l: 'System test done?', opts: ['Not yet', 'Done'], onCard: true },
+      { k: 'checkin', l: 'Check-in link', ph: 'https://…', onCard: true },
+      { k: 'systest', l: 'System test link', ph: 'https://…', onCard: true },
+      { k: 'order', l: 'Order number', mono: true },
+      { k: 'candid', l: 'Candidate ID', mono: true, upper: true },
+      { k: 'regid', l: 'Registration ID', mono: true },
       { k: 'issued', l: 'Issued on', date: true, onCard: true },
       { k: 'expiry', l: 'Valid till', date: true, onCard: true },
       { k: 'credid', l: 'Credential ID', mono: true },
@@ -4038,7 +4059,7 @@ select.input {
   function certState(f) {
     if (f.status === 'Exam booked' && f.examdate) {
       var d = daysUntil(f.examdate);
-      if (d !== null && d >= 0) return { level: d <= 7 ? 'warn' : 'ok', text: d === 0 ? 'Exam today' : 'Exam in ' + d + (d === 1 ? ' day' : ' days') };
+      if (d !== null && d >= 0) return { level: d <= 7 ? 'warn' : 'ok', text: d === 0 ? 'Exam today' + (hhmm(f.examtime) !== null ? ' at ' + f.examtime : '') : d === 1 ? 'Exam tomorrow' : 'Exam in ' + d + ' days' };
     }
     if (f.expiry && (f.status === 'Passed' || f.status === 'Expired' || !f.status)) {
       var ex = expiryState(f.expiry);
@@ -4066,10 +4087,42 @@ select.input {
       '</div>';
   }
 
+  // "07:00" -> minutes from midnight, or null
+  function hhmm(v) {
+    var m = /^([01]?\d|2[0-3])[:.]([0-5]\d)$/.exec(String(v || '').trim());
+    return m ? +m[1] * 60 + +m[2] : null;
+  }
+  function examBlock(f) {
+    if (f.status !== 'Exam booked' || !f.examdate) return '';
+    var d = daysUntil(f.examdate);
+    if (d === null || d < 0) return '';
+    var mins = hhmm(f.examtime), when = fmtDate(f.examdate) + (mins !== null ? ' · ' + f.examtime : '');
+    var bits = [f.duration ? f.duration + ' min' : '', f.mode, f.provider].filter(Boolean).join(' · ');
+    var online = f.mode === 'Online proctored';
+    var checkAt = '';
+    if (mins !== null) {
+      var c = mins - 30;
+      checkAt = 'Check-in opens 30 minutes before, at ' + ('0' + Math.floor((c + 1440) % 1440 / 60)).slice(-2) + ':' + ('0' + (c + 1440) % 60).slice(-2) + '.';
+    }
+    var sys = safeLink(f.systest), chk = safeLink(f.checkin);
+    var need = online && f.sysdone !== 'Done';
+    return '<div class="exam">' +
+      '<p class="exam-when"><b>' + esc(when) + '</b>' + (bits ? '<span>' + esc(bits) + '</span>' : '') + '</p>' +
+      (need ? '<p class="exam-warn">Run the system test before exam day: camera, microphone, internet and the secure browser.</p>' : '') +
+      (online && f.sysdone === 'Done' ? '<p class="exam-ok">✓ System test done</p>' : '') +
+      '<div class="exam-acts">' +
+      (sys && need ? '<a class="btn ghost" href="' + esc(sys) + '" target="_blank" rel="noopener noreferrer">Test your system</a>' : '') +
+      (need ? '<button type="button" class="btn ghost" data-sysdone="1">Mark system test done</button>' : '') +
+      (chk ? '<a class="btn" href="' + esc(chk) + '" target="_blank" rel="noopener noreferrer">Check in to start the exam</a>' : '') +
+      '</div>' +
+      (checkAt ? '<p class="hint">' + esc(checkAt) + (online ? ' Keep a government photo ID ready and clear the desk.' : ' Carry a government photo ID.') + '</p>' : '') +
+      '</div>';
+  }
+
   function certCard(e) {
     var f = e.f || {}, st = certState(f), link = safeLink(f.verify);
     var facts = [['Issued', f.issued && fmtDate(f.issued)], ['Valid till', f.expiry && fmtDate(f.expiry)],
-      ['Exam date', f.status === 'Exam booked' && f.examdate && fmtDate(f.examdate)]].filter(function (x) { return x[1]; });
+      ['Exam date', f.status === 'Exam booked' && f.examdate && !examBlock(f) && fmtDate(f.examdate)]].filter(function (x) { return x[1]; });
     return '<div class="certc">' +
       '<div class="certc-top"><span class="certc-issuer">' + esc(f.issuer || 'Certification') + '</span>' +
       (st ? '<span class="pill ' + (st.level === 'none' ? '' : st.level) + '">' + esc(st.text) + '</span>' : '') + '</div>' +
@@ -4078,6 +4131,7 @@ select.input {
       (facts.length ? '<div class="edu-facts">' + facts.map(function (x) {
         return '<div><span class="label">' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>';
       }).join('') + '</div>' : '') +
+      examBlock(f) +
       (link ? '<a class="btn ghost certc-verify" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">Verify this credential</a>' : '') +
       '</div>';
   }
@@ -4340,6 +4394,13 @@ select.input {
     }
 
     if (ev.target.closest('#btn-share')) { startShare(e); return; }
+
+    if (ev.target.closest('[data-sysdone]')) {
+      e.f.sysdone = 'Done';
+      e.updated = Date.now();
+      persist().then(function () { renderDetail(); toast('System test marked done'); });
+      return;
+    }
 
     if (ev.target.closest('[data-ipocheck]')) {
       // The link opens normally; copying the PAN rides along with the same tap.
@@ -4840,6 +4901,10 @@ select.input {
       if (!eb && f.from && f.year && +f.from > +f.year) eb = 'The year of joining is after the year of passing.';
       if (!eb && f.verify && !safeLink(f.verify)) eb = 'The verification link should start with https://';
       if (!eb && f.issued && f.expiry && f.expiry < f.issued) eb = 'The certificate expires before it was issued.';
+      if (!eb && f.examtime && hhmm(f.examtime) === null) eb = 'Write the exam time as hours:minutes, 24-hour, for example 07:00 or 14:30.';
+      if (!eb && f.examtime) f.examtime = ('0' + Math.floor(hhmm(f.examtime) / 60)).slice(-2) + ':' + ('0' + hhmm(f.examtime) % 60).slice(-2);
+      if (!eb && f.checkin && !safeLink(f.checkin)) eb = 'The check-in link should start with https://';
+      if (!eb && f.systest && !safeLink(f.systest)) eb = 'The system test link should start with https://';
       if (eb) { $('#edit-err').textContent = eb; return; }
     }
     if (groupOf(d.type) === 'id') {
@@ -5411,8 +5476,13 @@ select.input {
         if (f.status === 'Exam booked' && f.examdate) {
           d = daysUntil(f.examdate);
           if (d !== null && d >= 0) {
+            var timed = hhmm(f.examtime) !== null, online = f.mode === 'Online proctored';
             out.push({ e: e, date: f.examdate, days: d, level: d <= 7 ? 'warn' : 'ok',
-              what: 'Exam day' + (f.code ? ' · ' + f.code : ''), cal: 'Exam day', alarms: ['-P7D', '-P1D'] });
+              what: 'Exam day' + (f.code ? ' · ' + f.code : '') + (timed ? ' · ' + f.examtime : '') +
+                (online && f.sysdone !== 'Done' ? ' · system test not done' : ''),
+              cal: 'Exam' + (f.code ? ' ' + f.code : ''), time: timed ? f.examtime : null, mins: +f.duration || 0,
+              note: [f.mode, f.provider, safeLink(f.checkin) ? 'Check in: ' + f.checkin : ''].filter(Boolean).join('. '),
+              alarms: timed ? ['-P1D', '-PT45M'] : ['-P7D', '-P1D'] });
           }
         }
       }
@@ -5517,14 +5587,19 @@ select.input {
       var start = a.date.replace(/-/g, '');
       var endD = new Date(+a.date.slice(0, 4), +a.date.slice(5, 7) - 1, +a.date.slice(8, 10) + 1);
       var summary = (a.e.title || 'Untitled') + (personOf(a.e) ? ' (' + personOf(a.e).name + ')' : '') + ' — ' + a.cal;
-      L.push('BEGIN:VEVENT',
-        'UID:' + a.e.id + '-' + a.date + '@deposit-box',
-        'DTSTAMP:' + stamp,
-        'DTSTART;VALUE=DATE:' + start,
-        'DTEND;VALUE=DATE:' + toYmd(endD).replace(/-/g, ''),
-        'SUMMARY:' + icsText(summary),
-        'DESCRIPTION:' + icsText('From Deposit Box. Open the app for details.'),
-        'TRANSP:TRANSPARENT');
+      L.push('BEGIN:VEVENT', 'UID:' + a.e.id + '-' + a.date + '@deposit-box', 'DTSTAMP:' + stamp);
+      if (a.time) {
+        // a timed event in the phone's own time zone, blocked out for the exam's length
+        var sm = hhmm(a.time), em = sm + (a.mins || 60);
+        var endT = new Date(+a.date.slice(0, 4), +a.date.slice(5, 7) - 1, +a.date.slice(8, 10), 0, em);
+        var two = function (n) { return ('0' + n).slice(-2); };
+        L.push('DTSTART:' + start + 'T' + two(Math.floor(sm / 60)) + two(sm % 60) + '00',
+          'DTEND:' + toYmd(endT).replace(/-/g, '') + 'T' + two(endT.getHours()) + two(endT.getMinutes()) + '00');
+      } else {
+        L.push('DTSTART;VALUE=DATE:' + start, 'DTEND;VALUE=DATE:' + toYmd(endD).replace(/-/g, ''), 'TRANSP:TRANSPARENT');
+      }
+      L.push('SUMMARY:' + icsText(summary),
+        'DESCRIPTION:' + icsText((a.note ? a.note + '. ' : '') + 'From Deposit Box. Open the app for details.'));
       a.alarms.forEach(function (tr) {
         L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(summary), 'TRIGGER:' + tr, 'END:VALARM');
       });

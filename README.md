@@ -320,6 +320,17 @@ past papers), 60 books and 432 chapters.
 The list is `lib/ias-prelims.js`; your progress and notes are in the encrypted
 vault and travel with backups.
 
+### Booked exams
+
+A certification with status **Exam booked** also takes the details from the
+booking email: exam time, length, online or test centre, who delivers it
+(Pearson VUE, PSI…), check-in and system-test links, order, candidate and
+registration numbers. The card then shows the date and time, when check-in
+opens, a reminder to run the system test (with a button to mark it done), and a
+**Check in** button. Needs attention lists it, and *Add to Calendar* creates a
+timed event for the exam's length with alerts the day before and 45 minutes
+before.
+
 ### OSCP labs
 
 Home → **OSCP labs rooted**. All 196 machines from TJ Null's NetSecFocus
