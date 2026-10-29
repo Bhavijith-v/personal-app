@@ -122,6 +122,17 @@ for a passport). They're shrunk to 1400px and stored encrypted in the vault.
 Tap one to show it full screen, at a counter for example. Settings shows how
 much space the vault uses.
 
+**Taking the photo.** Tapping *Add front* offers **Take a photo with a guide**
+(the camera with a card-shaped frame) or **Choose from my photos**. Either way
+the app finds the card's four corners, cuts the card out and straightens it
+into a flat rectangle, so the table, shadows and fingers beside the card are
+left behind; a card shot at an angle comes out square-on, at the real card
+proportions. Drag any corner to adjust (a magnifier shows under your finger),
+or tap *Find edges* to detect again, *Rotate* to turn the photo, *Clean up* to
+brighten a dim photo, or *Whole photo* to skip cropping. Best results: a dark,
+plain surface, phone held flat above, fingers off the card. A finger lying
+*on* the card can only be trimmed off when it is at an edge.
+
 The sealed vault is stored in IndexedDB, which on iPhone has room for far more
 than the ~5 MB Safari allows localStorage, so photos no longer run it out of
 space. A box saved by an older version moves across the first time the app
