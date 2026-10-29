@@ -957,6 +957,46 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- IAS prelims ---------- */
+.hub-tile.wide { grid-column: 1 / -1; }
+.ias-exam { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; font-size: 13.5px; color: var(--fg-dim); }
+.ias-exam b { color: var(--fg); font-weight: 600; }
+.ias-exam input { flex: 1 1 160px; padding: 9px 11px; font-size: 16px; }
+.ias-syl { margin: -2px 0 10px; font-size: 12.5px; }
+.ibooks { display: flex; flex-direction: column; gap: 8px; }
+.ibook { border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); overflow: hidden; }
+.ibook-head {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; min-width: 0;
+  padding: 12px 13px; background: transparent; border: none; color: var(--fg);
+}
+.ibook-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ibook-text small { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-faint); }
+.ibook-text b { font-weight: 600; font-size: 15px; line-height: 1.3; }
+.ibook-n { flex: 0 0 auto; font-family: var(--data); font-size: 12.5px; color: var(--fg-dim); font-variant-numeric: tabular-nums; }
+.ibook-n.full { color: var(--ok); }
+.ibook .chev { transition: transform 0.15s; }
+.ibook.open .chev { transform: rotate(90deg); }
+.itag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); font-size: 10px; letter-spacing: 0.05em; color: var(--fg-faint); vertical-align: 1px; }
+.ibook-bar { height: 3px; background: var(--surface-3); }
+.ibook-bar i { display: block; height: 100%; background: var(--brass); }
+.ibook-body { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-top: 1px solid var(--line-soft); }
+.ibook-body .lab-main { background: var(--surface-2); }
+.ibook-body .lab-st { background: var(--surface-2); }
+.ibook-none { margin: 2px 4px 4px; font-size: 13px; color: var(--fg-faint); }
+.iadd { display: flex; gap: 8px; }
+.iadd input { flex: 1 1 auto; padding: 10px 12px; font-size: 16px; }
+.iadd .mini { width: auto; padding: 0 12px; font-size: 14px; font-weight: 600; color: var(--brass); border-color: var(--brass); }
+.iadd-open { align-self: flex-start; background: none; border: none; color: var(--brass); font-weight: 600; font-size: 14px; padding: 6px 4px; }
+.chap-where { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--brass); margin: 6px 0 0; }
+.chap-rev { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding: 12px 13px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.chap-rev span { font-size: 14.5px; color: var(--fg-dim); }
+.chap-rev b { color: var(--fg); font-family: var(--data); font-weight: 500; }
+.chap-rev div { display: flex; gap: 6px; }
+.chap-rev .mini { font-size: 16px; font-weight: 600; }
+.chap-nav { display: flex; gap: 8px; }
+.chap-nav .btn { flex: 1 1 0; padding: 12px 10px; font-size: 14.5px; }
+.lab-notes textarea#chap-n { font-family: var(--ui); font-size: 15.5px; line-height: 1.55; min-height: 220px; }
+
 /* ---------- brand tiles + covers ---------- */
 .glyph.brand { border-color: transparent; }
 .glyph.brand svg { fill: currentColor; stroke: none; width: 17px; height: 17px; }
@@ -1145,6 +1185,7 @@ select.input {
         <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
         <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
         <button class="hub-tile" id="hub-oscp"><b id="hub-oscp-n">0</b><span>OSCP labs rooted</span></button>
+        <button class="hub-tile wide" id="hub-ias"><b id="hub-ias-n">0</b><span id="hub-ias-sub">IAS prelims chapters done</span></button>
       </div>
       <div class="tabs" role="tablist" id="tabs"></div>
       <div class="list" id="list"></div>
@@ -1274,6 +1315,14 @@ select.input {
   </section>
 
   <!-- ================= ONE LAB ================= -->
+  <section id="screen-ias" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>IAS prelims</h1></div></header>
+    <div class="col gutter page-body" id="ias-body"></div>
+  </section>
+  <section id="screen-chap" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-chap-back" aria-label="Back to the reading list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1 id="chap-bar-title">Chapter</h1></div></header>
+    <div class="col gutter page-body" id="chap-body"></div>
+  </section>
   <section id="screen-lab" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-lab-back" aria-label="Back to the lab list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1 id="lab-bar-title">Lab</h1></div></header>
     <div class="col gutter page-body" id="lab-body"></div>
@@ -1370,6 +1419,8 @@ select.input {
 <!-- TJ Null's OSCP list, generated by tools/oscp/build_labs.py. Lab names
      and ratings only; your progress and notes live in the encrypted vault. -->
 <script src="lib/oscp-labs.js"></script>
+<!-- UPSC prelims reading list: subjects, NCERT books and chapters. -->
+<script src="lib/ias-prelims.js"></script>
 
 <script>
 (function () {
@@ -2132,7 +2183,7 @@ select.input {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap'
   };
   function show(view) {
     S.view = view;
@@ -2149,6 +2200,8 @@ select.input {
     if (view === 'oscp') renderOscp();
     if (view === 'lab') renderLab();
     if (view === 'share') renderShare();
+    if (view === 'ias') renderIas();
+    if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
@@ -2180,6 +2233,8 @@ select.input {
     coachReset();
     $('#oscp-body').textContent = ''; $('#lab-body').textContent = ''; oscpLab = null;
     oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };   // like the main list's tab
+    $('#ias-body').textContent = ''; $('#chap-body').textContent = '';
+    iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -2709,6 +2764,9 @@ select.input {
     $('#hub-run-n').textContent = km >= 100 ? Math.round(km) : km.toFixed(1).replace(/\.0$/, '');
     var ot = oscpTotals();
     $('#hub-oscp-n').textContent = ot.done + ' / ' + ot.all;
+    var it = iasTotals(), ex = iasExamDays();
+    $('#hub-ias-n').textContent = it.done + ' / ' + it.all;
+    $('#hub-ias-sub').textContent = 'IAS prelims chapters done' + (ex !== null && ex >= 0 ? ' · ' + (ex === 0 ? 'exam today' : ex + (ex === 1 ? ' day' : ' days') + ' to prelims') : '');
     $('#hub-attn').classList.toggle('alert', att > 0);
     $('#hub-health').classList.toggle('alert', bad > 0);
   }
@@ -2716,6 +2774,7 @@ select.input {
   $('#hub-health').addEventListener('click', function () { show('health'); });
   $('#hub-run').addEventListener('click', function () { show('run'); });
   $('#hub-oscp').addEventListener('click', function () { show('oscp'); });
+  $('#hub-ias').addEventListener('click', function () { show('ias'); });
   document.addEventListener('click', function (ev) {
     if (ev.target.closest('[data-back]')) show('vault');
   });
@@ -4103,6 +4162,7 @@ select.input {
           S.data.entries = incoming;
           S.data.runs = sanitizeRuns(r.data && r.data.runs);
           S.data.oscp = sanitizeOscp(r.data && r.data.oscp);
+          S.data.ias = sanitizeIas(r.data && r.data.ias);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
       }
@@ -4112,6 +4172,7 @@ select.input {
       runs().forEach(function (x) { have[x.id] = 1; });
       S.data.runs = runs().concat(sanitizeRuns(r.data && r.data.runs).filter(function (x) { return !have[x.id]; }));
       S.data.oscp = mergeOscp(S.data.oscp, sanitizeOscp(r.data && r.data.oscp));
+      S.data.ias = mergeIas(S.data.ias, sanitizeIas(r.data && r.data.ias));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
       if (res.updated) parts.push('updated ' + res.updated);
@@ -4140,6 +4201,7 @@ select.input {
         runs: sanitizeRuns(r.data && r.data.runs),
         claude: sanitizeClaude(r.data && r.data.claude),
         oscp: sanitizeOscp(r.data && r.data.oscp),
+        ias: sanitizeIas(r.data && r.data.ias),
         lastExport: (r.data && r.data.lastExport) || null
       };
       if (r.raw) {
@@ -5905,6 +5967,361 @@ select.input {
   });
   $('#btn-lab-back').addEventListener('click', function () {
     saveLabNotes().then(function () { show('oscp'); window.scrollTo(0, oscpScroll); });
+  });
+
+  /* ============ IAS prelims ============
+     The reading list (lib/ias-prelims.js) is public: subjects, NCERT books
+     and chapter titles. Your part - status, revisions, notes, chapters you
+     add, your exam date - lives in S.data.ias inside the encrypted vault and
+     travels with backups. */
+  var IAS_SUBJ = window.IAS_SUBJECTS || [], IAS_BOOKS = window.IAS_BOOKS || [], IAS_M = window.IAS_META || {};
+  var IAS_BOOK = {}, IAS_SNAME = {};
+  IAS_BOOKS.forEach(function (b) { IAS_BOOK[b.id] = b; });
+  IAS_SUBJ.forEach(function (s) { IAS_SNAME[s.id] = s.name; });
+  var ISTATUS = { todo: 'To read', doing: 'Reading', done: 'Done' };
+  var iasView = { q: '', subj: 'all', status: 'all', src: 'all' };
+  var iasOpen = {}, iasChap = null, iasAdding = null, iasExamEdit = false, iasNoteTimer = null, iasScroll = 0;
+
+  function iasData() { return (S.data && S.data.ias) || {}; }
+  function iasChapters(b) {
+    var out = (b.ch || []).map(function (t, i) { return { id: b.id + '.' + (i + 1), t: t, no: i + 1 }; });
+    return out.concat(((iasData().x || {})[b.id] || []).map(function (x) { return { id: b.id + '.' + x.id, t: x.t, user: true }; }));
+  }
+  function chState(id) { return (iasData().c || {})[id] || {}; }
+  function chStatus(id) { return chState(id).s || 'todo'; }
+  function iasEnsure() {
+    S.data.ias = S.data.ias || {};
+    S.data.ias.c = S.data.ias.c || {};
+    S.data.ias.x = S.data.ias.x || {};
+    return S.data.ias;
+  }
+  function setChap(id, patch) {
+    var c = iasEnsure().c, cur = c[id] || {};
+    Object.keys(patch).forEach(function (k) {
+      if (patch[k] === undefined || patch[k] === '' || patch[k] === 0) delete cur[k]; else cur[k] = patch[k];
+    });
+    cur.u = Date.now();
+    if (!cur.s && !cur.n && !cur.r) delete c[id]; else c[id] = cur;
+    return persist();
+  }
+  function findChap(id) {
+    var b = IAS_BOOK[String(id).split('.')[0]];
+    if (!b) return null;
+    var list = iasChapters(b);
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return { b: b, c: list[i], list: list, i: i };
+    return null;
+  }
+  function iasTotals(books) {
+    var t = { all: 0, done: 0, doing: 0 };
+    (books || IAS_BOOKS).forEach(function (b) {
+      iasChapters(b).forEach(function (c) {
+        t.all++;
+        var st = chStatus(c.id);
+        if (st === 'done') t.done++; else if (st === 'doing') t.doing++;
+      });
+    });
+    return t;
+  }
+  function iasExamDays() { var e = iasData().exam; return e ? daysUntil(e) : null; }
+  function bookLabel(b) {
+    return b.ref ? 'Reference' : b.c ? 'Class ' + b.c + ' · NCERT' : IAS_SNAME[b.s] || '';
+  }
+
+  function sanitizeIas(o) {
+    var out = { c: {}, x: {} };
+    if (!o || typeof o !== 'object') return out;
+    var c = o.c && typeof o.c === 'object' ? o.c : {};
+    Object.keys(c).forEach(function (id) {
+      var v = c[id];
+      if (!/^[a-z0-9]{1,6}\.(\d{1,3}|u[a-z0-9]{4,16})$/.test(id) || !v || typeof v !== 'object') return;
+      var k = {};
+      if (v.s === 'doing' || v.s === 'done') k.s = v.s;
+      if (typeof v.n === 'string' && v.n) k.n = v.n.slice(0, 50000);
+      if (typeof v.r === 'number' && v.r >= 1) k.r = Math.min(999, Math.floor(v.r));
+      if (typeof v.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.d)) k.d = v.d;
+      k.u = typeof v.u === 'number' ? v.u : 0;
+      if (k.s || k.n || k.r) out.c[id] = k;
+    });
+    var x = o.x && typeof o.x === 'object' ? o.x : {};
+    Object.keys(x).forEach(function (bid) {
+      if (!IAS_BOOK[bid] || !Array.isArray(x[bid])) return;
+      var list = x[bid].filter(function (it) {
+        return it && typeof it.id === 'string' && /^u[a-z0-9]{4,16}$/.test(it.id) && typeof it.t === 'string' && it.t.trim();
+      }).slice(0, 300).map(function (it) { return { id: it.id, t: it.t.trim().slice(0, 200) }; });
+      if (list.length) out.x[bid] = list;
+    });
+    if (typeof o.exam === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.exam)) out.exam = o.exam;
+    return out;
+  }
+  function mergeIas(mine, theirs) {
+    mine = mine || {};
+    var out = { c: mergeOscp(mine.c, theirs.c), x: {} };
+    [mine.x || {}, theirs.x || {}].forEach(function (src) {
+      Object.keys(src).forEach(function (bid) {
+        var have = out.x[bid] = out.x[bid] || [];
+        src[bid].forEach(function (it) {
+          if (!have.some(function (h) { return h.id === it.id; })) have.push(it);
+        });
+      });
+    });
+    if (mine.exam || theirs.exam) out.exam = mine.exam || theirs.exam;
+    return out;
+  }
+
+  function iasFiltering() { return !!(iasView.q || iasView.status !== 'all'); }
+  function chapMatches(b, c) {
+    if (iasView.status !== 'all' && chStatus(c.id) !== iasView.status) return false;
+    if (iasView.q) {
+      var hay = [c.t, b.t, bookLabel(b), IAS_SNAME[b.s], chState(c.id).n || ''].join(' ').toLowerCase();
+      if (!iasView.q.split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; })) return false;
+    }
+    return true;
+  }
+  function iasChips(label, key, options) {
+    return '<div class="fgroup"><span class="label">' + esc(label) + '</span><div class="tabs fchips">' +
+      [['all', 'All']].concat(options).map(function (o) {
+        return '<button class="tab" data-if="' + key + '" data-v="' + esc(o[0]) + '" aria-pressed="' + (iasView[key] === o[0]) + '">' + esc(o[1]) + '</button>';
+      }).join('') + '</div></div>';
+  }
+  function chapRow(c) {
+    var st = chStatus(c.id), s = chState(c.id);
+    var meta = [s.r ? 'Revised ×' + s.r : '', s.n ? 'notes' : '', c.user ? 'added by you' : ''].filter(Boolean).join(' · ');
+    return '<div class="lab ' + st + '">' +
+      '<button class="lab-st" data-icycle="' + esc(c.id) + '" aria-label="' + esc(c.t) + ': ' + ISTATUS[st] + '. Tap to change.">' + STATUS_ICON[st] + '</button>' +
+      '<button class="lab-main" data-ichap="' + esc(c.id) + '"><span class="lab-text"><b>' + (c.no ? c.no + '. ' : '') + esc(c.t) + '</b>' +
+      (meta ? '<small>' + esc(meta) + '</small>' : '') + '</span></button></div>';
+  }
+  function bookCard(b, chs) {
+    var all = iasChapters(b), done = all.filter(function (c) { return chStatus(c.id) === 'done'; }).length;
+    var open = iasOpen[b.id] || iasFiltering() || iasAdding === b.id;
+    var pct = all.length ? Math.round(done / all.length * 100) : 0;
+    var body = '';
+    if (open) {
+      body = '<div class="ibook-body">' +
+        (chs.length ? chs.map(chapRow).join('')
+          : !iasFiltering() ? '<p class="ibook-none">' + (b.ref ? 'Add its chapters or parts as you read, to track them and keep notes.' : 'No chapters yet.') + '</p>' : '') +
+        (iasFiltering() ? '' : iasAdding === b.id
+          ? '<div class="iadd"><input class="input" id="iadd-in" type="text" placeholder="Chapter or topic name" maxlength="200" autocapitalize="sentences" enterkeyhint="done">' +
+            '<button type="button" class="mini" data-iaddsave="' + esc(b.id) + '">Add</button>' +
+            '<button type="button" class="mini" data-iaddcancel="1" style="color:var(--fg-dim);border-color:var(--line)">Cancel</button></div>'
+          : '<button type="button" class="iadd-open" data-iadd="' + esc(b.id) + '">+ Add a chapter or topic</button>') +
+        '</div>';
+    }
+    return '<div class="ibook' + (open ? ' open' : '') + '">' +
+      '<button class="ibook-head" data-ibook="' + esc(b.id) + '" aria-expanded="' + !!open + '">' +
+      '<span class="ibook-text"><small>' + esc(bookLabel(b)) + (b.opt ? '<span class="itag">Optional</span>' : '') + '</small>' +
+      '<b>' + esc(b.t) + '</b></span>' +
+      '<span class="ibook-n' + (all.length && done === all.length ? ' full' : '') + '">' + done + ' / ' + all.length + '</span>' +
+      '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></span>' +
+      '</button>' +
+      (all.length ? '<div class="ibook-bar"><i style="width:' + pct + '%"></i></div>' : '') +
+      body + '</div>';
+  }
+
+  function renderIas() {
+    var el = $('#ias-body');
+    if (!el || !S.data) return;
+    if (!IAS_BOOKS.length) { el.innerHTML = '<div class="empty"><h2>Reading list missing</h2><p>lib/ias-prelims.js did not load.</p></div>'; return; }
+    var t = iasTotals(), pct = t.all ? Math.round(t.done / t.all * 100) : 0;
+    var exam = iasData().exam, days = iasExamDays();
+    var books = IAS_BOOKS.filter(function (b) {
+      return (iasView.subj === 'all' || b.s === iasView.subj) &&
+        (iasView.src === 'all' || (iasView.src === 'ref' ? !!b.ref : iasView.src === 'ncert' ? !!b.c : !b.c && !b.ref));
+    });
+    var shownCount = 0;
+    var groups = IAS_SUBJ.map(function (s) {
+      var mine = books.filter(function (b) { return b.s === s.id; });
+      var cards = mine.map(function (b) {
+        var chs = iasChapters(b).filter(function (c) { return chapMatches(b, c); });
+        shownCount += chs.length;
+        if (iasFiltering() && !chs.length) return '';
+        return bookCard(b, chs);
+      }).join('');
+      if (!cards) return '';
+      var st = iasTotals(mine);
+      return '<div class="section-label lab-group">' + esc(s.name) + ' <span>' + st.done + ' / ' + st.all + ' done</span></div>' +
+        '<p class="hint ias-syl">' + esc(s.syl) + '</p>' +
+        '<div class="ibooks">' + cards + '</div>';
+    }).join('');
+    var filtered = iasFiltering() || iasView.subj !== 'all' || iasView.src !== 'all';
+
+    el.innerHTML =
+      '<div class="oscp-head"><div class="oscp-count"><b>' + t.done + '</b><span>of ' + t.all + ' chapters done' +
+      (t.doing ? ' · ' + t.doing + ' reading' : '') + '</span></div>' +
+      '<div class="oscp-bar" role="img" aria-label="' + pct + ' percent done"><i style="width:' + pct + '%"></i></div>' +
+      (iasExamEdit
+        ? '<div class="ias-exam"><input class="input" id="ias-exam-in" type="date" value="' + esc(exam || '') + '" aria-label="Prelims date">' +
+          '<button type="button" class="linkish" id="ias-exam-save">Save</button>' +
+          (exam ? '<button type="button" class="linkish" id="ias-exam-clear" style="color:var(--fg-dim)">Remove</button>' : '') + '</div>'
+        : '<div class="ias-exam">' + (exam
+            ? '<span>Prelims on <b>' + esc(fmtDate(exam)) + '</b>' + (days !== null && days >= 0 ? ' · ' + (days === 0 ? 'today' : days + (days === 1 ? ' day' : ' days') + ' to go') : ' · done') + '</span>' +
+              '<button type="button" class="linkish" id="ias-exam-edit">Change</button>'
+            : '<span>Add your prelims date for a countdown.</span><button type="button" class="linkish" id="ias-exam-edit">Set date</button>') + '</div>') +
+      '</div>' +
+      '<div class="search oscp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>' +
+      '<input class="input" id="ias-q" type="search" placeholder="Search chapters and your notes" value="' + esc(iasView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search chapters"></div>' +
+      iasChips('Subject', 'subj', IAS_SUBJ.map(function (s) { return [s.id, s.name]; })) +
+      iasChips('Status', 'status', [['todo', 'To read'], ['doing', 'Reading'], ['done', 'Done']]) +
+      iasChips('Source', 'src', [['ncert', 'NCERT'], ['ref', 'Reference books'], ['other', 'Syllabus & papers']]) +
+      '<div class="oscp-showing"><span>' + shownCount + ' chapters</span>' +
+      (filtered ? '<button type="button" class="linkish" id="ias-clear">Clear filters</button>' : '') + '</div>' +
+      (groups || '<div class="empty"><h2>Nothing matches</h2><p>Try fewer filters.</p></div>') +
+      '<p class="hint oscp-src">Chapter names follow the full NCERT editions UPSC aspirants read, checked against ncert.nic.in. ' +
+      'Current NCERT reprints dropped some chapters in 2022–23 and replaced the Class 6 and 9 books; the older printings still have them. ' +
+      'Tap a book to open it, the circle to mark a chapter, and a chapter for notes. Your progress and notes stay encrypted in the box.</p>';
+  }
+
+  function cycleChap(id) {
+    var next = { todo: 'doing', doing: 'done', done: 'todo' }[chStatus(id)];
+    return setChap(id, { s: next === 'todo' ? '' : next, d: next === 'done' ? toYmd(new Date()) : next === 'todo' ? '' : chState(id).d });
+  }
+  function iasRerender(keepScroll) {
+    var y = window.scrollY;
+    renderIas();
+    if (keepScroll) window.scrollTo(0, y);
+  }
+  function addChapter(bid) {
+    var inp = $('#iadd-in'), name = inp ? inp.value.trim() : '';
+    if (!name) { if (inp) inp.focus(); return; }
+    var x = iasEnsure().x, id = 'u' + uid().slice(0, 10);
+    x[bid] = (x[bid] || []).concat([{ id: id, t: name.slice(0, 200) }]);
+    persist().then(function () {
+      iasAdding = bid;
+      iasRerender(true);
+      var again = $('#iadd-in');
+      if (again) again.focus();
+      toast('Added');
+    });
+  }
+
+  $('#ias-body').addEventListener('click', function (ev) {
+    var f = ev.target.closest('[data-if]');
+    if (f) { iasView[f.dataset.if] = f.dataset.v; iasRerender(true); return; }
+    if (ev.target.closest('#ias-clear')) { iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; renderIas(); return; }
+    if (ev.target.closest('#ias-exam-edit')) { iasExamEdit = true; iasRerender(true); return; }
+    if (ev.target.closest('#ias-exam-save') || ev.target.closest('#ias-exam-clear')) {
+      var v = ev.target.closest('#ias-exam-clear') ? '' : ($('#ias-exam-in').value || '');
+      if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) { toast('Pick a date'); return; }
+      var d = iasEnsure();
+      if (v) d.exam = v; else delete d.exam;
+      persist().then(function () { iasExamEdit = false; iasRerender(true); });
+      return;
+    }
+    var bk = ev.target.closest('[data-ibook]');
+    if (bk) {
+      var id = bk.dataset.ibook;
+      if (iasFiltering()) return;
+      iasOpen[id] = !iasOpen[id];
+      if (!iasOpen[id] && iasAdding === id) iasAdding = null;
+      iasRerender(true);
+      return;
+    }
+    var cy = ev.target.closest('[data-icycle]');
+    if (cy) {
+      var cid = cy.dataset.icycle;
+      cycleChap(cid).then(function () {
+        iasRerender(true);
+        if (chStatus(cid) === 'done') toast('Marked done');
+      });
+      return;
+    }
+    var op = ev.target.closest('[data-ichap]');
+    if (op) { iasChap = op.dataset.ichap; iasScroll = window.scrollY; show('chap'); return; }
+    var ad = ev.target.closest('[data-iadd]');
+    if (ad) { iasAdding = ad.dataset.iadd; iasRerender(true); var i = $('#iadd-in'); if (i) i.focus(); return; }
+    if (ev.target.closest('[data-iaddcancel]')) { iasAdding = null; iasRerender(true); return; }
+    var sv = ev.target.closest('[data-iaddsave]');
+    if (sv) addChapter(sv.dataset.iaddsave);
+  });
+  $('#ias-body').addEventListener('keydown', function (ev) {
+    if (ev.target.id === 'iadd-in' && ev.key === 'Enter') { ev.preventDefault(); addChapter(iasAdding); }
+  });
+  $('#ias-body').addEventListener('input', function (ev) {
+    if (ev.target.id !== 'ias-q') return;
+    iasView.q = ev.target.value.trim().toLowerCase();
+    var pos = ev.target.selectionStart;
+    renderIas();
+    var q = $('#ias-q');
+    if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (e) {} }
+  });
+
+  function renderChap() {
+    var el = $('#chap-body'), hit = findChap(iasChap);
+    if (!el || !hit || !S.data) { show('ias'); return; }
+    var b = hit.b, c = hit.c, st = chState(c.id), status = chStatus(c.id);
+    var prev = hit.list[hit.i - 1], next = hit.list[hit.i + 1];
+    $('#chap-bar-title').textContent = b.t;
+    el.innerHTML =
+      '<div class="lab-hero"><p class="chap-where">' + esc([IAS_SNAME[b.s], bookLabel(b)].join(' · ')) + '</p>' +
+      '<h2>' + (c.no ? 'Ch ' + c.no + '. ' : '') + esc(c.t) + '</h2><p>' + esc(b.t) + '</p></div>' +
+      '<div class="seg" role="radiogroup" aria-label="Status">' +
+      ['todo', 'doing', 'done'].map(function (k) {
+        return '<button type="button" role="radio" data-icst="' + k + '" aria-checked="' + (status === k) + '">' + STATUS_ICON[k] + ISTATUS[k] + '</button>';
+      }).join('') + '</div>' +
+      (status === 'done' && st.d ? '<p class="hint lab-when">Done on ' + esc(fmtDate(st.d)) + '</p>' : '') +
+      '<div class="chap-rev"><span>Revised <b>' + (st.r || 0) + '</b> ' + ((st.r || 0) === 1 ? 'time' : 'times') + '</span>' +
+      '<div><button type="button" class="mini" data-irev="-1" aria-label="One less revision"' + (st.r ? '' : ' disabled') + '>−</button>' +
+      '<button type="button" class="mini" data-irev="1" aria-label="Add a revision">+</button></div></div>' +
+      '<div class="field lab-notes"><label class="label" for="chap-n">Your notes</label>' +
+      '<textarea class="input" id="chap-n" rows="10" placeholder="Key points, facts, maps, links to current affairs, PYQs from this chapter…">' + esc(st.n || '') + '</textarea>' +
+      '<p class="hint" id="chap-saved">Saved automatically, encrypted in the box.</p></div>' +
+      '<div class="lab-links">' +
+      '<div class="chap-nav">' +
+      (prev ? '<button type="button" class="btn ghost" data-igo="' + esc(prev.id) + '">← Previous</button>' : '') +
+      (next ? '<button type="button" class="btn ghost" data-igo="' + esc(next.id) + '">Next →</button>' : '') + '</div>' +
+      (b.k ? '<a class="btn ghost" href="' + esc(IAS_M.ncert + b.k) + '" target="_blank" rel="noopener noreferrer">Open the book on ncert.nic.in</a>' : '') +
+      (c.user ? '<button type="button" class="btn danger" id="chap-del">Delete this chapter</button>' : '') +
+      '</div>';
+  }
+  function saveChapNotes() {
+    clearTimeout(iasNoteTimer);
+    var box = $('#chap-n');
+    if (!box || !iasChap) return Promise.resolve();
+    var v = box.value;
+    if ((chState(iasChap).n || '') === v) return Promise.resolve();
+    return setChap(iasChap, { n: v }).then(function () {
+      var s2 = $('#chap-saved');
+      if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', encrypted in the box.';
+    });
+  }
+  $('#chap-body').addEventListener('input', function (ev) {
+    if (ev.target.id === 'chap-n') { clearTimeout(iasNoteTimer); iasNoteTimer = setTimeout(saveChapNotes, 700); }
+  });
+  $('#chap-body').addEventListener('click', function (ev) {
+    var s = ev.target.closest('[data-icst]');
+    if (s) {
+      var k = s.dataset.icst;
+      saveChapNotes().then(function () {
+        return setChap(iasChap, { s: k === 'todo' ? '' : k, d: k === 'done' ? (chState(iasChap).d || toYmd(new Date())) : '' });
+      }).then(function () { if (k === 'done') toast('Marked done'); renderChap(); });
+      return;
+    }
+    var r = ev.target.closest('[data-irev]');
+    if (r) {
+      var n = Math.max(0, (chState(iasChap).r || 0) + (+r.dataset.irev));
+      saveChapNotes().then(function () { return setChap(iasChap, { r: n }); }).then(renderChap);
+      return;
+    }
+    var go = ev.target.closest('[data-igo]');
+    if (go) {
+      saveChapNotes().then(function () { iasChap = go.dataset.igo; renderChap(); window.scrollTo(0, 0); });
+      return;
+    }
+    if (ev.target.closest('#chap-del')) {
+      var hit = findChap(iasChap);
+      if (!hit) return;
+      askConfirm({ title: 'Delete this chapter?', body: '“' + hit.c.t + '” and its notes will be removed.', yes: 'Delete' }).then(function (ok) {
+        if (!ok) return;
+        var d = iasEnsure(), bid = hit.b.id, xid = hit.c.id.split('.')[1];
+        d.x[bid] = (d.x[bid] || []).filter(function (it) { return it.id !== xid; });
+        if (!d.x[bid].length) delete d.x[bid];
+        delete d.c[hit.c.id];
+        persist().then(function () { iasChap = null; toast('Chapter deleted'); show('ias'); window.scrollTo(0, iasScroll); });
+      });
+    }
+  });
+  $('#btn-chap-back').addEventListener('click', function () {
+    saveChapNotes().then(function () { show('ias'); window.scrollTo(0, iasScroll); });
   });
 
   /* ============ share one item safely ============

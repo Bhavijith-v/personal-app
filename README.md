@@ -232,6 +232,28 @@ saved on their phone.
 There is no server, so a sent link can't be revoked. Its expiry is enforced by
 the app. Photos are never included.
 
+### IAS prelims
+
+The **IAS prelims** tile on the home screen opens a reading list for the UPSC
+Civil Services preliminary exam: 10 subjects (History, Art & Culture,
+Geography, Polity, Economy, Environment, Science & Tech, Current Affairs, CSAT,
+past papers), 60 books and 432 chapters.
+
+- NCERT textbooks from Class 6 to 12 with every chapter, checked against the
+  contents pages on ncert.nic.in. Titles follow the full editions aspirants
+  read; current reprints dropped some chapters in 2022–23 and NCERT replaced
+  the Class 6 and 9 books, so the older printings are the ones to use.
+- Standard reference books (Laxmikanth, Spectrum, G.C. Leong, Ramesh Singh,
+  Shankar IAS, Nitin Singhania…) start empty: add their chapters as you read.
+- Each subject shows its line from the official GS Paper I syllabus.
+- Tap the circle to mark a chapter To read → Reading → Done. Tap a chapter for
+  your notes (autosaved), a revision counter and a link to the book online.
+- Filter by subject, status or source; search covers chapter names and your
+  notes. Set your prelims date for a countdown.
+
+The list is `lib/ias-prelims.js`; your progress and notes are in the encrypted
+vault and travel with backups.
+
 ### OSCP labs
 
 Home → **OSCP labs rooted**. All 196 machines from TJ Null's NetSecFocus
