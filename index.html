@@ -960,6 +960,55 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- plans, budgets, digest ---------- */
+.plan { margin-top: 12px; padding: 14px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
+.plan-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.plan-top b { font-size: 16px; }
+.plan-top span { color: var(--fg-faint); font-size: 12.5px; }
+.plan-now { margin: 8px 0 0; font-size: 14px; color: var(--fg-dim); }
+.plan-now b { color: var(--fg); }
+.plan-next { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.plan-next button { text-align: left; padding: 10px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font-size: 14.5px; }
+.plan-next small { display: block; font-size: 11px; color: var(--fg-faint); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px; }
+.plan-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
+.plan-table th { text-align: left; color: var(--fg-faint); font-weight: 600; font-size: 11.5px; padding: 4px 2px; border-bottom: 1px solid var(--line-soft); }
+.plan-table td { padding: 6px 2px; border-bottom: 1px solid var(--line-soft); font-family: var(--data); font-variant-numeric: tabular-nums; }
+.plan-table tr.now td { color: var(--brass); font-weight: 600; }
+.run-import { margin: 12px 0 4px; }
+.run-plan-none { margin: 12px 0 0; }
+.oscp-week { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; font-size: 13.5px; color: var(--fg-dim); }
+.oscp-week b { color: var(--fg); }
+.oscp-week label { display: flex; align-items: center; gap: 8px; }
+.oscp-week select { width: auto; padding: 6px 30px 6px 10px; font-size: 14px; }
+.bud + .bud { margin-top: 12px; }
+.bud-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.bud-top span { font-family: var(--data); color: var(--fg-dim); font-size: 13px; }
+.bud .meter { margin: 6px 0 4px; }
+.bud-note { margin: 0; font-size: 12.5px; color: var(--fg-faint); }
+.bud-note.bad { color: var(--danger); font-weight: 600; }
+.bud-note.warn { color: var(--warn); }
+.bud-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; }
+.bud-row label { font-size: 14px; color: var(--fg-dim); }
+.bud-row input { width: 130px; padding: 8px 10px; font-size: 16px; text-align: right; }
+.bill { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+.bill:last-child { border-bottom: none; }
+.bill b { display: block; font-size: 14.5px; font-weight: 500; }
+.bill small { display: block; font-size: 12px; color: var(--fg-faint); }
+.bill-r { text-align: right; }
+.bill-r b { font-family: var(--data); }
+.dg-plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dg { text-align: left; padding: 12px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); color: var(--fg); min-width: 0; }
+.dg b { display: block; font-size: 20px; font-weight: 600; margin-top: 4px; }
+.dg small { display: block; font-size: 12px; color: var(--fg-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- life admin ---------- */
+.life { padding: 16px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); margin-bottom: 14px; }
+.life-head { display: block; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+.life-sub { margin: 4px 0 0; color: var(--fg-dim); font-size: 13.5px; line-height: 1.45; }
+.life-dates { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.life-date { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 14px; }
+.paste-what { display: block; font-weight: 400; color: var(--fg-faint); font-size: 12.5px; margin-top: 2px; text-align: left; }
+
 /* ---------- booked exams ---------- */
 .paste-box textarea { font-size: 15px; }
 .paste-box .btn-row { margin-top: 8px; }
@@ -1382,6 +1431,7 @@ select.input {
         <input class="input" id="q" type="search" placeholder="Search the box" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search the box">
       </div>
       <div class="hub" id="hub" hidden>
+        <button class="hub-tile wide" id="hub-week"><b id="hub-week-n">0</b><span id="hub-week-sub">due this week · weekly digest</span></button>
         <button class="hub-tile" id="hub-attn"><b id="hub-attn-n">0</b><span>Needs attention</span></button>
         <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
         <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
@@ -1526,6 +1576,10 @@ select.input {
   </section>
 
   <!-- ================= ONE LAB ================= -->
+  <section id="screen-week" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>This week</h1></div></header>
+    <div class="col gutter page-body" id="week-body"></div>
+  </section>
   <section id="screen-money" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" data-back aria-label="Back to the box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Money</h1></div></header>
     <div class="col gutter page-body" id="money-body"></div>
@@ -1597,6 +1651,7 @@ select.input {
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*" hidden>
 <input type="file" id="scan-in" accept="image/*" hidden>
+<input type="file" id="runs-in" accept=".gpx,.tcx,.csv,application/gpx+xml,text/csv,text/xml,application/xml" hidden>
 <input type="file" id="stmt-in" accept=".pdf,.xls,.xlsx,.csv,.txt,.htm,.html,application/pdf,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 
 <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Card photo">
@@ -1841,7 +1896,7 @@ select.input {
       ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'life', 'race'];
 
   /* --- Indian government IDs ---
      One "ID document" kind and one tab, with a sub-type per document. Each
@@ -2116,8 +2171,90 @@ select.input {
   };
   ICON.ipo = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 20.5h17"/><path d="m4.5 16 5-5 3.5 3.5 6.5-7"/><path d="M14.5 7.5h5v5"/></svg>';
 
-  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER, broker: ['broker', 'ipo'] };
-  var KIND_LABEL = { id: 'ID document', edu: 'Education', broker: 'Trading' };
+  /* --- life admin: insurance, vehicles, warranties, tickets ---
+     Things with a renewal or a date to remember. Each can hold two photos
+     (the policy, the RC, the bill, the ticket), kept encrypted like ID photos. */
+  var LIFE_ORDER = ['ins', 'vehicle', 'warranty', 'trip'];
+  var INSURERS = ['LIC', 'Star Health', 'HDFC ERGO', 'ICICI Lombard', 'Niva Bupa', 'Care Health', 'Tata AIG', 'Bajaj Allianz',
+    'New India Assurance', 'United India', 'SBI Life', 'SBI General', 'HDFC Life', 'ICICI Prudential Life', 'Max Life', 'Digit', 'Acko'];
+  TYPES.ins = {
+    group: 'life', name: 'Insurance policy', short: 'Insurance', titleLabel: 'Name', titlePh: 'Star Health family floater',
+    photos: true, sides: ['Policy', 'Card'], photoNoun: 'policy',
+    fields: [
+      { k: 'kind', l: 'Type', opts: ['Health', 'Life (term)', 'Life (LIC / endowment)', 'Vehicle', 'Home', 'Travel', 'Other'], onCard: true },
+      { k: 'insurer', l: 'Insurer', list: INSURERS, onCard: true },
+      { k: 'policyno', l: 'Policy number', mono: true, upper: true },
+      { k: 'covered', l: 'Who is covered', ph: 'Self, wife' },
+      { k: 'sum', l: 'Cover / sum insured (₹)', mono: true, num: true, onCard: true },
+      { k: 'premium', l: 'Premium (₹)', mono: true, num: true, onCard: true },
+      { k: 'freq', l: 'Premium paid', opts: ['Yearly', 'Half-yearly', 'Quarterly', 'Monthly', 'Single'] },
+      { k: 'renewal', l: 'Next premium / renewal date', date: true, onCard: true },
+      { k: 'ends', l: 'Policy ends', date: true },
+      { k: 'nominee', l: 'Nominee' },
+      { k: 'helpline', l: 'Claims helpline / agent', ph: '1800 425 2255' }
+    ]
+  };
+  TYPES.vehicle = {
+    group: 'life', name: 'Vehicle', short: 'Vehicle', titleLabel: 'Name', titlePh: 'Royal Enfield Classic 350',
+    photos: true, sides: ['RC front', 'RC back'], photoNoun: 'RC', guide: { ar: 85.6 / 54, fw: '88%' },
+    fields: [
+      { k: 'regno', l: 'Registration number', mono: true, upper: true, ph: 'KL07AB1234', onCard: true },
+      { k: 'kind', l: 'Type', opts: ['Two-wheeler', 'Car', 'Other'] },
+      { k: 'model', l: 'Make and model', onCard: true },
+      { k: 'fuel', l: 'Fuel', opts: ['Petrol', 'Diesel', 'Electric', 'CNG', 'Hybrid'] },
+      { k: 'insexp', l: 'Insurance valid till', date: true, onCard: true },
+      { k: 'insurer', l: 'Insurer', list: INSURERS },
+      { k: 'policyno', l: 'Insurance policy number', mono: true, upper: true },
+      { k: 'puc', l: 'Pollution (PUC) valid till', date: true, onCard: true },
+      { k: 'rcexp', l: 'RC valid till', date: true, onCard: true },
+      { k: 'service', l: 'Next service due', date: true, onCard: true },
+      { k: 'odo', l: 'Odometer (km)', mono: true, num: true },
+      { k: 'chassis', l: 'Chassis number', mono: true, upper: true },
+      { k: 'fastag', l: 'FASTag (bank / ID)' }
+    ]
+  };
+  TYPES.warranty = {
+    group: 'life', name: 'Warranty', short: 'Warranty', titleLabel: 'Product', titlePh: 'iPhone 18 Pro Max',
+    photos: true, sides: ['Bill', 'Warranty card'], photoNoun: 'bill',
+    fields: [
+      { k: 'brand', l: 'Brand', onCard: true },
+      { k: 'bought', l: 'Bought on', date: true, onCard: true },
+      { k: 'months', l: 'Warranty (months)', mono: true, num: true, ph: '12' },
+      { k: 'ends', l: 'Warranty ends', date: true, onCard: true },
+      { k: 'price', l: 'Price (₹)', mono: true, num: true, onCard: true },
+      { k: 'store', l: 'Bought from', ph: 'Amazon, Croma, Lulu…' },
+      { k: 'serial', l: 'Serial / IMEI', mono: true, upper: true },
+      { k: 'support', l: 'Service centre / helpline' }
+    ]
+  };
+  TYPES.trip = {
+    group: 'life', name: 'Trip / ticket', short: 'Ticket', titleLabel: 'Name', titlePh: 'Kochi → Bengaluru',
+    photos: true, sides: ['Ticket', 'Return ticket'], photoNoun: 'ticket',
+    fields: [
+      { k: 'mode', l: 'By', opts: ['Train', 'Flight', 'Bus', 'Other'], onCard: true },
+      { k: 'from', l: 'From', onCard: true },
+      { k: 'to', l: 'To', onCard: true },
+      { k: 'date', l: 'Journey date', date: true, onCard: true },
+      { k: 'time', l: 'Departure (24-hour)', mono: true, ph: '22:10', onCard: true },
+      { k: 'number', l: 'Train / flight number', mono: true, upper: true, onCard: true },
+      { k: 'pnr', l: 'PNR / booking reference', mono: true, upper: true, onCard: true },
+      { k: 'cls', l: 'Class' },
+      { k: 'seat', l: 'Coach / seat' },
+      { k: 'passengers', l: 'Passengers' },
+      { k: 'amount', l: 'Fare (₹)', mono: true, num: true },
+      { k: 'via', l: 'Booked through', ph: 'IRCTC, MakeMyTrip…' }
+    ]
+  };
+  ICON.ins = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6Z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>';
+  ICON.vehicle = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5V12l2-5h12l2 5v4.5"/><path d="M3 12h18M4 16.5h16"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg>';
+  ICON.warranty = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>';
+  ICON.trip = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5V6h17v2.5a2 2 0 0 0 0 4V18h-17v-5.5a2 2 0 0 0 0-4Z"/><path d="M14.5 6v12" stroke-dasharray="2 2"/></svg>';
+  ICON.life = ICON.ins;
+
+  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER, broker: ['broker', 'ipo'], life: LIFE_ORDER };
+  var KIND_LABEL = { id: 'ID document', edu: 'Education', broker: 'Trading', life: 'Life admin' };
+  // "Front" -> "front", but "RC front" stays as it is
+  function lcFirst(x) { x = String(x || ''); return /^[A-Z]{2}/.test(x) ? x : x.charAt(0).toLowerCase() + x.slice(1); }
   function hasPhotos(type) { return !!(TYPES[type] && (TYPES[type].photos || TYPES[type].group === 'id')); }
 
   function groupOf(type) { return (TYPES[type] && TYPES[type].group) || type; }
@@ -2615,13 +2752,14 @@ select.input {
   /* --- the crop screen --- */
   function guideFor() {
     var t = S.draft && S.draft.type;
+    if (t && TYPES[t] && TYPES[t].guide) return TYPES[t].guide;
     if (t === 'id_passport') return { ar: 1.42, fw: '88%' };
     if (t && TYPES[t] && TYPES[t].photos) return { ar: 0.707, fw: '62%' };   // certificates are A4
     return { ar: CARD_RATIO, fw: '88%' };
   }
   function shotLabel() {
     var sides = (S.draft && TYPES[S.draft.type] && TYPES[S.draft.type].sides) || ['Front', 'Back'];
-    return String(sides[imgTarget === 'img2' ? 1 : 0] || 'photo').toLowerCase();
+    return lcFirst(sides[imgTarget === 'img2' ? 1 : 0] || 'photo');
   }
   function openShotSheet() {
     $('#shotsheet-title').textContent = 'Add ' + shotLabel();
@@ -2787,6 +2925,161 @@ select.input {
     cropState.quad = detectCard(c) || defaultQuad(c.width, c.height);
     layoutCrop();
   });
+
+  /* ============ life admin ============ */
+  // Every date a life entry carries, with what it means.
+  function lifeDates(e) {
+    var f = e.f || {}, t = e.type, out = [];
+    var add = function (k, label, warnDays) { if (f[k]) out.push({ k: k, label: label, date: f[k], warn: warnDays }); };
+    if (t === 'ins') { add('renewal', 'Premium / renewal due', 30); add('ends', 'Policy ends', 60); }
+    if (t === 'vehicle') { add('insexp', 'Insurance expires', 30); add('puc', 'PUC expires', 15); add('rcexp', 'RC expires', 90); add('service', 'Service due', 7); }
+    if (t === 'warranty') { var en = warrantyEnd(f); if (en) out.push({ k: 'ends', label: 'Warranty ends', date: en, warn: 30 }); }
+    if (t === 'trip') add('date', 'Journey', 2);
+    return out;
+  }
+  function warrantyEnd(f) {
+    if (f.ends) return f.ends;
+    var m = +f.months;
+    if (!f.bought || !(m > 0)) return '';
+    var d = ymdDate(f.bought); d.setMonth(d.getMonth() + m);
+    return toYmd(d);
+  }
+  function lifeCard(e) {
+    var f = e.f || {}, t = e.type, head = '', sub = [];
+    if (t === 'ins') { head = [f.insurer, f.kind].filter(Boolean).join(' · ') || 'Insurance'; if (f.sum) sub.push('Cover ' + rupees(+f.sum)); if (f.premium) sub.push('Premium ' + rupees(+f.premium) + (f.freq ? ' ' + f.freq.toLowerCase() : '')); }
+    if (t === 'vehicle') { head = f.regno || 'Vehicle'; if (f.model) sub.push(f.model); }
+    if (t === 'warranty') { head = [f.brand, e.title].filter(Boolean).join(' '); if (f.bought) sub.push('Bought ' + fmtDate(f.bought)); if (f.price) sub.push(rupees(+f.price)); }
+    if (t === 'trip') {
+      head = [f.from, f.to].filter(Boolean).join(' → ') || e.title;
+      sub.push([f.mode, f.number].filter(Boolean).join(' '));
+      if (f.date) sub.push(fmtDate(f.date) + (f.time ? ' · ' + f.time : ''));
+      if (f.pnr) sub.push('PNR ' + f.pnr);
+    }
+    var dates = lifeDates(e).map(function (x) {
+      var d = daysUntil(x.date), lvl = d === null ? '' : d < 0 ? 'bad' : d <= x.warn ? 'warn' : 'ok';
+      var txt = d === null ? fmtDate(x.date) : d < 0 ? (x.k === 'date' ? 'Done · ' : 'Overdue · ') + fmtDate(x.date)
+        : d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : 'In ' + d + ' days · ' + fmtDate(x.date);
+      return '<div class="life-date"><span>' + esc(x.label) + '</span><span class="pill ' + lvl + '">' + esc(txt) + '</span></div>';
+    }).join('');
+    return '<div class="life"><b class="life-head">' + esc(head) + '</b>' +
+      (sub.filter(Boolean).length ? '<p class="life-sub">' + esc(sub.filter(Boolean).join(' · ')) + '</p>' : '') +
+      (dates ? '<div class="life-dates">' + dates + '</div>' : '') + '</div>';
+  }
+
+  /* ============ paste an email or SMS to fill an entry ============
+     One box on the New entry screen reads exam bookings, train and flight
+     tickets, IPO allotment messages, insurance renewals and race
+     registrations, picks the right kind of entry and fills it in. All on
+     the phone. An IPO message updates the IPO you already track. */
+  function findDate(s) {
+    var res = [/\b\d{4}-\d{2}-\d{2}\b/, /\b\d{1,2}[\s\-\/.](?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*[\s\-\/.,]+\d{2,4}\b/i,
+      /\b\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}\b/];
+    for (var i = 0; i < res.length; i++) {
+      var m = res[i].exec(s);
+      if (m) { var d = parseDay(m[0]); if (d) return d; }
+    }
+    var m2 = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})\b/i.exec(s);
+    if (m2) return ymdOf(+m2[3], MON3[m2[1].toLowerCase().slice(0, 3)], +m2[2]);
+    return null;
+  }
+  function findDateAfter(s, re) {
+    var m = re.exec(s);
+    return m ? findDate(s.slice(m.index, m.index + 90)) : null;
+  }
+  function to24(h, mi, ap) {
+    h = +h;
+    if (ap) h = h % 12 + (/p/i.test(ap) ? 12 : 0);
+    return h < 24 ? ('0' + h).slice(-2) + ':' + mi : null;
+  }
+  function moneyIn(s, re) {
+    var m = re.exec(s);
+    return m ? String(parseFloat(m[1].replace(/,/g, ''))) : null;
+  }
+  var AIRLINES = { '6E': 'IndiGo', AI: 'Air India', IX: 'Air India Express', QP: 'Akasa Air', SG: 'SpiceJet', UK: 'Vistara', I5: 'AIX Connect',
+    EK: 'Emirates', QR: 'Qatar Airways', EY: 'Etihad', SQ: 'Singapore Airlines', FZ: 'flydubai', G9: 'Air Arabia', WY: 'Oman Air' };
+  function parseAny(raw) {
+    var text = String(raw || '').replace(/\r/g, ''), flat = text.replace(/\s+/g, ' ').trim(), m, f = {};
+    if (!flat) return null;
+    // 1. exam booking
+    var ex = parseBooking(text);
+    if (ex.examdate && (ex.order || ex.candid || ex.regid) && /\bexam\b|candidate|proctor|pearson|onvue|\bPSI\b|kryterion|test cent/i.test(flat)) { var t0 = ex.title; delete ex.title; return { type: 'cert', title: t0, f: ex }; }
+    // 2. train ticket (IRCTC email or SMS)
+    var pnr = /PNR\s*(?:No\.?|Number)?\s*[:\-]?\s*(\d{10})\b/i.exec(flat);
+    var trn = /(?:\bTRN|Train\s*(?:No\.?|Number)?(?:\s*\/\s*Name)?)\s*[:\-]?\s*(\d{5})\b(?:\s*[\/\-]\s*([A-Z][A-Z .]{2,30}?)(?=\s+(?:Date|DOJ|From|Class|Quota|Boarding)|,|$))?/i.exec(flat);
+    if (pnr && trn) {
+      f.mode = 'Train'; f.pnr = pnr[1]; f.number = trn[1] + (trn[2] ? ' ' + trn[2].trim() : ''); f.via = 'IRCTC';
+      if ((m = /DOJ\s*[:\-]?\s*(\d{1,2}[\-\/]\d{1,2}[\-\/]\d{2,4})/i.exec(flat))) f.date = parseDay(m[1]);
+      else f.date = findDateAfter(flat, /date of journey|journey date|DOJ/i) || findDate(flat);
+      if ((m = /\bFrom\s*:?\s*([A-Z][A-Za-z .]+?)\s*\(([A-Z]{2,5})\)/.exec(flat))) f.from = m[1].trim() + ' (' + m[2] + ')';
+      if ((m = /\bTo\s*:?\s*([A-Z][A-Za-z .]+?)\s*\(([A-Z]{2,5})\)/.exec(flat))) f.to = m[1].trim() + ' (' + m[2] + ')';
+      if (!f.from && (m = /,\s*([A-Z]{2,5})\s*-\s*([A-Z]{2,5})\s*,/.exec(flat))) { f.from = m[1]; f.to = m[2]; }
+      if ((m = /\b(1A|2A|3A|3E|SL|CC|EC|2S|FC)\b/.exec(flat))) f.cls = m[1];
+      if ((m = /(?:Dep(?:arture)?|DP)\*?\s*[:\-]?\s*(\d{1,2}):(\d{2})\s*(AM|PM)?/i.exec(flat))) f.time = to24(m[1], m[2], m[3]);
+      f.amount = moneyIn(flat, /(?:Total\s*)?Fare\s*[:\-]?\s*(?:Rs\.?|₹|INR)?\s*([\d,]+(?:\.\d+)?)/i);
+      var seats = flat.match(/\b(?:[A-Z]{1,2}\d{1,2}\s\d{1,3}|CNF\/[A-Z0-9\/]+|WL\s?\d+|RAC\s?\d+)\b/g);
+      if (seats) f.seat = seats.slice(0, 6).join(', ');
+      return { type: 'trip', title: [f.from, f.to].filter(Boolean).map(function (x) { return x.replace(/\s*\(.*\)/, ''); }).join(' → ') || 'Train ' + f.number, f: f };
+    }
+    // 3. flight
+    var fl = /\b(6E|AI|IX|QP|SG|UK|I5|EK|QR|EY|SQ|FZ|G9|WY)\s?-?\s?(\d{2,4})\b/.exec(flat);
+    var ref = /(?:PNR|Booking\s*(?:reference|ref\.?|ID)|Confirmation\s*(?:code|number))\s*(?:No\.?|is)?\s*[:\-]?\s*([A-Z0-9]{5,8})\b/i.exec(flat);
+    if (fl && ref) {
+      f.mode = 'Flight'; f.number = fl[1] + ' ' + fl[2]; f.pnr = ref[1].toUpperCase(); f.via = AIRLINES[fl[1]] || '';
+      if ((m = /\b([A-Z]{3})\s*(?:→|->|–|—|-|to)\s*([A-Z]{3})\b/.exec(flat.replace(/PNR|REF|CNF/g, '')))) { f.from = m[1]; f.to = m[2]; }
+      f.date = findDate(flat);
+      if ((m = /\b(\d{1,2}):(\d{2})\s*(AM|PM)?/i.exec(flat))) f.time = to24(m[1], m[2], m[3]);
+      f.amount = moneyIn(flat, /(?:Total|Amount paid|Fare)\s*[:\-]?\s*(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d+)?)/i);
+      return { type: 'trip', title: (f.from && f.to ? f.from + ' → ' + f.to : (AIRLINES[fl[1]] || 'Flight') + ' ' + f.number), f: f };
+    }
+    // 4. IPO allotment or credit
+    if (/\b(ipo|allot\w*|isin|demat)\b/i.test(flat) && /\ballot|credit/i.test(flat)) {
+      var co = /(?:shares of|IPO of|issue of|IPO\s*[:\-]|in)\s+([A-Z][A-Za-z0-9&.\- ]{2,60}?)\s*(?:Ltd\.?|Limited|LTD|LIMITED)\b/.exec(flat) ||
+        /\b([A-Z][A-Za-z0-9&.\-]+(?:\s+[A-Z][A-Za-z0-9&.\-]+){0,4})\s+IPO\b/.exec(flat);
+      var name = co ? co[1].replace(/\s+/g, ' ').trim() : '';
+      var no = /not\s+(?:been\s+)?allot|non.?allot|no allotment|unsuccessful|not successful|refund|mandate\s+\w*\s*(?:revoked|released|cancelled)/i.test(flat);
+      var sh = /(?:credit(?:ed)? of|allotted)\s*:?\s*(\d{1,6})\s*(?:equity\s*)?(?:shares?|qty)?/i.exec(flat) || /(\d{1,6})\s*(?:equity\s*)?shares?\b/i.exec(flat);
+      f.status = no ? 'Not allotted' : 'Allotted';
+      if (!no && sh) f.allotted = sh[1];
+      var words = name.toLowerCase().split(/\s+/).filter(function (w) { return w.length >= 3; });
+      var best = null, bestN = 0;
+      entries().forEach(function (e) {
+        if (e.type !== 'ipo') return;
+        var tl = String(e.title || '').toLowerCase(), n = words.filter(function (w) { return tl.indexOf(w) >= 0; }).length;
+        if (n > bestN) { bestN = n; best = e; }
+      });
+      return { type: 'ipo', title: name ? name + ' IPO' : 'IPO', f: f, update: best ? best.id : null };
+    }
+    // 5. insurance renewal or policy
+    var pol = /Policy\s*(?:No\.?|Number)\s*[:\-]?\s*([A-Z0-9][A-Z0-9\/\-]{4,29})/i.exec(flat);
+    if (pol && /premium|sum (?:insured|assured)|renew|insur|policy/i.test(flat)) {
+      f.policyno = pol[1].toUpperCase();
+      f.premium = moneyIn(flat, /(?:premium|amount)\s*(?:due|payable|of)?\s*[:\-]?\s*(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d+)?)/i);
+      f.sum = moneyIn(flat, /sum\s*(?:insured|assured)\s*[:\-]?\s*(?:Rs\.?|₹|INR)?\s*([\d,]+)/i);
+      f.renewal = findDateAfter(flat, /due date|renewal date|due on|expires on|expiry date|valid (?:till|upto|up to)|policy end date|renew by|before/i);
+      INSURERS.forEach(function (n) { if (!f.insurer && new RegExp('\\b' + n.replace(/ /g, '\\s*'), 'i').test(flat)) f.insurer = n; });
+      f.kind = /health|mediclaim|hospital/i.test(flat) ? 'Health' : /term|life/i.test(flat) ? (/LIC|endowment|jeevan/i.test(flat) ? 'Life (LIC / endowment)' : 'Life (term)')
+        : /motor|car|bike|two.?wheeler|vehicle/i.test(flat) ? 'Vehicle' : /travel/i.test(flat) ? 'Travel' : '';
+      return { type: 'ins', title: [f.insurer, f.kind].filter(Boolean).join(' ') || 'Insurance policy', f: f };
+    }
+    // 6. race registration
+    if (/marathon|\b(?:5|10|21(?:\.1)?|42(?:\.2)?)\s?k\b|\brun\b|race/i.test(flat) && /regist|bib|confirm|ticket|entry/i.test(flat)) {
+      var line = text.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return /marathon|\brun\b|race/i.test(l) && l.length <= 70; })[0];
+      f.status = 'Registered';
+      f.distance = /42\.2|full marathon|\b42\s?k\b/i.test(flat) ? 'Marathon (42.2K)' : /21\.1|half marathon|\b21\s?k\b|\bhm\b/i.test(flat) ? 'Half marathon (21.1K)'
+        : /\b10\s?k\b/i.test(flat) ? '10K' : /\b5\s?k\b/i.test(flat) ? '5K' : /\b3\s?k\b/i.test(flat) ? '3K' : '';
+      if ((m = /bib\s*(?:no\.?|number)?\s*[:\-#]?\s*([A-Z]?\d{2,6})\b/i.exec(flat))) f.bib = m[1];
+      f.date = findDate(flat);
+      if ((m = /(?:flag.?off|start(?:s|ing)? at|start time|gun time|reporting time)\s*[:\-]?\s*(\d{1,2})[:.](\d{2})\s*(am|pm)?/i.exec(flat))) f.start = to24(m[1], m[2], m[3]);
+      if ((m = /(?:venue|location|start point)\s*[:\-]\s*([^\n]{3,80})/i.exec(text))) f.venue = m[1].trim();
+      return { type: 'race', title: line || 'Race', f: f };
+    }
+    return null;
+  }
+  function applyParsed(r) {
+    var keep = {};
+    TYPES[r.type].fields.forEach(function (fd) { if (r.f[fd.k] != null && r.f[fd.k] !== '') keep[fd.k] = String(r.f[fd.k]); });
+    return keep;
+  }
 
   /* ============ IPOs ============ */
   function ipoNum(v) { var n = parseFloat(String(v || '').replace(/[,₹\s]/g, '')); return isFinite(n) ? n : null; }
@@ -3254,7 +3547,7 @@ select.input {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week'
   };
   function show(view) {
     S.view = view;
@@ -3273,6 +3566,7 @@ select.input {
     if (view === 'share') renderShare();
     if (view === 'ias') renderIas();
     if (view === 'money') renderMoney();
+    if (view === 'week') renderWeek();
     if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
@@ -3309,7 +3603,7 @@ select.input {
     iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
     moneyPending = null; moneyBusy = false; moneyEditTx = null; moneyAcctEdit = null;
     moneyView = { acct: null, month: null, cat: null, help: false }; $('#money-body').textContent = '';
-    whoView = 'all'; famEdit = null; whoAdding = false; $('#whos').textContent = ''; $('#fam-body').textContent = '';
+    whoView = 'all'; famEdit = null; whoAdding = false; budgetEdit = false; $('#week-body').textContent = ''; $('#whos').textContent = ''; $('#fam-body').textContent = '';
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -3762,7 +4056,7 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, race: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, life: 0, race: 0 };
     entries().filter(inView).forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
@@ -3783,6 +4077,14 @@ select.input {
     }
     if (e.type === 'wifi') {
       return [f.ssid, f.security === 'None (open)' ? 'Open' : f.security].filter(Boolean).join('  ·  ');
+    }
+    if (groupOf(e.type) === 'life') {
+      var nx = lifeDates(e).filter(function (x) { var dd = daysUntil(x.date); return dd !== null && dd >= 0; })
+        .sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
+      var lead = e.type === 'ins' ? [f.insurer, f.kind].filter(Boolean).join(' ') : e.type === 'vehicle' ? f.regno
+        : e.type === 'warranty' ? f.brand : [f.mode, f.number].filter(Boolean).join(' ');
+      return [TYPES[e.type].short, lead, nx ? nx.label.toLowerCase().replace('premium / ', '') + ' ' + (daysUntil(nx.date) === 0 ? 'today' : 'in ' + daysUntil(nx.date) + 'd') : '']
+        .filter(Boolean).join('  ·  ');
     }
     if (e.type === 'ipo') {
       var ist = f.status || 'Applied', idd = f.allot ? daysUntil(f.allot) : null, inn = ipoNums(f);
@@ -3847,6 +4149,10 @@ select.input {
     $('#hub-run-n').textContent = km >= 100 ? Math.round(km) : km.toFixed(1).replace(/\.0$/, '');
     var ot = oscpTotals();
     $('#hub-oscp-n').textContent = ot.done + ' / ' + ot.all;
+    var wk = weekDue(), dig = digestDue();
+    $('#hub-week-n').textContent = wk.length;
+    $('#hub-week-sub').textContent = (wk.length === 1 ? 'thing' : 'things') + ' due this week' + (dig ? ' · new weekly digest' : ' · weekly digest');
+    $('#hub-week').classList.toggle('alert', dig);
     var ms = moneySummary();
     $('#hub-money-n').textContent = ms.nb ? rupees(ms.bal) : ms.any ? 'Money' : '₹';
     $('#hub-money-sub').textContent = ms.nb
@@ -3864,13 +4170,14 @@ select.input {
   $('#hub-oscp').addEventListener('click', function () { show('oscp'); });
   $('#hub-ias').addEventListener('click', function () { show('ias'); });
   $('#hub-money').addEventListener('click', function () { show('money'); });
+  $('#hub-week').addEventListener('click', function () { show('week'); });
   document.addEventListener('click', function (ev) {
     if (ev.target.closest('[data-back]')) show('vault');
   });
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', life: 'Life', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -3898,7 +4205,10 @@ select.input {
     $('#tabs').hidden = !hasAny;
     $('#search-wrap').hidden = !hasAny;
     $('#hub').hidden = !hasAny || !!query;
-    $('#backup-nudge').hidden = !(hasAny && !(S.data && S.data.lastExport)) || !!query;
+    var lastBk = S.data && S.data.lastExport, bkDays = lastBk ? Math.floor((Date.now() - lastBk) / 86400000) : null;
+    $('#backup-nudge').hidden = !(hasAny && (bkDays === null || bkDays >= 30)) || !!query;
+    if (bkDays !== null && bkDays >= 30) $('#backup-nudge').innerHTML = '<b>Last backup was ' + bkDays + ' days ago.</b> Save a fresh encrypted copy so everything since then is safe too.';
+    else $('#backup-nudge').innerHTML = '<b>No backup yet.</b> If this phone is lost or wiped, everything in the box goes with it. Tap to save an encrypted copy.';
     if (hasAny) renderHub();
 
     if (!hasAny) { $('#list').textContent = ''; return; }
@@ -3911,8 +4221,8 @@ select.input {
     }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', race: 'races' };
-      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', race: 'a race' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', life: 'policies, vehicles, warranties or tickets', race: 'races' };
+      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', life: 'a policy, vehicle or ticket', race: 'a race' };
       var forWho = personById(whoView);
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + (forWho ? ' for ' + esc(forWho.name) : '') + ' stored so far.</p>' +
@@ -4200,9 +4510,9 @@ select.input {
           '<span>' + esc(sides[i]) + '</span></button>'
         : '';
     }).join('');
-    var noun = TYPES[e.type].photos ? 'certificate' : 'card';
+    var noun = TYPES[e.type].photoNoun || (TYPES[e.type].photos ? 'certificate' : 'card');
     if (!shots) return '<p class="hint idp-none">No photos of the real ' + noun + ' yet. Tap <b>Edit</b> to add the ' +
-      esc(sides[0].toLowerCase()) + ' and ' + esc(sides[1].toLowerCase()) + '.</p>';
+      esc(lcFirst(sides[0])) + ' and ' + esc(lcFirst(sides[1])) + '.</p>';
     return '<div class="idps">' + shots + '</div>';
   }
 
@@ -4269,6 +4579,7 @@ select.input {
     if (e.type === 'cert') html += certCard(e) + idPhotos(e);
     if (e.type === 'wifi') html += wifiCard(e);
     if (e.type === 'ipo') html += ipoCard(e);
+    if (groupOf(e.type) === 'life') html += lifeCard(e) + idPhotos(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
       html += '<div class="otp">' +
@@ -4575,13 +4886,15 @@ select.input {
         '</div>';
     }
 
-    if (d.type === 'cert') {
+    if (S.isNew || d.type === 'cert') {
       html += certPasteOpen
-        ? '<div class="field paste-box"><label class="label" for="cert-paste">Paste the booking email</label>' +
-          '<textarea class="input" id="cert-paste" rows="6" placeholder="In Mail, press and hold the email text, tap Select All, then Copy, and paste it here."></textarea>' +
+        ? '<div class="field paste-box"><label class="label" for="cert-paste">Paste an email or SMS</label>' +
+          '<textarea class="input" id="cert-paste" rows="6" placeholder="In Mail or Messages, press and hold the text, tap Select All (or Copy), and paste it here."></textarea>' +
           '<div class="btn-row"><button type="button" class="btn ghost" data-certpaste="close">Cancel</button><button type="button" class="btn" data-certfill="1">Fill in</button></div>' +
           '<p class="hint">Read on this phone only. Links don’t come across as text: copy them separately (press and hold a link, then Copy Link).</p></div>'
-        : '<div class="field"><button type="button" class="iadd-open" data-certpaste="open">+ Fill from a booking email (Pearson VUE, PSI…)</button></div>';
+        : '<div class="field"><button type="button" class="iadd-open" data-certpaste="open">' + (S.isNew
+            ? '+ Paste an email or SMS to fill this in<small class="paste-what">Exam bookings, train and flight tickets, IPO allotment, insurance renewals, race registrations</small>'
+            : '+ Fill from a booking email (Pearson VUE, PSI…)') + '</button></div>';
     }
 
     html += '<div class="field"><label class="label" for="in-title">' + esc(t.titleLabel) + '</label>' +
@@ -4591,14 +4904,14 @@ select.input {
     if (groupOf(d.type) === 'id') html += '<div id="scan-area"></div>';
     if (hasPhotos(d.type)) {
       var sides = t.sides || ['Front', 'Back'];
-      html += '<div class="field"><span class="label">Photos of your ' + (t.photos ? 'certificate' : 'card') + '</span><div class="docshots">' +
+      html += '<div class="field"><span class="label">Photos of your ' + (t.photoNoun || (t.photos ? 'certificate' : 'card')) + '</span><div class="docshots">' +
         ['img1', 'img2'].map(function (slot, i) {
           var src = (d.f || {})[slot];
           return '<div class="docshot">' +
             (src ? '<img src="' + esc(src) + '" alt="' + esc(sides[i]) + '">'
                  : '<div class="docshot-empty">' + esc(sides[i]) + '</div>') +
             '<div class="docshot-acts">' +
-            '<button type="button" data-shot="' + slot + '">' + (src ? 'Replace' : 'Add ' + esc(sides[i].toLowerCase())) + '</button>' +
+            '<button type="button" data-shot="' + slot + '">' + (src ? 'Replace' : 'Add ' + esc(lcFirst(sides[i]))) + '</button>' +
             (src ? '<button type="button" class="drop" data-unshot="' + slot + '">Remove</button>' : '') +
             '</div></div>';
         }).join('') + '</div>' +
@@ -4729,6 +5042,33 @@ select.input {
     }
     var cp = ev.target.closest('[data-certpaste]');
     if (cp) { collectDraft(); certPasteOpen = cp.dataset.certpaste === 'open'; renderEdit(); var ta = $('#cert-paste'); if (ta) ta.focus(); return; }
+    if (ev.target.closest('[data-certfill]') && S.isNew) {
+      collectDraft();
+      var pr = parseAny($('#cert-paste').value);
+      if (!pr) { toast('Couldn’t recognise that. It reads exam bookings, train and flight tickets, IPO allotment, insurance and race registrations.'); return; }
+      if (pr.update) {
+        var ue = findEntry(pr.update);
+        if (ue) {
+          ue.f = ue.f || {};
+          Object.keys(pr.f).forEach(function (k) { ue.f[k] = pr.f[k]; });
+          ue.updated = Date.now();
+          persist().then(function () {
+            certPasteOpen = false; S.isNew = false; S.draft = null; S.id = ue.id;
+            show('detail');
+            toast(ue.title + ': ' + pr.f.status + (pr.f.allotted ? ', ' + pr.f.allotted + ' shares' : ''));
+          });
+          return;
+        }
+      }
+      certPasteOpen = false;
+      if (S.draft.type !== pr.type) switchType(pr.type);
+      var filled = applyParsed(pr);
+      Object.keys(filled).forEach(function (k) { S.draft.f[k] = filled[k]; });
+      if (pr.title && !S.draft.title) S.draft.title = pr.title;
+      renderEdit();
+      toast('Filled ' + (Object.keys(filled).length + (pr.title ? 1 : 0)) + ' details as ' + (TYPES[pr.type].name).toLowerCase() + '. Check them, then Save.');
+      return;
+    }
     if (ev.target.closest('[data-certfill]')) {
       collectDraft();
       var got = parseBooking($('#cert-paste').value);
@@ -5029,6 +5369,12 @@ select.input {
         }
       }
     }
+    if (d.type === 'warranty' && !f.ends) { var we = warrantyEnd(f); if (we) f.ends = we; }
+    if (d.type === 'trip' && f.time) {
+      if (hhmm(f.time) === null) { $('#edit-err').textContent = 'Write the departure as hours:minutes, 24-hour, for example 22:10.'; return; }
+      f.time = ('0' + Math.floor(hhmm(f.time) / 60)).slice(-2) + ':' + ('0' + hhmm(f.time) % 60).slice(-2);
+    }
+    if (d.type === 'vehicle' && f.regno) f.regno = f.regno.replace(/\s+/g, '');
     if (d.type === 'ipo') {
       var ib = '';
       ['price', 'lotsize', 'lots', 'allotted', 'listprice'].forEach(function (k) {
@@ -5407,6 +5753,7 @@ select.input {
           S.data.oscp = sanitizeOscp(r.data && r.data.oscp);
           S.data.ias = sanitizeIas(r.data && r.data.ias);
           S.data.people = sanitizePeople(r.data && r.data.people);
+          S.data.goals = sanitizeGoals(r.data && r.data.goals);
           S.data.money = sanitizeMoney(r.data && r.data.money);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
@@ -5419,6 +5766,7 @@ select.input {
       S.data.oscp = mergeOscp(S.data.oscp, sanitizeOscp(r.data && r.data.oscp));
       S.data.ias = mergeIas(S.data.ias, sanitizeIas(r.data && r.data.ias));
       S.data.people = mergePeople(people(), sanitizePeople(r.data && r.data.people));
+      if (!S.data.goals) S.data.goals = sanitizeGoals(r.data && r.data.goals);
       S.data.money = mergeMoney(S.data.money, sanitizeMoney(r.data && r.data.money));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
@@ -5450,6 +5798,7 @@ select.input {
         oscp: sanitizeOscp(r.data && r.data.oscp),
         ias: sanitizeIas(r.data && r.data.ias),
         people: sanitizePeople(r.data && r.data.people),
+        goals: sanitizeGoals(r.data && r.data.goals),
         money: sanitizeMoney(r.data && r.data.money),
         lastExport: (r.data && r.data.lastExport) || null
       };
@@ -5586,6 +5935,25 @@ select.input {
           out.push({ e: e, date: f.listing, days: d, level: d <= 1 ? 'warn' : 'ok', what: 'IPO listing day', cal: 'IPO listing', alarms: ['PT9H'] });
         }
       }
+      if (groupOf(e.type) === 'life') {
+        lifeDates(e).forEach(function (x) {
+          var dd = daysUntil(x.date);
+          if (dd === null) return;
+          if (x.k === 'date') {   // a journey: from a week before until the day
+            if (dd < 0 || dd > 7) return;
+            var tt = hhmm(f.time) !== null;
+            out.push({ e: e, date: x.date, days: dd, level: dd <= 1 ? 'warn' : 'ok',
+              what: 'Journey' + (f.number ? ' · ' + f.number : '') + (tt ? ' · ' + f.time : '') + (f.pnr ? ' · PNR ' + f.pnr : ''),
+              cal: (f.mode || 'Journey'), time: tt ? f.time : null, mins: 120, note: f.pnr ? 'PNR ' + f.pnr : '',
+              alarms: tt ? ['-P1D', '-PT3H'] : ['-P1D'] });
+            return;
+          }
+          var span = Math.max(x.warn * 2, 30);
+          if (dd > span || dd < -60) return;
+          out.push({ e: e, date: x.date, days: dd, level: dd < 0 ? 'bad' : dd <= x.warn ? 'warn' : 'ok',
+            what: x.label, cal: x.label, alarms: x.warn >= 30 ? ['-P30D', '-P7D'] : ['-P7D', '-P1D'] });
+        });
+      }
       if (e.type === 'race' && isUpcoming(e)) {
         d = daysUntil(f.date);
         out.push({ e: e, date: f.date, days: d, level: d <= 14 ? 'warn' : 'ok',
@@ -5593,7 +5961,8 @@ select.input {
           alarms: ['-P7D', '-P1D'] });
       }
     });
-    out.sort(function (a, b) { return a.days - b.days; });
+    moneyAttention().forEach(function (x) { out.push(x); });
+    out.sort(function (a, b) { return (a.days === null ? -1 : a.days) - (b.days === null ? -1 : b.days); });
     var last = S.data && S.data.lastExport;
     if (entries().length && (!last || Date.now() - last > 30 * 86400000)) {
       out.unshift({ backup: true, level: 'warn', days: null,
@@ -5619,19 +5988,19 @@ select.input {
       $('#attn-body').innerHTML = '<div class="empty"><h2>Nothing needs you</h2><p>No IDs or cards expiring within a year, and no races ahead. Add expiry dates to your documents and they will show here.</p></div>';
       return;
     }
-    var dated = items.filter(function (a) { return !a.backup; });
+    var dated = items.filter(function (a) { return !a.backup && a.date; });
     $('#attn-body').innerHTML =
       (dated.length ? '<button class="btn ghost att-all" id="btn-cal-all">Add all ' + dated.length + ' to Calendar</button>' : '') +
       '<div class="att-list">' + items.map(function (a, i) {
-        var title = a.backup ? 'Back up the box' : (a.e.title || 'Untitled') + (personOf(a.e) ? ' · ' + personOf(a.e).name : '');
+        var title = a.backup ? 'Back up the box' : a.e ? (a.e.title || 'Untitled') + (personOf(a.e) ? ' · ' + personOf(a.e).name : '') : a.title;
         return '<div class="att">' +
           '<button class="att-main" data-att="' + i + '">' +
-          '<span class="glyph" aria-hidden="true">' + (a.backup ? BACKUP_ICON : ICON[a.e.type]) + '</span>' +
+          '<span class="glyph" aria-hidden="true">' + (a.backup ? BACKUP_ICON : a.e ? ICON[a.e.type] : MONEY_ICON) + '</span>' +
           '<span class="att-text"><b>' + esc(title) + '</b><small>' + esc(a.what) + '</small>' +
           (a.days !== null ? '<small class="att-when">' + esc(whenText(a)) + '</small>' : '') + '</span>' +
           '<span class="pill ' + a.level + '">' + esc(a.backup ? 'Due' : LEVEL_WORD[a.level]) + '</span>' +
           '</button>' +
-          (a.backup ? '' : '<button class="att-cal" data-cal="' + i + '" aria-label="Add ' + esc(title) + ' to Calendar">' +
+          (a.backup || !a.date ? '' : '<button class="att-cal" data-cal="' + i + '" aria-label="Add ' + esc(title) + ' to Calendar">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
             '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M12 12.5v5M9.5 15h5"/></svg></button>') +
           '</div>';
@@ -5647,12 +6016,13 @@ select.input {
       var a = attnCache[+m.dataset.att];
       if (!a) return;
       if (a.backup) { show('backup'); return; }
+      if (a.go) { show(a.go); return; }
       S.id = a.e.id; show('detail');
       return;
     }
     var c = ev.target.closest('[data-cal]');
     if (c) { var one = attnCache[+c.dataset.cal]; if (one) shareIcs([one]); return; }
-    if (ev.target.closest('#btn-cal-all')) shareIcs(attnCache.filter(function (a) { return !a.backup; }));
+    if (ev.target.closest('#btn-cal-all')) shareIcs(attnCache.filter(function (a) { return !a.backup && a.date; }));
   });
 
   function icsText(s) {
@@ -5664,8 +6034,8 @@ select.input {
     items.forEach(function (a) {
       var start = a.date.replace(/-/g, '');
       var endD = new Date(+a.date.slice(0, 4), +a.date.slice(5, 7) - 1, +a.date.slice(8, 10) + 1);
-      var summary = (a.e.title || 'Untitled') + (personOf(a.e) ? ' (' + personOf(a.e).name + ')' : '') + ' — ' + a.cal;
-      L.push('BEGIN:VEVENT', 'UID:' + a.e.id + '-' + a.date + '@deposit-box', 'DTSTAMP:' + stamp);
+      var summary = a.e ? (a.e.title || 'Untitled') + (personOf(a.e) ? ' (' + personOf(a.e).name + ')' : '') + ' — ' + a.cal : a.title + ' — ' + a.cal;
+      L.push('BEGIN:VEVENT', 'UID:' + (a.e ? a.e.id : 'x' + fnv(a.title)) + '-' + a.date + '@deposit-box', 'DTSTAMP:' + stamp);
       if (a.time) {
         // a timed event in the phone's own time zone, blocked out for the exam's length
         var sm = hhmm(a.time), em = sm + (a.mins || 60);
@@ -5914,6 +6284,8 @@ select.input {
       '<div class="form-foot run-foot"><button class="btn ghost" id="run-cancel">Cancel</button><button class="btn" id="run-save">Save run</button></div>' +
       '</div>' +
 
+      runPlanHtml() +
+      '<div class="run-import"><button type="button" class="linkish" id="run-import">Import runs from Garmin or Strava (GPX, TCX or CSV)</button></div>' +
       '<div class="section-label">Personal bests</div><div class="pbs">' +
       pbs.map(function (p) {
         return '<div class="pb' + (p.best ? '' : ' none') + '"><span class="label">' + esc(p.name) + '</span>' +
@@ -7118,7 +7490,7 @@ select.input {
     el.innerHTML =
       '<div class="oscp-head"><div class="oscp-count"><b>' + t.done + '</b><span>of ' + t.all + ' rooted' +
       (t.doing ? ' · ' + t.doing + ' in progress' : '') + '</span></div>' +
-      '<div class="oscp-bar" role="img" aria-label="' + pct + ' percent rooted"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="oscp-bar" role="img" aria-label="' + pct + ' percent rooted"><i style="width:' + pct + '%"></i></div>' + oscpWeekHtml() + '</div>' +
       '<div class="search oscp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>' +
       '<input class="input" id="oscp-q" type="search" placeholder="Search labs" value="' + esc(oscpView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search labs"></div>' +
       chipRow('Difficulty', 'diff', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard'], ['Insane', 'Insane'], ['Unrated', 'Unrated']]) +
@@ -7277,10 +7649,10 @@ select.input {
   function money() {
     S.data.money = S.data.money || {};
     var m = S.data.money;
-    m.acc = m.acc || []; m.tx = m.tx || []; m.st = m.st || []; m.rules = m.rules || {};
+    m.acc = m.acc || []; m.tx = m.tx || []; m.st = m.st || []; m.rules = m.rules || {}; m.budgets = m.budgets || {};
     return m;
   }
-  function moneyData() { return (S.data && S.data.money) || { acc: [], tx: [], st: [], rules: {} }; }
+  function moneyData() { return (S.data && S.data.money) || { acc: [], tx: [], st: [], rules: {}, budgets: {} }; }
 
   /* --- formatting --- */
   var INR = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
@@ -7344,8 +7716,10 @@ select.input {
     m = /(?:NEFT|RTGS|IMPS)\*[^*]*\*[^*]*\*([^*\-]+)/.exec(s);
     if (m && /[A-Z]{2}/.test(m[1])) return m[1].trim().slice(0, 30);
     s = s.replace(/^(TO|BY)\s+TRANSFER[\s\-]*/, '').replace(/\b(NEFT|IMPS|RTGS|UPI|POS|ATM|ECOM|INB|DR|CR|TRANSFER|TO|BY|PRCR)\b/g, ' ');
+    s = s.replace(/[\w.]+@[\w.]+/g, ' ');   // UPI handles repeat the name: "NETFLIX-netflix@axis"
     s = s.replace(/[0-9*#:\/\\.,_\-@()]+/g, ' ').replace(/\s+/g, ' ').trim();
-    return s.split(' ').filter(function (w) { return w.length > 1; }).slice(0, 3).join(' ') || 'Unknown';
+    var seenW = {};
+    return s.split(' ').filter(function (w) { if (w.length < 2 || seenW[w]) return false; seenW[w] = 1; return true; }).slice(0, 3).join(' ') || 'Unknown';
   }
   function titleCase(s) { return String(s).toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }); }
   function autoCat(t) {
@@ -8085,6 +8459,8 @@ select.input {
       (cats.length ? '<div class="cwrap" id="c-cats"></div>' + tableHtml(['Category', 'Spent'], cats.map(function (x) { return [x.c === 'rest' ? 'Everything else' : MCAT[x.c], rupees(x.v)]; }))
         : '<p class="m-note">No spending recorded this month.</p>') + '</div>';
 
+    html += budgetHtml(selM) + billsHtml();
+
     // cards
     var cards = md.acc.filter(function (a) { return a.kind === 'card'; });
     if (cards.length) {
@@ -8426,6 +8802,8 @@ select.input {
       out.tx.push(c);
     });
     if (o.rules && typeof o.rules === 'object') Object.keys(o.rules).slice(0, 2000).forEach(function (k) { if (MCAT[o.rules[k]]) out.rules[String(k).slice(0, 40)] = o.rules[k]; });
+    out.budgets = {};
+    if (o.budgets && typeof o.budgets === 'object') Object.keys(o.budgets).forEach(function (k) { if (MCAT[k] && +o.budgets[k] > 0) out.budgets[k] = Math.round(+o.budgets[k]); });
     return out;
   }
   function mergeMoney(mine, theirs) {
@@ -8438,8 +8816,337 @@ select.input {
     var out = { acc: add(mine.acc, theirs.acc), st: add(mine.st, theirs.st), tx: add(mine.tx, theirs.tx), rules: {} };
     Object.keys(theirs.rules).forEach(function (k) { out.rules[k] = theirs.rules[k]; });
     Object.keys(mine.rules).forEach(function (k) { out.rules[k] = mine.rules[k]; });
+    out.budgets = Object.keys(mine.budgets || {}).length ? mine.budgets : theirs.budgets || {};
     return out;
   }
+
+  /* ============ bills found in statements, and budgets ============ */
+  var MONEY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10M7 9h10M10 5c3 0 4.5 1.8 4.5 4S13 13 10 13H8l7 6"/></svg>';
+  var budgetEdit = false;
+  function median(a) { a = a.slice().sort(function (x, y) { return x - y; }); return a.length ? a[a.length >> 1] : 0; }
+  function addMonths(ymd, n) {
+    var d = ymdDate(ymd), day = d.getDate();
+    d.setDate(1); d.setMonth(d.getMonth() + n);
+    var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, last));
+    return toYmd(d);
+  }
+  // Payments that come back month after month at about the same amount:
+  // subscriptions, bills, EMIs, SIPs, rent. Two or more months is enough.
+  function recurringBills() {
+    var md = moneyData(), groups = {}, latest = '';
+    md.tx.forEach(function (t) {
+      if (t.d > latest) latest = t.d;
+      if (t.dir !== 'out') return;
+      var c = catOf(t);
+      // everyday spending repeats too, but it isn't a bill
+      if (['cardpay', 'cash', 'food', 'groc', 'shop', 'travel', 'health', 'refund', 'income'].indexOf(c) >= 0) return;
+      var k = payeeOf(t.desc);
+      if (!k || k === 'Unknown') return;
+      (groups[k] = groups[k] || []).push(t);
+    });
+    var out = [], today = toYmd(new Date());
+    Object.keys(groups).forEach(function (k) {
+      var g = groups[k].sort(function (a, b) { return a.d < b.d ? -1 : 1; }), byM = {};
+      g.forEach(function (t) { var mk = t.d.slice(0, 7); byM[mk] = (byM[mk] || 0) + t.amt; });
+      var ms = Object.keys(byM).sort();
+      if (ms.length < 2) return;
+      var vals = ms.map(function (m) { return byM[m]; }), med = median(vals);
+      if (vals.filter(function (v) { return Math.abs(v - med) <= med * 0.25; }).length < 2) return;
+      var last = g[g.length - 1];
+      if (latest && daysBetween(last.d, latest) > 70) return;   // stopped
+      var next = addMonths(last.d, 1), guard = 0;
+      while (next < today && guard++ < 24) next = addMonths(next, 1);
+      out.push({ payee: titleCase(k), amt: med, cat: catOf(last), last: last.d, next: next, months: ms.length });
+    });
+    return out.sort(function (a, b) { return a.next < b.next ? -1 : 1; });
+  }
+  function daysBetween(a, b) { return Math.round((ymdDate(b) - ymdDate(a)) / 86400000); }
+  function catSums(ym) {
+    var s = {};
+    moneyData().tx.forEach(function (t) { if (t.d.slice(0, 7) === ym && isSpend(t)) { var c = catOf(t); s[c] = (s[c] || 0) + t.amt; } });
+    return s;
+  }
+  var BUDGET_CATS = ['food', 'groc', 'shop', 'travel', 'fun', 'bills', 'health', 'invest', 'emi', 'cash', 'fees', 'xfer', 'other'];
+  function budgetHtml(ym) {
+    var b = moneyData().budgets || {}, sums = catSums(ym), keys = Object.keys(b);
+    var html = '<div class="section-label lab-group">Budgets · ' + esc(monthLabel(ym)) + ' <button type="button" class="linkish" id="m-budget">' + (budgetEdit ? 'Cancel' : keys.length ? 'Change' : 'Set budgets') + '</button></div>';
+    if (budgetEdit) {
+      return html + '<div class="mcard"><p class="m-note">A monthly limit for each category you want to watch. Leave blank for no limit.</p>' +
+        BUDGET_CATS.map(function (c) {
+          return '<div class="bud-row"><label for="bud-' + c + '">' + esc(MCAT[c]) + '</label><input class="input mono" id="bud-' + c + '" data-bud="' + c + '" inputmode="numeric" placeholder="₹" value="' + esc(b[c] || '') + '"></div>';
+        }).join('') + '<button type="button" class="btn" id="m-budget-save" style="margin-top:12px">Save budgets</button></div>';
+    }
+    if (!keys.length) return html + '<div class="mcard"><p class="m-note" style="margin:0">Set a monthly limit for food, shopping and the rest. After each statement you’ll see where you went over, and Needs attention will flag it.</p></div>';
+    return html + '<div class="mcard">' + keys.map(function (c) {
+      var spent = sums[c] || 0, lim = b[c], pct = Math.round(spent / lim * 100), lvl = pct > 100 ? 'bad' : pct >= 80 ? 'warn' : 'ok';
+      return '<div class="bud"><div class="bud-top"><b>' + esc(MCAT[c]) + '</b><span>' + esc(rupees(spent)) + ' of ' + esc(rupees(lim)) + '</span></div>' +
+        '<div class="meter ' + lvl + '" role="img" aria-label="' + pct + ' percent of the budget"><i style="width:' + Math.min(100, Math.max(pct, 1)) + '%"></i></div>' +
+        '<p class="bud-note ' + lvl + '">' + (pct > 100 ? '▲ ' + esc(rupees(spent - lim)) + ' over' : pct >= 80 ? esc(rupees(lim - spent)) + ' left · nearly there' : esc(rupees(lim - spent)) + ' left') + '</p></div>';
+    }).join('') + '</div>';
+  }
+  function billsHtml() {
+    var bills = recurringBills();
+    if (!bills.length) return '';
+    var total = bills.reduce(function (s, x) { return s + x.amt; }, 0);
+    return '<div class="section-label lab-group">Bills and subscriptions <span>' + esc(rupees(total)) + ' a month</span></div><div class="mcard">' +
+      '<p class="m-note">Payments that came back month after month in your statements, with the next one expected.</p>' +
+      bills.map(function (x) {
+        var d = daysUntil(x.next);
+        return '<div class="bill"><span><b>' + esc(x.payee) + '</b><small>' + esc(MCAT[x.cat] || '') + ' · seen ' + x.months + ' months</small></span>' +
+          '<span class="bill-r"><b>' + esc(rupees(x.amt)) + '</b><small>' + (d === 0 ? 'today' : d === 1 ? 'tomorrow' : 'next ~' + esc(fmtDate(x.next))) + '</small></span></div>';
+      }).join('') + '</div>';
+  }
+  function moneyAttention() {
+    var out = [];
+    if (!S.data || !S.data.money) return out;
+    var ym = toYmd(new Date()).slice(0, 7), b = moneyData().budgets || {}, sums = catSums(ym);
+    Object.keys(b).forEach(function (c) {
+      var spent = sums[c] || 0;
+      if (spent > b[c]) out.push({ go: 'money', title: MCAT[c] + ' budget', what: rupees(spent - b[c]) + ' over in ' + monthLabel(ym, true), level: 'bad', days: null });
+      else if (spent >= b[c] * 0.9) out.push({ go: 'money', title: MCAT[c] + ' budget', what: 'Only ' + rupees(b[c] - spent) + ' left this month', level: 'warn', days: null });
+    });
+    recurringBills().forEach(function (x) {
+      var d = daysUntil(x.next);
+      if (d !== null && d >= 0 && d <= 3) out.push({ go: 'money', title: x.payee, what: 'Bill expected · about ' + rupees(x.amt), date: x.next, days: d, level: 'ok', cal: 'Bill', alarms: ['-P1D'] });
+    });
+    return out;
+  }
+  $('#money-body').addEventListener('click', function (ev) {
+    if (ev.target.closest('#m-budget')) { budgetEdit = !budgetEdit; var y = window.scrollY; renderMoney(); window.scrollTo(0, y); return; }
+    if (ev.target.closest('#m-budget-save')) {
+      var m = money(), nb = {};
+      document.querySelectorAll('[data-bud]').forEach(function (inp) {
+        var v = parseFloat(String(inp.value).replace(/[,₹\s]/g, ''));
+        if (v > 0) nb[inp.dataset.bud] = Math.round(v);
+      });
+      m.budgets = nb;
+      persist().then(function () { budgetEdit = false; var y2 = window.scrollY; renderMoney(); window.scrollTo(0, y2); toast('Budgets saved'); });
+    }
+  });
+
+  /* ============ IAS: a daily plan to the exam ============
+     The chapters left (optional books and current-affairs sources aside) are
+     spread over the days to the exam, keeping the last 15 days for revision.
+     It re-plans every day, so falling behind just raises tomorrow's number. */
+  function iasPlan() {
+    var exam = iasData().exam, days = exam ? daysUntil(exam) : null;
+    if (days === null || days < 0) return null;
+    var rev = Math.min(15, Math.floor(days * 0.2)), study = Math.max(1, days - rev), today = toYmd(new Date());
+    var todo = [], doneToday = 0;
+    IAS_BOOKS.forEach(function (b) {
+      if (b.opt || b.s === 'ca') return;
+      iasChapters(b).forEach(function (c) {
+        var st = chState(c.id);
+        if (st.s === 'done') { if (st.d === today) doneToday++; }
+        else todo.push({ b: b, c: c });
+      });
+    });
+    var perDay = Math.max(1, Math.ceil((todo.length + doneToday) / study));
+    var reviseFrom = new Date(); reviseFrom.setDate(reviseFrom.getDate() + study);
+    return { days: days, rev: rev, perDay: perDay, doneToday: doneToday, left: Math.max(0, perDay - doneToday), todo: todo, reviseFrom: toYmd(reviseFrom) };
+  }
+  function iasPlanHtml() {
+    var p = iasPlan();
+    if (!p) return '';
+    if (!p.todo.length) return '<div class="plan"><b>Every chapter is done.</b><p class="hint">Now revise, and solve past papers.</p></div>';
+    var next = p.todo.slice(0, Math.max(p.left, 1));
+    return '<div class="plan"><div class="plan-top"><b>Today: ' + p.doneToday + ' of ' + p.perDay + (p.perDay === 1 ? ' chapter' : ' chapters') + '</b>' +
+      '<span>' + p.todo.length + ' left · revision from ' + esc(fmtDate(p.reviseFrom)) + '</span></div>' +
+      '<div class="oscp-bar"><i style="width:' + Math.min(100, Math.round(p.doneToday / p.perDay * 100)) + '%"></i></div>' +
+      (p.left ? '<div class="plan-next">' + next.map(function (x) {
+        return '<button type="button" data-ichap="' + esc(x.c.id) + '"><small>' + esc(IAS_SNAME[x.b.s] + ' · ' + bookLabel(x.b)) + '</small>' + esc(x.c.t) + '</button>';
+      }).join('') + '</div>' : '<p class="hint" style="margin-top:8px">Today’s target is met. Anything more is a head start.</p>') + '</div>';
+  }
+
+  /* ============ OSCP: a weekly target ============ */
+  function oscpWeekDone() {
+    var wk = toYmd(weekStart(new Date())), n = 0;
+    LABS.forEach(function (l) { var st = labState(l.id); if (st.s === 'done' && st.d && st.d >= wk) n++; });
+    return n;
+  }
+  function oscpWeekHtml() {
+    var tgt = goals().oscpWeek || 0, done = oscpWeekDone();
+    return '<div class="oscp-week"><span>' + (tgt ? 'This week: <b>' + done + ' of ' + tgt + '</b> rooted' + (done >= tgt ? ' ✓' : '') : 'This week: <b>' + done + '</b> rooted') + '</span>' +
+      '<label>Weekly goal <select class="input" id="oscp-week">' + [0, 1, 2, 3, 4, 5, 6, 7, 10, 14].map(function (n) {
+        return '<option value="' + n + '"' + (n === tgt ? ' selected' : '') + '>' + (n ? n + ' labs' : 'None') + '</option>';
+      }).join('') + '</select></label></div>';
+  }
+  $('#oscp-body').addEventListener('change', function (ev) {
+    if (ev.target.id !== 'oscp-week') return;
+    setGoal('oscpWeek', +ev.target.value).then(renderOscp);
+  });
+
+  /* ============ running: a plan to the next race, and imports ============
+     Weekly distance builds from your last four weeks by about 10% a week to a
+     peak that suits the race, eases every fourth week, and tapers over the
+     last two. The long run is about a third of the week. */
+  var PEAK_KM = { '3K': 20, '5K': 25, '10K': 35, 'Half marathon (21.1K)': 45, 'Marathon (42.2K)': 65 };
+  var LONG_KM = { '3K': 6, '5K': 8, '10K': 14, 'Half marathon (21.1K)': 18, 'Marathon (42.2K)': 32 };
+  function nextRace() {
+    return entries().filter(function (e) { return e.type === 'race' && isUpcoming(e) && PEAK_KM[(e.f || {}).distance] && (e.f || {}).status !== 'Skipped'; })
+      .sort(function (a, b) { return a.f.date < b.f.date ? -1 : 1; })[0] || null;
+  }
+  function runPlan() {
+    var r = nextRace();
+    if (!r) return null;
+    var dLeft = daysUntil(r.f.date), wLeft = Math.max(1, Math.floor(dLeft / 7) + 1);
+    var past = weeklyKm(5).slice(0, 4), base = Math.max(10, past.reduce(function (s, w) { return s + w.km; }, 0) / 4);
+    var peak = Math.max(PEAK_KM[r.f.distance], Math.round(base)), lng = LONG_KM[r.f.distance];
+    var start = weekStart(new Date()), weeks = [], vol = base;
+    for (var i = 0; i < Math.min(wLeft, 20); i++) {
+      var toRace = wLeft - 1 - i, km;
+      if (toRace === 0) km = peak * 0.4;
+      else if (toRace === 1) km = peak * 0.65;
+      else { vol = Math.min(peak, i === 0 ? Math.max(base, Math.min(peak, base * 1.1)) : vol * 1.1); km = (i + 1) % 4 === 0 ? vol * 0.8 : vol; }
+      var ws = new Date(start); ws.setDate(ws.getDate() + 7 * i);
+      weeks.push({ start: toYmd(ws), km: Math.round(km), long: toRace === 0 ? 0 : Math.min(lng, Math.round(km * 0.35)) });
+    }
+    return { race: r, weeks: weeks, base: base, wLeft: wLeft, done: weeklyKm(1)[0].km };
+  }
+  function runPlanHtml() {
+    var p = runPlan();
+    if (!p) return '<p class="hint run-plan-none">Add an upcoming race with its distance and you’ll get a week-by-week plan here.</p>';
+    var w0 = p.weeks[0], pct = Math.min(100, Math.round(p.done / Math.max(1, w0.km) * 100));
+    return '<div class="plan"><div class="plan-top"><b>' + esc(p.race.title) + '</b><span>' + p.wLeft + (p.wLeft === 1 ? ' week' : ' weeks') + ' to go · ' + esc(fmtDate(p.race.f.date)) + '</span></div>' +
+      '<p class="plan-now">This week: <b>' + kmText(p.done) + ' of ' + w0.km + ' km</b>' + (w0.long ? ' · long run ' + w0.long + ' km' : ' · race week: rest and race') + '</p>' +
+      '<div class="oscp-bar"><i style="width:' + pct + '%"></i></div>' +
+      '<table class="plan-table"><tr><th>Week of</th><th>km</th><th>Long run</th></tr>' + p.weeks.slice(0, 8).map(function (w, i) {
+        return '<tr' + (i === 0 ? ' class="now"' : '') + '><td>' + esc(fmtDate(w.start)) + '</td><td>' + w.km + '</td><td>' + (w.long ? w.long + ' km' : 'Race') + '</td></tr>';
+      }).join('') + '</table>' +
+      '<p class="hint">Built from your last 4 weeks (about ' + kmText(p.base) + ' km a week): up about 10% a week, easier every 4th week, tapering over the last two.</p></div>';
+  }
+  // GPX and TCX from a watch, or the activities CSV from Garmin Connect or Strava.
+  function haversine(a, b) {
+    var R = 6371, toR = Math.PI / 180, dLa = (b.lat - a.lat) * toR, dLo = (b.lon - a.lon) * toR;
+    var h = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function runsFromXml(text) {
+    var doc = new DOMParser().parseFromString(text, 'application/xml'), pts = [];
+    Array.prototype.forEach.call(doc.getElementsByTagName('trkpt'), function (p) {
+      var t = p.getElementsByTagName('time')[0];
+      pts.push({ lat: +p.getAttribute('lat'), lon: +p.getAttribute('lon'), t: t ? Date.parse(t.textContent) : NaN });
+    });
+    if (pts.length > 1) {
+      var km = 0;
+      for (var i = 1; i < pts.length; i++) km += haversine(pts[i - 1], pts[i]);
+      var t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+      return [{ date: isFinite(t0) ? toYmd(new Date(t0)) : '', km: km, secs: isFinite(t0) && isFinite(t1) ? (t1 - t0) / 1000 : 0 }];
+    }
+    var tps = doc.getElementsByTagName('Trackpoint');
+    if (tps.length > 1) {
+      var dist = 0, first = NaN, lastT = NaN;
+      Array.prototype.forEach.call(tps, function (tp) {
+        var dm = tp.getElementsByTagName('DistanceMeters')[0], tt = tp.getElementsByTagName('Time')[0];
+        if (dm) dist = Math.max(dist, +dm.textContent);
+        if (tt) { var v = Date.parse(tt.textContent); if (isNaN(first)) first = v; lastT = v; }
+      });
+      return [{ date: isFinite(first) ? toYmd(new Date(first)) : '', km: dist / 1000, secs: (lastT - first) / 1000 || 0 }];
+    }
+    return [];
+  }
+  function runsFromCsv(text) {
+    var rows = delimitedRows(text), h = rows[0] || [], out = [];
+    var find = function (re) { for (var j = 0; j < h.length; j++) if (re.test(String(h[j]).trim())) return j; return -1; };
+    var di = find(/^(activity date|date|start time|begin timestamp)$/i), ti = find(/^(activity type|type|sport)$/i),
+      ki = find(/^distance/i), si = find(/^(moving time|elapsed time|time|duration)/i);
+    if (di < 0 || ki < 0) return out;
+    rows.slice(1).forEach(function (r) {
+      if (ti >= 0 && !/run/i.test(r[ti] || '')) return;
+      var km = parseFloat(String(r[ki] || '').replace(/,/g, ''));
+      if (!(km > 0)) return;
+      if (km > 300) km = km / 1000;
+      var raw = String(r[di] || ''), d = parseDay(raw) || (isFinite(Date.parse(raw)) ? toYmd(new Date(Date.parse(raw))) : null);
+      var tv = String(r[si] || '').trim(), secs = /^\d+(\.\d+)?$/.test(tv) ? +tv : parseTime(tv) || 0;
+      if (d) out.push({ date: d, km: km, secs: secs });
+    });
+    return out;
+  }
+  $('#runs-in').addEventListener('change', function () {
+    var files = Array.prototype.slice.call(this.files || []);
+    if (!files.length || !S.key) return;
+    Promise.all(files.map(function (f) {
+      return f.text().then(function (t) { return /^\s*</.test(t) ? runsFromXml(t) : runsFromCsv(t); }, function () { return []; });
+    })).then(function (lists) {
+      var add = [], have = runs();
+      [].concat.apply([], lists).forEach(function (x) {
+        if (!x.date || !(x.km > 0.3) || daysUntil(x.date) > 0) return;
+        var km = Math.round(x.km * 100) / 100;
+        if (have.concat(add).some(function (r) { return r.date === x.date && Math.abs(+r.km - km) < 0.15; })) return;
+        add.push({ id: uid(), date: x.date, km: km, time: x.secs > 0 ? fmtSecs(x.secs) : '', kind: km >= 16 ? 'Long' : 'Easy', note: 'Imported' });
+      });
+      if (!add.length) { toast('No new runs in that file'); return; }
+      S.data.runs = runs().concat(add);
+      persist().then(function () { renderRun(); toast(add.length + (add.length === 1 ? ' run' : ' runs') + ' added'); });
+    });
+  });
+  $('#run-body').addEventListener('click', function (ev) {
+    if (!ev.target.closest('#run-import')) return;
+    guardSheet();
+    var inp = $('#runs-in'); inp.value = ''; inp.multiple = true; inp.click();
+  });
+
+  /* ============ the weekly digest ============ */
+  function weekDue() {
+    return attentionItems().filter(function (a) { return a.date && a.days !== null && a.days >= -1 && a.days <= 7; });
+  }
+  function digestDue() {
+    var now = new Date(), key = toYmd(weekStart(now));
+    // Fresh each week from Sunday: the coming week's digest is ready the day before it starts.
+    if (now.getDay() === 0) { var n = new Date(now); n.setDate(n.getDate() + 1); key = toYmd(weekStart(n)); }
+    return (goals().digestSeen || '') < key && entries().length > 0 && (now.getDay() === 0 || now.getDay() === 1);
+  }
+  function renderWeek() {
+    var el = $('#week-body');
+    if (!el || !S.data) return;
+    var now = new Date(), today = toYmd(now), wkAgo = new Date(now); wkAgo.setDate(wkAgo.getDate() - 6);
+    var from = toYmd(wkAgo), due = weekDue(), bills = recurringBills().filter(function (x) { var d = daysUntil(x.next); return d !== null && d >= 0 && d <= 7; });
+    var km = efforts().filter(function (x) { return x.date && x.date >= from && x.date <= today; }).reduce(function (s, x) { return s + x.km; }, 0);
+    var chapters = 0;
+    Object.keys(iasData().c || {}).forEach(function (k) { var c = iasData().c[k]; if (c.s === 'done' && c.d && c.d >= from) chapters++; });
+    var labs = 0;
+    LABS.forEach(function (l) { var st = labState(l.id); if (st.s === 'done' && st.d && st.d >= from) labs++; });
+    var spent = 0, anyTx = false;
+    moneyData().tx.forEach(function (t) { if (t.d >= from && t.d <= today) { anyTx = true; if (isSpend(t)) spent += t.amt; } });
+    var ip = iasPlan(), rp = runPlan(), og = goals().oscpWeek || 0, lastBk = S.data.lastExport;
+    var dayName = function (a) { return a.days < 0 ? 'Overdue' : a.days === 0 ? 'Today' : a.days === 1 ? 'Tomorrow' : ymdDate(a.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }); };
+    var html = '<p class="lead">Week of ' + esc(fmtDate(toYmd(weekStart(now)))) + '. Everything due, for you and your family, plus how the last 7 days went.</p>';
+    html += '<div class="section-label">Coming up · next 7 days</div>' + (due.length ? '<div class="att-list">' + due.map(function (a, i) {
+      var title = a.e ? (a.e.title || 'Untitled') + (personOf(a.e) ? ' · ' + personOf(a.e).name : '') : a.title;
+      return '<div class="att"><button class="att-main" data-wk-item="' + i + '"><span class="glyph" aria-hidden="true">' + (a.e ? ICON[a.e.type] : MONEY_ICON) + '</span>' +
+        '<span class="att-text"><b>' + esc(title) + '</b><small>' + esc(a.what) + '</small><small class="att-when">' + esc(dayName(a)) + '</small></span>' +
+        '<span class="pill ' + a.level + '">' + esc(LEVEL_WORD[a.level]) + '</span></button></div>';
+    }).join('') + '</div>' : '<div class="mcard"><p class="m-note" style="margin:0">Nothing due in the next 7 days.</p></div>');
+    if (bills.length) html += '<div class="section-label">Bills expected</div><div class="mcard">' + bills.map(function (x) {
+      return '<div class="bill"><span><b>' + esc(x.payee) + '</b><small>' + esc(MCAT[x.cat] || '') + '</small></span><span class="bill-r"><b>' + esc(rupees(x.amt)) + '</b><small>~' + esc(fmtDate(x.next)) + '</small></span></div>';
+    }).join('') + '</div>';
+    html += '<div class="section-label">Plans</div><div class="dg-plans">' +
+      (ip ? '<button type="button" class="dg" data-go="ias"><span class="label">IAS today</span><b>' + ip.doneToday + ' / ' + ip.perDay + '</b><small>chapters · ' + ip.days + ' days to prelims</small></button>' : '') +
+      (rp ? '<button type="button" class="dg" data-go="run"><span class="label">Running this week</span><b>' + kmText(rp.done) + ' / ' + rp.weeks[0].km + ' km</b><small>' + esc(rp.race.title) + '</small></button>' : '') +
+      '<button type="button" class="dg" data-go="oscp"><span class="label">OSCP this week</span><b>' + oscpWeekDone() + (og ? ' / ' + og : '') + '</b><small>labs rooted</small></button>' +
+      '</div>';
+    html += '<div class="section-label">Last 7 days</div><div class="dg-plans">' +
+      '<div class="dg"><span class="label">Run</span><b>' + kmText(km) + ' km</b></div>' +
+      '<div class="dg"><span class="label">IAS chapters done</span><b>' + chapters + '</b></div>' +
+      '<div class="dg"><span class="label">OSCP labs rooted</span><b>' + labs + '</b></div>' +
+      '<div class="dg"><span class="label">Spent</span><b>' + (anyTx ? esc(rupees(spent)) : '—') + '</b><small>' + (anyTx ? 'from your statements' : 'import a statement to see this') + '</small></div>' +
+      '</div>';
+    html += '<p class="hint" style="margin-top:16px">' + (lastBk ? 'Last backup ' + esc(stampOf(lastBk)) + '.' : 'No backup yet.') +
+      (!lastBk || Date.now() - lastBk > 30 * 86400000 ? ' <button type="button" class="linkish" data-go="backup">Back up now</button>' : '') + '</p>';
+    el.innerHTML = html;
+    weekCache = due;
+    var key = toYmd(weekStart(now));
+    if (now.getDay() === 0) { var n2 = new Date(now); n2.setDate(n2.getDate() + 1); key = toYmd(weekStart(n2)); }
+    if ((goals().digestSeen || '') < key) setGoal('digestSeen', key);
+  }
+  var weekCache = [];
+  $('#week-body').addEventListener('click', function (ev) {
+    var it = ev.target.closest('[data-wk-item]');
+    if (it) { var a = weekCache[+it.dataset.wkItem]; if (!a) return; if (a.go) show(a.go); else { S.id = a.e.id; show('detail'); } return; }
+    var g = ev.target.closest('[data-go]');
+    if (g) show(g.dataset.go);
+  });
 
   /* ============ IAS prelims ============
      The reading list (lib/ias-prelims.js) is public: subjects, NCERT books
@@ -8497,6 +9204,21 @@ select.input {
   function iasExamDays() { var e = iasData().exam; return e ? daysUntil(e) : null; }
   function bookLabel(b) {
     return b.ref ? 'Reference' : b.c ? 'Class ' + b.c + ' · NCERT' : IAS_SNAME[b.s] || '';
+  }
+
+  function goals() { return (S.data && S.data.goals) || {}; }
+  function setGoal(k, v) {
+    S.data.goals = S.data.goals || {};
+    if (v === undefined || v === null || v === '' || v === 0) delete S.data.goals[k]; else S.data.goals[k] = v;
+    return persist();
+  }
+  function sanitizeGoals(o) {
+    var out = {};
+    if (!o || typeof o !== 'object') return out;
+    if (+o.oscpWeek >= 1 && +o.oscpWeek <= 14) out.oscpWeek = Math.round(+o.oscpWeek);
+    if (typeof o.digestSeen === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.digestSeen)) out.digestSeen = o.digestSeen;
+    if (o.push === true) out.push = true;
+    return out;
   }
 
   function sanitizeIas(o) {
@@ -8629,7 +9351,7 @@ select.input {
             ? '<span>Prelims on <b>' + esc(fmtDate(exam)) + '</b>' + (days !== null && days >= 0 ? ' · ' + (days === 0 ? 'today' : days + (days === 1 ? ' day' : ' days') + ' to go') : ' · done') + '</span>' +
               '<button type="button" class="linkish" id="ias-exam-edit">Change</button>'
             : '<span>Add your prelims date for a countdown.</span><button type="button" class="linkish" id="ias-exam-edit">Set date</button>') + '</div>') +
-      '</div>' +
+      '</div>' + iasPlanHtml() +
       '<div class="search oscp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>' +
       '<input class="input" id="ias-q" type="search" placeholder="Search chapters and your notes" value="' + esc(iasView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search chapters"></div>' +
       iasChips('Subject', 'subj', IAS_SUBJ.map(function (s) { return [s.id, s.name]; })) +
