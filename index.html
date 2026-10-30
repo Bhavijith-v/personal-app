@@ -1029,6 +1029,10 @@ select.input {
 .note-more[aria-expanded="true"] { color: var(--brass); border-color: var(--brass); }
 .rule-foot .streak + .note-more { margin-left: 0; }
 .note-meta .linkish { font-size: 13px; }
+.note-meta { flex-wrap: wrap; row-gap: 10px; }
+.freq-pick { display: inline-flex; padding: 2px; border-radius: 10px; background: var(--surface-3); flex: 1 0 100%; max-width: max-content; }
+.freq-pick button { padding: 6px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--fg-dim); font-size: 13px; font-weight: 600; }
+.freq-pick button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
 .stickies { display: flex; flex-direction: column; gap: 10px; }
 .sticky { padding: 12px 14px 10px; border-radius: var(--r-md); border: 1px solid var(--line-soft); position: relative; }
 .sticky.t0 { background: rgba(232, 178, 64, 0.11); }
@@ -1042,6 +1046,7 @@ select.input {
 .note-ideas { display: flex; flex-wrap: wrap; gap: 8px; }
 .note-idea { padding: 9px 13px; border-radius: 999px; border: 1px dashed var(--line); background: transparent; color: var(--fg-dim); font-size: 13.5px; }
 .note-idea::before { content: '+ '; color: var(--brass); font-weight: 700; }
+.note-idea em { margin-left: 6px; font-style: normal; font-size: 11px; font-weight: 600; color: var(--fg-faint); text-transform: uppercase; letter-spacing: 0.04em; }
 .notes-warn { margin: 22px 0 0; text-align: center; }
 .face-nudge { margin: 12px 0 0; }
 
@@ -4420,8 +4425,8 @@ select.input {
     var ot = oscpTotals();
     $('#hub-oscp-n').textContent = ot.done + ' / ' + ot.all;
     var nl = notesList(), rules = nl.filter(function (x) { return x.daily; }), today = toYmd(new Date());
-    $('#hub-notes-n').textContent = rules.length ? rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length + ' / ' + rules.length : nl.length;
-    $('#hub-notes-sub').textContent = rules.length ? 'daily rules done today · notes & rules' : 'notes & rules · no passphrase needed';
+    $('#hub-notes-n').textContent = rules.length ? rules.filter(function (x) { return ruleDone(x); }).length + ' / ' + rules.length : nl.length;
+    $('#hub-notes-sub').textContent = rules.length ? 'rules done so far · notes & rules' : 'notes & rules · no passphrase needed';
     $('#face-nudge').hidden = !(faceSupported() && S.rec && S.rec.wraps && !S.rec.wraps.face);
     var wk = weekDue(), dig = digestDue();
     $('#hub-week-n').textContent = wk.length;
@@ -9588,52 +9593,95 @@ select.input {
   function notesSave(list) {
     try { localStorage.setItem(NOTES_KEY, JSON.stringify(list)); return true; } catch (e) { toast('Could not save the note'); return false; }
   }
-  function streakOf(days) {
-    var set = {}, n = 0, d = new Date();
-    (days || []).forEach(function (x) { set[x] = 1; });
-    if (!set[toYmd(d)]) d.setDate(d.getDate() - 1);   // today not ticked yet: count up to yesterday
-    while (set[toYmd(d)]) { n++; d.setDate(d.getDate() - 1); }
+  // a rule repeats daily, weekly (weeks start Monday) or monthly; ticks are dates
+  var FREQ = { day: { name: 'Daily', unit: 'day', now: 'today' }, week: { name: 'Weekly', unit: 'week', now: 'this week' }, month: { name: 'Monthly', unit: 'month', now: 'this month' } };
+  function freqOf(x) { return FREQ[x.freq] ? x.freq : 'day'; }
+  function periodStart(d, f) {
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (f === 'week') d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+    if (f === 'month') d.setDate(1);
+    return d;
+  }
+  function periodBack(d, f) {
+    if (f === 'day') d.setDate(d.getDate() - 1); else if (f === 'week') d.setDate(d.getDate() - 7); else d.setMonth(d.getMonth() - 1);
+    return d;
+  }
+  function periodKey(ymd, f) {
+    var p = ymd.split('-');
+    return toYmd(periodStart(new Date(+p[0], p[1] - 1, +p[2]), f));
+  }
+  function ruleDone(x, f) {
+    f = f || freqOf(x);
+    var cur = toYmd(periodStart(new Date(), f));
+    return (x.days || []).some(function (d) { return periodKey(d, f) === cur; });
+  }
+  function streakOf(days, f) {
+    f = f || 'day';
+    var set = {}, n = 0, d = periodStart(new Date(), f);
+    (days || []).forEach(function (x) { set[periodKey(x, f)] = 1; });
+    if (!set[toYmd(d)]) periodBack(d, f);   // not ticked yet this time round: count up to the last one
+    while (set[toYmd(d)]) { n++; periodBack(d, f); }
     return n;
   }
-  var NOTE_IDEAS = ['Brush two times a day', 'Drink 1 litre of water every day', 'Stretch for 10 minutes', 'Read one IAS chapter', 'Sleep by 10:30 pm'];
+  var NOTE_IDEAS = [{ t: 'Brush two times a day', f: 'day' }, { t: 'Drink 1 litre of water every day', f: 'day' }, { t: 'Stretch for 10 minutes', f: 'day' },
+    { t: 'Read one IAS chapter', f: 'day' }, { t: 'Sleep by 10:30 pm', f: 'day' }, { t: 'Long run on Sunday', f: 'week' }, { t: 'Revise the week’s notes', f: 'week' },
+    { t: 'Call home', f: 'week' }, { t: 'Pay all bills', f: 'month' }, { t: 'Back up the box', f: 'month' }];
   var lastTick = null, openNote = null;
   var FLAME = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5c.6 3.1-1.1 4.9-2.6 6.5C7.9 10.6 6.5 12.1 6.5 14.6 6.5 18 9 21 12.2 21c3.4 0 5.8-2.7 5.8-6.2 0-2.6-1.2-4.4-2.4-5.6-.2 1.4-.8 2.4-1.8 3 .3-3.6-.6-6.7-1.8-8.7Z"/></svg>';
   function renderNotes() {
     var el = $('#notes-body'), list = notesList(), now = new Date(), today = toYmd(now);
     var rules = list.filter(function (x) { return x.daily; }), notes = list.filter(function (x) { return !x.daily; });
-    var done = rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length;
-    var all = rules.length && done === rules.length;
-    // the last seven days, oldest first
-    var week = [];
-    for (var i = 6; i >= 0; i--) { var d = new Date(now); d.setDate(d.getDate() - i); week.push({ ymd: toYmd(d), l: 'SMTWTFS'.charAt(d.getDay()) }); }
-    var best = rules.reduce(function (m, x) { var s = streakOf(x.days); return s > m.n ? { n: s, t: x.text } : m; }, { n: 0, t: '' });
+    var done = rules.filter(function (x) { return ruleDone(x); }).length;
+    var all = rules.length && done === rules.length, onlyDaily = rules.every(function (x) { return freqOf(x) === 'day'; });
+    // dots: the last 7 days, 6 weeks or 6 months, oldest first
+    var dots = {};
+    Object.keys(FREQ).forEach(function (f) {
+      var n = f === 'day' ? 7 : 6, d = periodStart(now, f), a = [];
+      for (var i = 0; i < n; i++) {
+        a.unshift({ key: toYmd(d), l: f === 'day' ? 'SMTWTFS'.charAt(d.getDay()) : f === 'week' ? String(d.getDate()) : 'JFMAMJJASOND'.charAt(d.getMonth()) });
+        periodBack(d, f);
+      }
+      dots[f] = a;
+    });
+    var best = rules.reduce(function (m, x) { var f = freqOf(x), s = streakOf(x.days, f); return s * (f === 'month' ? 30 : f === 'week' ? 7 : 1) > m.w ? { n: s, w: s * (f === 'month' ? 30 : f === 'week' ? 7 : 1), u: FREQ[f].unit, t: x.text } : m; }, { n: 0, w: 0, u: 'day', t: '' });
 
     // hero: a ring for today
     var R = 27, C = 2 * Math.PI * R, frac = rules.length ? done / rules.length : 0;
     var msg = !rules.length ? 'Start with one small daily rule'
-      : all ? 'All done today. Well done!'
-      : !done ? 'A fresh day. Start with one.'
-      : (rules.length - done) + ' more to go today';
+      : all ? (onlyDaily ? 'All done today. Well done!' : 'All caught up. Well done!')
+      : !done ? 'A fresh start. Pick one.'
+      : (rules.length - done) + ' more to go';
     var hero = '<div class="nh' + (all ? ' all' : '') + '">' +
       '<div class="nh-ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="nh-track" cx="32" cy="32" r="' + R + '"/>' +
       '<circle class="nh-arc" cx="32" cy="32" r="' + R + '" stroke-dasharray="' + (C * frac).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>' +
       '<span>' + (all ? '✓' : done + '<small>/' + rules.length + '</small>') + '</span></div>' +
       '<div class="nh-text"><span class="nh-day">' + esc(now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })) + '</span>' +
       '<b>' + esc(msg) + '</b>' +
-      (best.n >= 2 ? '<span class="nh-best">' + FLAME + ' Best streak: ' + best.n + ' days · ' + esc(best.t) + '</span>' : '') + '</div></div>';
+      (best.n >= 2 ? '<span class="nh-best">' + FLAME + ' Best streak: ' + best.n + ' ' + best.u + 's · ' + esc(best.t) + '</span>' : '') + '</div></div>';
 
     var rule = function (x) {
-      var days = x.days || [], ticked = days.indexOf(today) >= 0, st = streakOf(days);
+      var days = x.days || [], f = freqOf(x), ticked = ruleDone(x, f), st = streakOf(days, f);
+      var keys = {}; days.forEach(function (d) { keys[periodKey(d, f)] = 1; });
+      var curKey = toYmd(periodStart(now, f));
       return '<div class="rule' + (ticked ? ' done' : '') + (lastTick === x.id ? ' pop' : '') + (openNote === x.id ? ' open' : '') + '" data-note="' + esc(x.id) + '">' +
-        '<button type="button" class="note-tick" data-ntick="' + esc(x.id) + '" aria-pressed="' + ticked + '" aria-label="' + (ticked ? 'Done today. Tap to undo' : 'Mark done today') + '">' +
+        '<button type="button" class="note-tick" data-ntick="' + esc(x.id) + '" aria-pressed="' + ticked + '" aria-label="' + (ticked ? 'Done ' + FREQ[f].now + '. Tap to undo' : 'Mark done ' + FREQ[f].now) + '">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg></button>' +
-        '<div class="rule-body"><textarea class="note-text" data-ntext="' + esc(x.id) + '" rows="1" placeholder="A daily rule…">' + esc(x.text) + '</textarea>' +
-        '<div class="rule-foot"><div class="rule-week" aria-label="Last 7 days">' + week.map(function (w) {
-          return '<i class="' + (days.indexOf(w.ymd) >= 0 ? 'on' : '') + (w.ymd === today ? ' today' : '') + '"><b></b>' + w.l + '</i>';
+        '<div class="rule-body"><textarea class="note-text" data-ntext="' + esc(x.id) + '" rows="1" placeholder="A ' + FREQ[f].name.toLowerCase() + ' rule…">' + esc(x.text) + '</textarea>' +
+        '<div class="rule-foot"><div class="rule-week" aria-label="' + (f === 'day' ? 'Last 7 days' : f === 'week' ? 'Last 6 weeks' : 'Last 6 months') + '">' + dots[f].map(function (w) {
+          return '<i class="' + (keys[w.key] ? 'on' : '') + (w.key === curKey ? ' today' : '') + '"><b></b>' + w.l + '</i>';
         }).join('') + '</div>' +
-        '<span class="streak' + (st ? '' : ' none') + '">' + (st ? FLAME + st + '-day streak' : 'No streak yet') + '</span>' + '<button type="button" class="note-more" data-nmore="' + esc(x.id) + '" aria-label="Edit options" aria-expanded="' + (openNote === x.id) + '">⋯</button>' + '</div>' +
-        '<div class="note-meta"><button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">Make it a note</button>' +
+        '<span class="streak' + (st ? '' : ' none') + '">' + (st ? FLAME + st + '-' + FREQ[f].unit + ' streak' : 'No streak yet') + '</span>' + '<button type="button" class="note-more" data-nmore="' + esc(x.id) + '" aria-label="Edit options" aria-expanded="' + (openNote === x.id) + '">⋯</button>' + '</div>' +
+        '<div class="note-meta"><div class="freq-pick" role="group" aria-label="Repeats">' + Object.keys(FREQ).map(function (k) {
+          return '<button type="button" data-nfreq="' + k + '" data-nid="' + esc(x.id) + '" aria-pressed="' + (k === f) + '">' + FREQ[k].name + '</button>';
+        }).join('') + '</div>' +
+        '<button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">Make it a note</button>' +
         '<button type="button" class="linkish rm" data-ndel="' + esc(x.id) + '">Delete</button></div></div></div>';
+    };
+    var group = function (f) {
+      var g = rules.filter(function (x) { return freqOf(x) === f; });
+      if (!g.length) return '';
+      var n = g.filter(function (x) { return ruleDone(x, f); }).length;
+      return '<div class="section-label lab-group">' + FREQ[f].name + ' rules <span>' + n + ' / ' + g.length + ' done ' + FREQ[f].now + '</span></div><div class="rules">' + g.map(rule).join('') + '</div>';
     };
     var note = function (x, i) {
       return '<div class="sticky t' + (i % 4) + (openNote === x.id ? ' open' : '') + '" data-note="' + esc(x.id) + '">' +
@@ -9642,23 +9690,24 @@ select.input {
         '<div class="note-meta"><button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">Make it a daily rule</button>' +
         '<button type="button" class="linkish rm" data-ndel="' + esc(x.id) + '">Delete</button></div></div></div>';
     };
-    var ideas = NOTE_IDEAS.filter(function (t) { return !list.some(function (x) { return x.text === t; }); });
+    var ideas = NOTE_IDEAS.filter(function (o) { return !list.some(function (x) { return x.text === o.t; }); });
 
     el.innerHTML = hero +
-      '<div class="note-adds"><button type="button" class="note-add" data-nnew="rule"><span>+</span>Daily rule</button><button type="button" class="note-add" data-nnew="note"><span>+</span>Note</button></div>' +
-      (rules.length ? '<div class="section-label lab-group">Daily rules <span>' + done + ' / ' + rules.length + ' done today</span></div><div class="rules">' + rules.map(rule).join('') + '</div>' : '') +
+      '<div class="note-adds"><button type="button" class="note-add" data-nnew="day"><span>+</span>Daily rule</button><button type="button" class="note-add" data-nnew="week"><span>+</span>Weekly rule</button>' +
+      '<button type="button" class="note-add" data-nnew="month"><span>+</span>Monthly rule</button><button type="button" class="note-add" data-nnew="note"><span>+</span>Note</button></div>' +
+      group('day') + group('week') + group('month') +
       (notes.length ? '<div class="section-label">Notes</div><div class="stickies">' + notes.map(note).join('') + '</div>' : '') +
-      (ideas.length ? '<div class="section-label">Ideas · tap to add</div><div class="note-ideas">' + ideas.map(function (t) {
-        return '<button type="button" class="note-idea" data-nidea="' + esc(t) + '">' + esc(t) + '</button>';
+      (ideas.length ? '<div class="section-label">Ideas · tap to add</div><div class="note-ideas">' + ideas.map(function (o) {
+        return '<button type="button" class="note-idea" data-nidea="' + esc(o.t) + '" data-nf="' + o.f + '">' + esc(o.t) + (o.f !== 'day' ? '<em>' + FREQ[o.f].name + '</em>' : '') + '</button>';
       }).join('') + '</div>' : '') +
       '<p class="hint notes-warn">Opens without your passphrase and isn’t encrypted, so keep passwords, PINs and account numbers out of here.</p>';
     Array.prototype.forEach.call(el.querySelectorAll('.note-text'), fitNote);
     lastTick = null;
   }
   function fitNote(t) { t.style.height = 'auto'; t.style.height = Math.max(26, t.scrollHeight) + 'px'; }
-  function addNote(text, daily) {
+  function addNote(text, daily, freq) {
     var list = notesList(), id = 'n' + uid().slice(0, 10);
-    list.push({ id: id, text: text || '', daily: !!daily, days: [], created: Date.now() });
+    list.push({ id: id, text: text || '', daily: !!daily, freq: daily && FREQ[freq] ? freq : 'day', days: [], created: Date.now() });
     notesSave(list);
     renderNotes();
     var t = $('[data-ntext="' + id + '"]');
@@ -9678,7 +9727,7 @@ select.input {
       tile('gx', gt.done + ' / ' + gt.all, 'Govt exam prep topics done') +
       tile('oscp', ot.done + ' / ' + ot.all, 'OSCP labs rooted') +
       tile('run', kmText(km) + ' km', 'Running this month · log a run') +
-      tile('notes', rules.length ? rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length + ' / ' + rules.length : String(nl.length), 'Notes & daily rules') +
+      tile('notes', rules.length ? rules.filter(function (x) { return ruleDone(x); }).length + ' / ' + rules.length : String(nl.length), 'Notes & rules') +
       '</div><button class="btn" id="open-unlock" style="margin-top:16px">Unlock the box</button>';
   }
   $('#open-body').addEventListener('click', function (ev) {
@@ -9702,12 +9751,17 @@ select.input {
     if ((b = ev.target.closest('[data-ntick]'))) {
       list.forEach(function (x) {
         if (x.id !== b.dataset.ntick) return;
+        var f = freqOf(x), cur = periodKey(today, f);
         x.days = x.days || [];
-        var i = x.days.indexOf(today);
-        if (i >= 0) x.days.splice(i, 1); else { x.days.push(today); lastTick = x.id; }
-        x.days = x.days.sort().slice(-120);
+        if (ruleDone(x, f)) x.days = x.days.filter(function (d) { return periodKey(d, f) !== cur; });   // undo this time round
+        else { x.days.push(today); lastTick = x.id; }
+        x.days = x.days.sort().slice(-400);
       });
       notesSave(list); renderNotes(); return;
+    }
+    if ((b = ev.target.closest('[data-nfreq]'))) {
+      list.forEach(function (x) { if (x.id === b.dataset.nid) x.freq = b.dataset.nfreq; });
+      notesSave(list); renderNotes(); toast('Repeats ' + FREQ[b.dataset.nfreq].name.toLowerCase()); return;
     }
     if ((b = ev.target.closest('[data-nmore]'))) { openNote = openNote === b.dataset.nmore ? null : b.dataset.nmore; renderNotes(); return; }
     if ((b = ev.target.closest('[data-ndaily]'))) {
@@ -9718,8 +9772,8 @@ select.input {
       var id = b.dataset.ndel;
       notesSave(list.filter(function (x) { return x.id !== id; })); renderNotes(); toast('Deleted'); return;
     }
-    if ((b = ev.target.closest('[data-nidea]'))) { addNote(b.dataset.nidea, true); return; }
-    if ((b = ev.target.closest('[data-nnew]'))) addNote('', b.dataset.nnew === 'rule');
+    if ((b = ev.target.closest('[data-nidea]'))) { addNote(b.dataset.nidea, true, b.dataset.nf); return; }
+    if ((b = ev.target.closest('[data-nnew]'))) addNote('', b.dataset.nnew !== 'note', b.dataset.nnew);
   });
 
   /* ============ Govt exam prep (PSC, SSC, banks, railways) ============
