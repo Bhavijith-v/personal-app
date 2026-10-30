@@ -1038,6 +1038,12 @@ select.input {
 .sync-acts .btn { flex: 1 1 auto; width: auto; }
 .sync-more { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 8px; }
 .app-ver { margin-top: 28px; text-align: center; }
+.office-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 8px; }
+.office-sum div { display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.office-sum b { font-size: 22px; font-weight: 700; }
+.office-sum span { font-size: 12px; color: var(--fg-dim); line-height: 1.3; }
+.office-next { margin: 0 0 4px; font-size: 14px; color: var(--fg); }
+.office-note { margin: 0 0 12px; font-size: 12.5px; }
 .files { padding: 6px 12px 12px; }
 .file-row { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
 .file-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 0; background: none; border: 0; color: inherit; text-align: left; }
@@ -1573,6 +1579,7 @@ select.input {
         <button class="hub-tile" id="hub-health"><b id="hub-health-n">0</b><span>Password issues</span></button>
         <button class="hub-tile" id="hub-run"><b id="hub-run-n">0</b><span>km this month</span></button>
         <button class="hub-tile" id="hub-oscp"><b id="hub-oscp-n">0</b><span>OSCP labs rooted</span></button>
+        <button class="hub-tile wide" id="hub-office"><b id="hub-office-n">0</b><span id="hub-office-sub">Office</span></button>
         <button class="hub-tile wide" id="hub-money"><b id="hub-money-n">₹</b><span id="hub-money-sub">Money: import a statement for charts</span></button>
         <button class="hub-tile wide" id="hub-gx"><b id="hub-gx-n">0</b><span>Govt exam prep · aptitude, reasoning, English, GK</span></button>
         <button class="hub-tile wide" id="hub-ias"><b id="hub-ias-n">0</b><span id="hub-ias-sub">IAS prelims chapters done</span></button>
@@ -2098,7 +2105,7 @@ select.input {
       ]
     }
   };
-  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'govjob', 'life', 'race'];
+  var ORDER = ['login', 'bank', 'card', 'broker', 'wifi', 'id', 'edu', 'cert', 'govjob', 'office', 'life', 'race'];
 
   /* --- Indian government IDs ---
      One "ID document" kind and one tab, with a sub-type per document. Each
@@ -2506,8 +2513,130 @@ select.input {
   ICON.trip = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5V6h17v2.5a2 2 0 0 0 0 4V18h-17v-5.5a2 2 0 0 0 0-4Z"/><path d="M14.5 6v12" stroke-dasharray="2 2"/></svg>';
   ICON.life = ICON.ins;
 
-  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER, broker: ['broker', 'ipo'], life: LIFE_ORDER };
-  var KIND_LABEL = { id: 'ID document', edu: 'Education', broker: 'Trading', life: 'Life admin' };
+  /* --- office: your job at work ---
+     Job details, projects, tasks, leave, payslips, appraisals, trainings,
+     work contacts and office letters. Tasks, leave, trainings and appraisal
+     dates feed Needs attention, the calendar and reminders like everything
+     else. Files (payslip PDFs, letters) attach to any of them. */
+  var OFFICE_ORDER = ['task', 'leave', 'project', 'job', 'pay', 'appraisal', 'training', 'wcontact', 'odoc'];
+  TYPES.job = {
+    group: 'office', name: 'Job details', short: 'Job', titleLabel: 'Company', titlePh: 'Tata Consultancy Services',
+    fields: [
+      { k: 'empid', l: 'Employee ID', mono: true, onCard: true },
+      { k: 'role', l: 'Designation', ph: 'Systems Engineer', onCard: true },
+      { k: 'grade', l: 'Grade / band', list: ['Y', 'C1', 'C2', 'C3A', 'C3B', 'C4', 'C5', 'CXO'], onCard: true },
+      { k: 'joined', l: 'Joined on', date: true, onCard: true },
+      { k: 'location', l: 'Office / branch', ph: 'TCS Infopark, Kochi' },
+      { k: 'unit', l: 'Business unit / ISU', ph: 'BFSI' },
+      { k: 'account', l: 'Current account / project' },
+      { k: 'manager', l: 'Reporting manager' },
+      { k: 'hr', l: 'HR / HRBP' },
+      { k: 'email', l: 'Official email', mono: true },
+      { k: 'ext', l: 'Work phone / extension', mono: true },
+      { k: 'uan', l: 'UAN (PF)', mono: true },
+      { k: 'pfno', l: 'PF account number', mono: true, upper: true },
+      { k: 'notice', l: 'Notice period', ph: '90 days' }
+    ]
+  };
+  TYPES.project = {
+    group: 'office', name: 'Project', short: 'Project', titleLabel: 'Project', titlePh: 'Payments modernisation',
+    fields: [
+      { k: 'status', l: 'Status', opts: ['Current', 'Upcoming', 'Past'], onCard: true },
+      { k: 'client', l: 'Client / account', onCard: true },
+      { k: 'myrole', l: 'My role', ph: 'Java developer', onCard: true },
+      { k: 'start', l: 'Started', date: true },
+      { k: 'end', l: 'Ends / release date', date: true, onCard: true },
+      { k: 'manager', l: 'Project manager' },
+      { k: 'code', l: 'Project / WON code', mono: true, upper: true },
+      { k: 'mode', l: 'Where', opts: ['Offshore', 'Onsite', 'Hybrid'] },
+      { k: 'stack', l: 'Tools / tech', ph: 'Java, Spring, AWS' }
+    ]
+  };
+  TYPES.task = {
+    group: 'office', name: 'Work task', short: 'Task', titleLabel: 'Task', titlePh: 'Submit timesheet',
+    fields: [
+      { k: 'status', l: 'Status', opts: ['To do', 'In progress', 'Waiting', 'Done'], onCard: true },
+      { k: 'due', l: 'Due date', date: true, onCard: true },
+      { k: 'time', l: 'Due time (24-hour)', mono: true, ph: '17:30', onCard: true },
+      { k: 'prio', l: 'Priority', opts: ['High', 'Normal', 'Low'], onCard: true },
+      { k: 'project', l: 'Project' },
+      { k: 'ref', l: 'Ticket / reference', mono: true, upper: true }
+    ]
+  };
+  TYPES.leave = {
+    group: 'office', name: 'Leave', short: 'Leave', titleLabel: 'Reason', titlePh: 'Navy half marathon trip',
+    fields: [
+      { k: 'kind', l: 'Type', opts: ['Earned leave', 'Casual leave', 'Sick leave', 'Optional holiday', 'Comp off', 'Work from home', 'Other'], onCard: true },
+      { k: 'from', l: 'From', date: true, onCard: true },
+      { k: 'to', l: 'To', date: true, onCard: true },
+      { k: 'days', l: 'Days', mono: true, num: true, onCard: true },
+      { k: 'status', l: 'Status', opts: ['Planned', 'Applied', 'Approved', 'Rejected', 'Taken', 'Cancelled'], onCard: true },
+      { k: 'approver', l: 'Approver' }
+    ]
+  };
+  TYPES.pay = {
+    group: 'office', name: 'Payslip / salary', short: 'Pay', titleLabel: 'Month', titlePh: 'October 2026',
+    fields: [
+      { k: 'net', l: 'Net pay (₹)', mono: true, num: true, onCard: true },
+      { k: 'gross', l: 'Gross pay (₹)', mono: true, num: true, onCard: true },
+      { k: 'tds', l: 'Income tax (TDS) (₹)', mono: true, num: true },
+      { k: 'pf', l: 'PF (₹)', mono: true, num: true },
+      { k: 'bonus', l: 'Variable / bonus (₹)', mono: true, num: true },
+      { k: 'ctc', l: 'Annual CTC (₹)', mono: true, num: true },
+      { k: 'paid', l: 'Paid on', date: true }
+    ]
+  };
+  TYPES.appraisal = {
+    group: 'office', name: 'Appraisal / goals', short: 'Appraisal', titleLabel: 'Cycle', titlePh: 'FY 2026-27',
+    fields: [
+      { k: 'goalsby', l: 'Goal setting due', date: true, onCard: true },
+      { k: 'selfby', l: 'Self-appraisal due', date: true, onCard: true },
+      { k: 'rating', l: 'Rating / band', onCard: true },
+      { k: 'hike', l: 'Hike (%)', mono: true, num: true, onCard: true },
+      { k: 'promo', l: 'Promotion', opts: ['No', 'Yes'] },
+      { k: 'effective', l: 'Effective from', date: true }
+    ]
+  };
+  TYPES.training = {
+    group: 'office', name: 'Training', short: 'Training', titleLabel: 'Course', titlePh: 'AWS Cloud Practitioner',
+    fields: [
+      { k: 'platform', l: 'Where', list: ['iEvolve', 'Fresco Play', 'LinkedIn Learning', 'Coursera', 'Udemy', 'Classroom', 'Other'], onCard: true },
+      { k: 'status', l: 'Status', opts: ['Assigned', 'In progress', 'Completed'], onCard: true },
+      { k: 'mandatory', l: 'Mandatory', opts: ['Yes', 'No'] },
+      { k: 'due', l: 'Complete by', date: true, onCard: true },
+      { k: 'done', l: 'Completed on', date: true },
+      { k: 'certid', l: 'Certificate ID', mono: true }
+    ]
+  };
+  TYPES.wcontact = {
+    group: 'office', name: 'Work contact', short: 'Contact', titleLabel: 'Name', titlePh: 'Anjali Menon',
+    fields: [
+      { k: 'role', l: 'Role', ph: 'Project manager', onCard: true },
+      { k: 'team', l: 'Team / project', onCard: true },
+      { k: 'email', l: 'Email', mono: true },
+      { k: 'phone', l: 'Phone', mono: true },
+      { k: 'location', l: 'Location' }
+    ]
+  };
+  TYPES.odoc = {
+    group: 'office', name: 'Office letter / document', short: 'Letter', titleLabel: 'Name', titlePh: 'Offer letter',
+    fields: [
+      { k: 'kind', l: 'Kind', opts: ['Offer letter', 'Appointment letter', 'Increment / revision letter', 'Promotion letter', 'Form 16', 'Experience letter', 'Relieving letter', 'Policy', 'Other'], onCard: true },
+      { k: 'date', l: 'Dated', date: true, onCard: true },
+      { k: 'ref', l: 'Reference number', mono: true, upper: true }
+    ]
+  };
+  ICON.office = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 12.5h18"/></svg>';
+  ICON.task = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.4 2.4 4.6-4.8"/></svg>';
+  ICON.leave = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+  ICON.pay = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10M7 9.5h10M10 5c3.5 0 3.5 4.5 0 4.5H7l7 9.5"/></svg>';
+  ICON.wcontact = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>';
+  ['job', 'project', 'appraisal', 'training', 'odoc'].forEach(function (k) { ICON[k] = ICON.office; });
+
+  var SUBKINDS = { id: DOC_ORDER, edu: EDU_ORDER, broker: ['broker', 'ipo'], life: LIFE_ORDER, office: OFFICE_ORDER };
+  var KIND_LABEL = { id: 'ID document', edu: 'Education', broker: 'Trading', life: 'Life admin', office: 'Office' };
+  // groups whose entries carry dates to remind about
+  function datedGroup(type) { var g = groupOf(type); return g === 'life' || g === 'office'; }
   // "Front" -> "front", but "RC front" stays as it is
   function lcFirst(x) { x = String(x || ''); return /^[A-Z]{2}/.test(x) ? x : x.charAt(0).toLowerCase() + x.slice(1); }
   function hasPhotos(type) { return !!(TYPES[type] && (TYPES[type].photos || TYPES[type].group === 'id')); }
@@ -3191,6 +3320,11 @@ select.input {
     if (t === 'vehicle') { add('insexp', 'Insurance expires', 30); add('puc', 'PUC expires', 15); add('rcexp', 'RC expires', 90); add('service', 'Service due', 7); }
     if (t === 'warranty') { var en = warrantyEnd(f); if (en) out.push({ k: 'ends', label: 'Warranty ends', date: en, warn: 30 }); }
     if (t === 'trip') add('date', 'Journey', 2);
+    if (t === 'task' && f.status !== 'Done') { add('due', 'Task due', 2); if (out.length && hhmm(f.time) !== null) out[out.length - 1].time = f.time; }
+    if (t === 'leave' && ['Rejected', 'Taken', 'Cancelled'].indexOf(f.status) < 0) add('from', f.status === 'Planned' ? 'Leave starts (apply for it)' : 'Leave starts', f.status === 'Planned' ? 14 : 3);
+    if (t === 'project' && f.status !== 'Past') add('end', 'Project ends', 14);
+    if (t === 'appraisal') { add('goalsby', 'Goal setting due', 7); add('selfby', 'Self-appraisal due', 7); }
+    if (t === 'training' && f.status !== 'Completed') add('due', f.mandatory === 'Yes' ? 'Mandatory training due' : 'Training due', 7);
     return out;
   }
   function warrantyEnd(f) {
@@ -3200,11 +3334,26 @@ select.input {
     var d = ymdDate(f.bought); d.setMonth(d.getMonth() + m);
     return toYmd(d);
   }
+  function tenure(ymd) {
+    var a = ymdDate(ymd), n = new Date(), m = (n.getFullYear() - a.getFullYear()) * 12 + n.getMonth() - a.getMonth() - (n.getDate() < a.getDate() ? 1 : 0);
+    if (m < 0) return 'not yet';
+    var y = Math.floor(m / 12); m %= 12;
+    return (y ? y + (y === 1 ? ' year' : ' years') : '') + (y && m ? ' ' : '') + (m || !y ? m + (m === 1 ? ' month' : ' months') : '');
+  }
   function lifeCard(e) {
     var f = e.f || {}, t = e.type, head = '', sub = [];
     if (t === 'ins') { head = [f.insurer, f.kind].filter(Boolean).join(' · ') || 'Insurance'; if (f.sum) sub.push('Cover ' + rupees(+f.sum)); if (f.premium) sub.push('Premium ' + rupees(+f.premium) + (f.freq ? ' ' + f.freq.toLowerCase() : '')); }
     if (t === 'vehicle') { head = f.regno || 'Vehicle'; if (f.model) sub.push(f.model); }
     if (t === 'warranty') { head = [f.brand, e.title].filter(Boolean).join(' '); if (f.bought) sub.push('Bought ' + fmtDate(f.bought)); if (f.price) sub.push(rupees(+f.price)); }
+    if (t === 'task') { head = [f.status || 'To do', f.prio && f.prio !== 'Normal' ? f.prio + ' priority' : ''].filter(Boolean).join(' · '); if (f.project) sub.push(f.project); if (f.ref) sub.push(f.ref); }
+    if (t === 'leave') { head = [f.kind || 'Leave', f.status].filter(Boolean).join(' · '); if (f.from) sub.push(fmtDate(f.from) + (f.to && f.to !== f.from ? ' → ' + fmtDate(f.to) : '')); if (f.days) sub.push(f.days + (+f.days === 1 ? ' day' : ' days')); }
+    if (t === 'project') { head = [f.client, f.status].filter(Boolean).join(' · ') || 'Project'; if (f.myrole) sub.push(f.myrole); if (f.mode) sub.push(f.mode); }
+    if (t === 'job') { head = [f.role, f.grade].filter(Boolean).join(' · ') || e.title; if (f.empid) sub.push('Emp ID ' + f.empid); if (f.joined) sub.push('Joined ' + fmtDate(f.joined) + ' (' + tenure(f.joined) + ')'); }
+    if (t === 'pay') { head = f.net ? 'Net ' + rupees(+f.net) : 'Payslip'; if (f.gross) sub.push('Gross ' + rupees(+f.gross)); if (f.tds) sub.push('TDS ' + rupees(+f.tds)); }
+    if (t === 'appraisal') { head = [f.rating ? 'Rating ' + f.rating : '', f.hike ? f.hike + '% hike' : '', f.promo === 'Yes' ? 'Promoted' : ''].filter(Boolean).join(' · ') || e.title; }
+    if (t === 'training') { head = [f.platform, f.status || 'Assigned'].filter(Boolean).join(' · '); if (f.mandatory === 'Yes') sub.push('Mandatory'); if (f.done) sub.push('Completed ' + fmtDate(f.done)); }
+    if (t === 'wcontact') { head = [f.role, f.team].filter(Boolean).join(' · ') || e.title; }
+    if (t === 'odoc') { head = f.kind || 'Document'; if (f.date) sub.push(fmtDate(f.date)); }
     if (t === 'trip') {
       head = [f.from, f.to].filter(Boolean).join(' → ') || e.title;
       sub.push([f.mode, f.number].filter(Boolean).join(' '));
@@ -4399,7 +4548,7 @@ select.input {
   /* ============ vault list ============ */
   function entries() { return (S.data && S.data.entries) || []; }
   function counts() {
-    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, govjob: 0, life: 0, race: 0 };
+    var c = { all: 0, login: 0, bank: 0, card: 0, broker: 0, wifi: 0, id: 0, edu: 0, cert: 0, govjob: 0, office: 0, life: 0, race: 0 };
     entries().filter(inView).forEach(function (e) { c.all++; var g = groupOf(e.type); if (c[g] != null) c[g]++; });
     return c;
   }
@@ -4425,12 +4574,17 @@ select.input {
       var gn = govDates(e).filter(function (x) { var dd = daysUntil(x.date); return dd !== null && dd >= 0; })[0];
       return [f.org, f.status || 'Planning to apply', gn ? gn.label.toLowerCase() + ' ' + (daysUntil(gn.date) === 0 ? 'today' : 'in ' + daysUntil(gn.date) + 'd') : ''].filter(Boolean).join('  ·  ');
     }
-    if (groupOf(e.type) === 'life') {
+    if (datedGroup(e.type)) {
       var nx = lifeDates(e).filter(function (x) { var dd = daysUntil(x.date); return dd !== null && dd >= 0; })
         .sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
       var lead = e.type === 'ins' ? [f.insurer, f.kind].filter(Boolean).join(' ') : e.type === 'vehicle' ? f.regno
-        : e.type === 'warranty' ? f.brand : [f.mode, f.number].filter(Boolean).join(' ');
-      return [TYPES[e.type].short, lead, nx ? nx.label.toLowerCase().replace('premium / ', '') + ' ' + (daysUntil(nx.date) === 0 ? 'today' : 'in ' + daysUntil(nx.date) + 'd') : '']
+        : e.type === 'warranty' ? f.brand : e.type === 'trip' ? [f.mode, f.number].filter(Boolean).join(' ')
+        : e.type === 'task' ? f.status || 'To do' : e.type === 'leave' ? [f.kind, f.status].filter(Boolean).join(', ')
+        : e.type === 'project' ? f.client : e.type === 'job' ? [f.role, f.empid].filter(Boolean).join(', ')
+        : e.type === 'pay' ? (f.net ? 'net ' + rupees(+f.net) : '') : e.type === 'training' ? [f.platform, f.status].filter(Boolean).join(', ')
+        : e.type === 'wcontact' ? [f.role, f.team].filter(Boolean).join(', ') : e.type === 'odoc' ? f.kind : e.type === 'appraisal' ? f.rating : '';
+      var late = !nx && e.type === 'task' && f.status !== 'Done' && daysUntil(f.due) < 0 ? 'overdue ' + -daysUntil(f.due) + 'd' : '';
+      return [TYPES[e.type].short, lead, nx ? nx.label.toLowerCase().replace('premium / ', '') + ' ' + (daysUntil(nx.date) === 0 ? 'today' : 'in ' + daysUntil(nx.date) + 'd') : late]
         .filter(Boolean).join('  ·  ');
     }
     if (e.type === 'ipo') {
@@ -4487,6 +4641,26 @@ select.input {
     renderVault();
   });
 
+  function officeStats() {
+    var es = entries().filter(function (e) { return groupOf(e.type) === 'office'; }), yr = String(new Date().getFullYear()), today = toYmd(new Date());
+    var open = es.filter(function (e) { return e.type === 'task' && (e.f || {}).status !== 'Done'; });
+    var late = open.filter(function (e) { var d = (e.f || {}).due; return d && d < today; });
+    var dueWeek = open.filter(function (e) { var d = daysUntil((e.f || {}).due); return d !== null && d >= 0 && d <= 7; });
+    var leaves = es.filter(function (e) { return e.type === 'leave'; });
+    var used = leaves.filter(function (e) { var f = e.f || {}; return /Approved|Taken/.test(f.status || '') && String(f.from || '').slice(0, 4) === yr && f.kind !== 'Work from home'; })
+      .reduce(function (n, e) { return n + (+(e.f || {}).days || 0); }, 0);
+    var next = leaves.filter(function (e) { var f = e.f || {}; return f.from && f.from >= today && !/Rejected|Cancelled|Taken/.test(f.status || ''); })
+      .sort(function (a, b) { return a.f.from < b.f.from ? -1 : 1; })[0];
+    return { n: es.length, open: open.length, late: late.length, week: dueWeek.length, used: used, next: next };
+  }
+  function officeSummary() {
+    var o = officeStats();
+    return '<div class="office-sum"><div><b>' + o.open + '</b><span>open ' + (o.open === 1 ? 'task' : 'tasks') + (o.late ? ' · ' + o.late + ' late' : '') + '</span></div>' +
+      '<div><b>' + o.week + '</b><span>due this week</span></div>' +
+      '<div><b>' + o.used + '</b><span>leave days used in ' + new Date().getFullYear() + '</span></div></div>' +
+      (o.next ? '<p class="office-next">Next leave: ' + esc(fmtDate(o.next.f.from)) + (o.next.f.kind ? ' · ' + esc(o.next.f.kind) : '') + (o.next.f.status ? ' · ' + esc(o.next.f.status) : '') + '</p>' : '') +
+      '<p class="hint office-note">Your own records only: keep client data, code and anything confidential to TCS out of here.</p>';
+  }
   function renderHub() {
     var att = attentionItems().filter(function (a) { return a.level !== 'ok'; }).length;
     var bad = healthReport().filter(function (h) { return h.reused || h.weak || h.old; }).length;
@@ -4509,6 +4683,11 @@ select.input {
     $('#hub-money-sub').textContent = ms.nb
       ? 'In the bank' + (ms.due ? ' · card due ' + rupees(ms.due) + (ms.dueDate ? ' by ' + fmtDate(ms.dueDate) : '') : '') + ' · tap for charts'
       : ms.any ? 'Spending and card charts' : 'Money: import a statement for charts';
+    var os = officeStats();
+    $('#hub-office-n').textContent = os.open;
+    $('#hub-office-sub').textContent = os.n ? 'Office · open tasks' + (os.late ? ' · ' + os.late + ' late' : os.week ? ' · ' + os.week + ' due this week' : '') + (os.next ? ' · leave ' + fmtDate(os.next.f.from) : '')
+      : 'Office: job, tasks, leave, payslips, appraisals';
+    $('#hub-office').classList.toggle('alert', os.late > 0);
     var gt = gxTotals();
     $('#hub-gx-n').textContent = gt.done + ' / ' + gt.all;
     var it = iasTotals(), ex = iasExamDays();
@@ -4525,6 +4704,11 @@ select.input {
   $('#hub-gx').addEventListener('click', function () { show('gx'); });
   $('#hub-money').addEventListener('click', function () { show('money'); });
   $('#hub-week').addEventListener('click', function () { show('week'); });
+  $('#hub-office').addEventListener('click', function () {
+    S.filter = 'office'; renderVault();
+    var t = $('#tabs [data-filter="office"]');
+    if (t) { t.scrollIntoView({ block: 'nearest', inline: 'center' }); $('#tabs').scrollIntoView({ block: 'start' }); }
+  });
   $('#hub-notes').addEventListener('click', function () { show('notes'); });
   $('#lock-after').addEventListener('change', function () {
     setGoal('lockAfter', +this.value).then(function () { armIdle(); toast(+$('#lock-after').value ? 'The box stays open for ' + $('#lock-after').selectedOptions[0].textContent + ' after you leave' : 'The box locks as soon as you leave'); });
@@ -4539,7 +4723,7 @@ select.input {
 
   function renderVault() {
     var c = counts();
-    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', govjob: 'Govt jobs', life: 'Life', race: 'Races' };
+    var TAB_NAMES = { login: 'Logins', bank: 'Banks', card: 'Cards', broker: 'Trading', wifi: 'Wi-Fi', id: 'IDs', edu: 'Education', cert: 'Certs', govjob: 'Govt jobs', office: 'Office', life: 'Life', race: 'Races' };
     var tabDefs = [{ k: 'all', n: 'Everything' }].concat(ORDER.map(function (k) {
       return { k: k, n: TAB_NAMES[k] };
     }));
@@ -4558,6 +4742,12 @@ select.input {
         var da = String((a.f || {}).date || ''), db = String((b.f || {}).date || '');
         return ua ? da.localeCompare(db) : db.localeCompare(da);
       });
+    } else if (S.filter === 'office') {
+      var oKey = function (e) {
+        var f = e.f || {}, i = OFFICE_ORDER.indexOf(e.type), done = (e.type === 'task' && f.status === 'Done') || (e.type === 'leave' && /Taken|Rejected|Cancelled/.test(f.status || ''));
+        return (done ? 'z' : 'a') + i + (e.type === 'task' ? (f.due || '9999') : e.type === 'leave' ? (f.from || '9999') : e.type === 'pay' ? String(9e12 - (e.updated || 0)) : '') + String(e.title || '').toLowerCase();
+      };
+      list.sort(function (a, b) { return oKey(a) < oKey(b) ? -1 : oKey(a) > oKey(b) ? 1 : 0; });
     } else {
       list.sort(function (a, b) { return String(a.title || '').localeCompare(String(b.title || ''), 'en'); });
     }
@@ -4583,8 +4773,8 @@ select.input {
     }
 
     if (!list.length) {
-      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', govjob: 'government job applications', life: 'policies, vehicles, warranties or tickets', race: 'races' };
-      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', govjob: 'a government job', life: 'a policy, vehicle or ticket', race: 'a race' };
+      var NONE = { login: 'logins', bank: 'bank accounts', card: 'cards', broker: 'trading accounts', wifi: 'Wi-Fi networks', id: 'ID documents', edu: 'education records', cert: 'certifications', govjob: 'government job applications', office: 'office records', life: 'policies, vehicles, warranties or tickets', race: 'races' };
+      var ONE = { all: 'an entry', login: 'a login', bank: 'a bank account', card: 'a card', broker: 'a trading account', wifi: 'a Wi-Fi network', id: 'an ID document', edu: 'an education record', cert: 'a certification', govjob: 'a government job', office: 'an office record', life: 'a policy, vehicle or ticket', race: 'a race' };
       var forWho = personById(whoView);
       $('#list').innerHTML = '<div class="empty"><h2>Nothing here yet</h2><p>No ' +
         esc(NONE[S.filter] || 'entries') + (forWho ? ' for ' + esc(forWho.name) : '') + ' stored so far.</p>' +
@@ -4619,7 +4809,7 @@ select.input {
       return p && whoView !== p.id ? p.name + (m ? '  ·  ' + m : '') : m;
     }
     var ipos = S.filter === 'broker' && !query ? list.filter(function (e) { return e.type === 'ipo'; }) : [];
-    $('#list').innerHTML = (ipos.length ? ipoSummary(ipos) : '') + (pinned.length && rest.length
+    $('#list').innerHTML = (ipos.length ? ipoSummary(ipos) : '') + (S.filter === 'office' && !query ? officeSummary() : '') + (pinned.length && rest.length
       ? '<div class="list-head">Pinned</div>' + pinned.map(rowHtml).join('') +
         '<div class="list-head">Others</div>' + rest.map(rowHtml).join('')
       : pinned.concat(rest).map(rowHtml).join('')) +
@@ -4943,6 +5133,7 @@ select.input {
     if (e.type === 'ipo') html += ipoCard(e);
     if (e.type === 'govjob') html += govCard(e) + idPhotos(e);
     if (groupOf(e.type) === 'life') html += lifeCard(e) + idPhotos(e);
+    if (groupOf(e.type) === 'office') html += lifeCard(e);
     var hasOtp = e.type === 'broker' && base32Decode((e.f || {}).totp);
     if (hasOtp) {
       html += '<div class="otp">' +
@@ -6342,7 +6533,7 @@ select.input {
             cal: x.label, time: timed ? f.examtime : null, mins: 120, alarms: x.k === 'examdate' ? (timed ? ['-P1D', '-PT2H'] : ['-P3D', '-P1D']) : ['-P3D', '-P1D'] });
         });
       }
-      if (groupOf(e.type) === 'life') {
+      if (datedGroup(e.type)) {
         lifeDates(e).forEach(function (x) {
           var dd = daysUntil(x.date);
           if (dd === null) return;
@@ -6358,7 +6549,8 @@ select.input {
           var span = Math.max(x.warn * 2, 30);
           if (dd > span || dd < -60) return;
           out.push({ e: e, date: x.date, days: dd, level: dd < 0 ? 'bad' : dd <= x.warn ? 'warn' : 'ok',
-            what: x.label, cal: x.label, alarms: x.warn >= 30 ? ['-P30D', '-P7D'] : ['-P7D', '-P1D'] });
+            what: x.label + (x.time ? ' · ' + x.time : ''), cal: x.label, time: x.time || null, mins: 30,
+            alarms: x.time ? ['-P1D', '-PT1H'] : x.warn >= 30 ? ['-P30D', '-P7D'] : ['-P7D', '-P1D'] });
         });
       }
       if (e.type === 'race' && isUpcoming(e)) {
@@ -11305,7 +11497,7 @@ select.input {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 40;
+  var APP_VER = 41;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   if ('serviceWorker' in navigator) {
     var hadWorker = !!navigator.serviceWorker.controller, reloading = false;

@@ -569,3 +569,7 @@ Any entry can hold files (PDF, photos, Word, Excel, anything up to 10 MB, 20 per
 
 - The entry lists the files; the bytes are sealed with the box's key and kept in IndexedDB, one record per file, so saving the box never rewrites them.
 - Backups carry the files, still sealed. Sync uploads each file once, on its own (`fput`/`fget`/`fdrop` in `claude-worker/src/sync.js`), sealed with the sync key; removing a file removes it from the other devices too.
+
+## Office
+
+An **Office** tab (and home tile) for your job: job details (employee ID, grade, manager, UAN), projects, work tasks, leave, payslips, appraisals and goals, trainings (iEvolve and others), work contacts and office letters. Task due dates and times, upcoming leave, mandatory trainings, appraisal deadlines and project end dates feed Needs attention, the calendar and reminders. The tab shows open and late tasks, what's due this week and leave days used this year. Attach payslip PDFs and letters as files. Keep client data and anything confidential to your employer out.
