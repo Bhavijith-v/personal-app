@@ -585,3 +585,11 @@ Entries wear their organisation's real logo: the IPO's company (Jio Financial, T
 - Vector logos come from Simple Icons; picture logos (`assets/logos/*.webp`, 128 px) were taken once from each organisation's own website or from Wikipedia / Wikimedia Commons and ship with the app, so nothing about an entry is ever sent anywhere.
 - To add or refresh: list the organisation in `tools/brands/orgs.py`, run `fetch_logos.py` (and `commons_logos.py` for sharper files), choose in `logo_picks.py`, render with `raster_logos.mjs`, then rebuild `lib/brands.js` with `build_brands.py`.
 - Brand names and marks belong to their owners; they are shown only to label your own records.
+
+## Running timing chart
+
+Running → **Your timing**: a line chart of pace (min/km) for every timed run, or finish times for 5K, 10K, Half or Marathon, over 3 months, 6 months, a year or all time. Faster is higher; races are hollow diamonds; the fastest and latest are labelled; a dashed trend line and a headline say whether you're getting faster. Tap a dot for its date, distance, time and pace.
+
+## Exam websites
+
+Official sites to apply, download admit cards and check results (UPSC, Kerala PSC/Thulasi, SSC, NTA, IBPS, SBI, RBI, NABARD, LIC, RRB, India Post GDS, Army, Navy, Air Force, ISRO, Kerala High Court, CMD, K-TET, LBS, CEE). Open them from Govt exam prep or the Govt jobs tab; a Govt job entry shows its recruiting body's links and fills in its website. Each link was checked to open the real page; sites with expired or mismatched certificates are left out. The list is `EXAM_SITES` in `index.html`.
