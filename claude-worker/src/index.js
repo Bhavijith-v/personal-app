@@ -10,6 +10,9 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { handlePush, runPushes } from './push.js';
+import { handleSync } from './sync.js';
+
+export { SyncBox } from './sync.js';
 
 // Sonnet 5.5: strong enough for training plans at half Opus's price.
 // Change to 'claude-opus-5-5' for the most capable model ($4/$20 per MTok).
@@ -78,6 +81,15 @@ export default {
       let pbody;
       try { pbody = await request.json(); } catch { return reply(400, { error: 'Request was not JSON.' }, cors.headers); }
       const [status, out] = await handlePush(path, pbody, env);
+      return reply(status, out, cors.headers);
+    }
+
+    // Sync needs no access token either: the box arrives already encrypted,
+    // and only the holder of the sync code can read or replace it.
+    if (path.startsWith('/sync/')) {
+      let sbody;
+      try { sbody = await request.json(); } catch { return reply(400, { error: 'Request was not JSON.' }, cors.headers); }
+      const [status, out] = await handleSync(path, sbody, env);
       return reply(status, out, cors.headers);
     }
 

@@ -552,3 +552,13 @@ changing that string is what tells the browser to re-fetch them.
 
 Your stored entries survive updates — they live in the browser's storage, not in
 the file. Save a backup before a big change anyway.
+
+## Sync between devices
+
+Settings → **Sync with your other devices** keeps the box the same on the iPhone and the laptop.
+
+- Turn on sync on one device; it shows a 26-character sync code. On the other device, tap "I have a code from my other device" and enter it. What's already on both devices is merged.
+- A random sync code, kept inside each device's encrypted box, gives (through HKDF) an id and key the worker checks and an AES key the worker never sees. Only the encrypted box is uploaded, to a Durable Object (`claude-worker/src/sync.js`) that keeps the newest copy and a revision number.
+- Every upload names the revision it was based on. If the other device changed first, the two are merged on the device and uploaded again. Deletes leave a dated id-only marker (`depositbox.gone`) so a merge doesn't bring things back.
+- Entries, runs, study progress, family, money and notes & rules sync. Settings such as Face ID, stay-unlocked and reminders stay per device, and each device keeps its own passphrase.
+- Sync runs while the box is unlocked: on unlocking, on coming back to the app, a few seconds after a change, and every 30 seconds.

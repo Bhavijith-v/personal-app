@@ -1029,6 +1029,15 @@ select.input {
 .note-more[aria-expanded="true"] { color: var(--brass); border-color: var(--brass); }
 .rule-foot .streak + .note-more { margin-left: 0; }
 .note-meta .linkish { font-size: 13px; }
+.sync-state { margin: 0 0 12px; font-weight: 600; color: var(--ok); }
+.sync-state.bad { color: var(--danger, #e5484d); }
+.sync-code { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.sync-code .label { margin: 0; width: 100%; }
+.sync-code code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; letter-spacing: 0.04em; color: var(--fg); overflow-wrap: anywhere; }
+.sync-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.sync-acts .btn { flex: 1 1 auto; width: auto; }
+#sync-link { margin-bottom: 8px; }
+#sync-link .btn { margin-top: 10px; }
 .note-meta { flex-wrap: wrap; row-gap: 10px; }
 .freq-pick { display: inline-flex; padding: 2px; border-radius: 10px; background: var(--surface-3); flex: 1 0 100%; max-width: max-content; }
 .freq-pick button { padding: 6px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--fg-dim); font-size: 13px; font-weight: 600; }
@@ -1585,6 +1594,14 @@ select.input {
       </div>
     </header>
     <div class="col gutter bk-body">
+
+      <div class="bk-sect" id="sync-sect">
+        <h2>Sync with your other devices</h2>
+        <p>Keep this box the same on your iPhone and your laptop. Only the locked, encrypted box goes to your own Cloudflare worker. The sync code that opens it stays inside the box on your devices.</p>
+        <div id="sync-body"></div>
+      </div>
+
+      <div class="bk-rule"></div>
 
       <div class="bk-sect" id="face-sect" hidden>
         <h2>Face ID</h2>
@@ -2586,6 +2603,7 @@ select.input {
       askConfirm({ title: 'Remove ' + p2.name + '?', body: 'Only the name goes. ' + p2.name + ' has no entries in the box.', yes: 'Remove' }).then(function (ok) {
         if (!ok) return;
         S.data.people = people().filter(function (q) { return q.id !== p2.id; });
+        markGone(p2.id);
         if (whoView === p2.id) whoView = 'all';
         persist().then(function () { renderFamily(); toast('Removed'); });
       });
@@ -3771,6 +3789,7 @@ select.input {
   var openAdopted = false;
 
   function persist() {
+    if (!SY.quiet) syncSoon();
     openIntoBox();
     return seal(S.data, S.key).then(function (sealed) {
       // Keep whatever scheme this vault was built with, PBKDF2 or Argon2id.
@@ -3823,6 +3842,7 @@ select.input {
     if (view === 'gx') renderGx();
     if (view === 'gxt') renderGxt();
     if (view === 'vault' && !pushOnOpen) { pushOnOpen = true; schedulePushSync(); }
+    if (view === 'vault') syncSoon(300);
     // On unlocking: adopt the box's copy the first time, otherwise refresh the box's copy (for backups).
     if (view === 'vault' && S.data && !openAdopted) { openAdopted = true; if (!OPEN.v) openFromBox(false); else persist(); }
     if (view === 'chap') renderChap();
@@ -5098,6 +5118,7 @@ select.input {
       }).then(function (ok) {
         if (!ok) return;
         S.data.entries = entries().filter(function (x) { return x.id !== e.id; });
+        markGone(e.id);
         persist().then(function () {
           S.id = null;
           toast('Entry deleted');
@@ -5906,6 +5927,7 @@ select.input {
     updateBkStatus();
     $('#lock-after').value = String(goals().lockAfter || 0);
     renderPushSection();
+    renderSync();
     renderFaceSection();
     famEdit = null;
     renderFamily();
@@ -6651,6 +6673,7 @@ select.input {
         .then(function (ok) {
           if (!ok) return;
           OPEN.runs = runs().filter(function (r) { return r.id !== del.dataset.delrun; });
+          markGone(del.dataset.delrun);
           saveOpen().then(function () { renderRun(); toast('Run deleted'); });
         });
       return;
@@ -9591,7 +9614,7 @@ select.input {
     try { var a = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
   }
   function notesSave(list) {
-    try { localStorage.setItem(NOTES_KEY, JSON.stringify(list)); return true; } catch (e) { toast('Could not save the note'); return false; }
+    try { localStorage.setItem(NOTES_KEY, JSON.stringify(list)); syncSoon(); return true; } catch (e) { toast('Could not save the note'); return false; }
   }
   // a rule repeats daily, weekly (weeks start Monday) or monthly; ticks are dates
   var FREQ = { day: { name: 'Daily', unit: 'day', now: 'today' }, week: { name: 'Weekly', unit: 'week', now: 'this week' }, month: { name: 'Monthly', unit: 'month', now: 'this month' } };
@@ -9707,7 +9730,7 @@ select.input {
   function fitNote(t) { t.style.height = 'auto'; t.style.height = Math.max(26, t.scrollHeight) + 'px'; }
   function addNote(text, daily, freq) {
     var list = notesList(), id = 'n' + uid().slice(0, 10);
-    list.push({ id: id, text: text || '', daily: !!daily, freq: daily && FREQ[freq] ? freq : 'day', days: [], created: Date.now() });
+    list.push({ id: id, text: text || '', daily: !!daily, freq: daily && FREQ[freq] ? freq : 'day', days: [], created: Date.now(), u: Date.now() });
     notesSave(list);
     renderNotes();
     var t = $('[data-ntext="' + id + '"]');
@@ -9742,7 +9765,7 @@ select.input {
     clearTimeout(noteTimer);
     noteTimer = setTimeout(function () {
       var list = notesList();
-      list.forEach(function (x) { if (x.id === t.dataset.ntext) x.text = t.value.slice(0, 2000); });
+      list.forEach(function (x) { if (x.id === t.dataset.ntext) { x.text = t.value.slice(0, 2000); x.u = Date.now(); } });
       notesSave(list);
     }, 400);
   });
@@ -9756,24 +9779,303 @@ select.input {
         if (ruleDone(x, f)) x.days = x.days.filter(function (d) { return periodKey(d, f) !== cur; });   // undo this time round
         else { x.days.push(today); lastTick = x.id; }
         x.days = x.days.sort().slice(-400);
+        x.u = Date.now();
       });
       notesSave(list); renderNotes(); return;
     }
     if ((b = ev.target.closest('[data-nfreq]'))) {
-      list.forEach(function (x) { if (x.id === b.dataset.nid) x.freq = b.dataset.nfreq; });
+      list.forEach(function (x) { if (x.id === b.dataset.nid) { x.freq = b.dataset.nfreq; x.u = Date.now(); } });
       notesSave(list); renderNotes(); toast('Repeats ' + FREQ[b.dataset.nfreq].name.toLowerCase()); return;
     }
     if ((b = ev.target.closest('[data-nmore]'))) { openNote = openNote === b.dataset.nmore ? null : b.dataset.nmore; renderNotes(); return; }
     if ((b = ev.target.closest('[data-ndaily]'))) {
-      list.forEach(function (x) { if (x.id === b.dataset.ndaily) x.daily = !x.daily; });
+      list.forEach(function (x) { if (x.id === b.dataset.ndaily) { x.daily = !x.daily; x.u = Date.now(); } });
       notesSave(list); renderNotes(); return;
     }
     if ((b = ev.target.closest('[data-ndel]'))) {
       var id = b.dataset.ndel;
+      markGone(id);
       notesSave(list.filter(function (x) { return x.id !== id; })); renderNotes(); toast('Deleted'); return;
     }
     if ((b = ev.target.closest('[data-nidea]'))) { addNote(b.dataset.nidea, true, b.dataset.nf); return; }
     if ((b = ev.target.closest('[data-nnew]'))) addNote('', b.dataset.nnew !== 'note', b.dataset.nnew);
+  });
+
+  /* ============ sync between devices ============
+     Keeps the box the same on the iPhone and the laptop. A random sync code,
+     kept inside each device's encrypted box, gives three things through
+     HKDF: an id and a key the worker checks, and an AES key the worker never
+     sees. Only the encrypted box goes to the worker. Each upload names the
+     revision it was based on; if the other device got there first, the two
+     are merged here and uploaded again. A delete leaves a dated marker (the
+     id only, nothing secret) so a merge doesn't bring the thing back. */
+  var GONE_KEY = 'depositbox.gone', B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  var SY = { busy: null, again: false, quiet: false, timer: null, keys: null, keysFor: '', at: 0, err: '', linking: false, show: false };
+  function goneList() {
+    try { var o = JSON.parse(localStorage.getItem(GONE_KEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; }
+  }
+  function goneSave(o) {
+    var cut = Date.now() - 120 * 86400000, out = {};
+    Object.keys(o).forEach(function (k) { if (typeof o[k] === 'number' && o[k] > cut && k.length < 80) out[k] = o[k]; });
+    try { localStorage.setItem(GONE_KEY, JSON.stringify(out)); } catch (e) {}
+  }
+  function markGone(id) { var g = goneList(); g[id] = Date.now(); goneSave(g); }
+  function syncOn() { return !!(S.key && S.data && S.data.sync && S.data.sync.code); }
+
+  // 16 random bytes as 26 Crockford base32 characters (no I, L, O or U).
+  function codeNew() {
+    var a = crypto.getRandomValues(new Uint8Array(16)), v = 0, bits = 0, out = '';
+    for (var i = 0; i < a.length; i++) {
+      v = ((v << 8) | a[i]) & 0xffff; bits += 8;
+      while (bits >= 5) { out += B32.charAt((v >>> (bits - 5)) & 31); bits -= 5; }
+    }
+    return out + B32.charAt((v << (5 - bits)) & 31);
+  }
+  function codeClean(t) {
+    var c = String(t || '').toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1').replace(/[\s-]/g, '');
+    return /^[0-9A-HJKMNP-TV-Z]{26}$/.test(c) ? c : '';
+  }
+  function codeShow(c) { return c.match(/.{1,4}/g).join('-'); }
+  function codeBytes(c) {
+    var out = new Uint8Array(16), v = 0, bits = 0, n = 0;
+    for (var i = 0; i < c.length && n < 16; i++) {
+      v = ((v << 5) | B32.indexOf(c.charAt(i))) & 0xffff; bits += 5;
+      if (bits >= 8) { out[n++] = (v >>> (bits - 8)) & 255; bits -= 8; }
+    }
+    return out;
+  }
+  function syncKeys(code) {
+    if (SY.keys && SY.keysFor === code) return Promise.resolve(SY.keys);
+    var info = function (w) { return { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: enc.encode('deposit-box/sync-' + w + '/v1') }; };
+    return crypto.subtle.importKey('raw', codeBytes(code), 'HKDF', false, ['deriveBits', 'deriveKey']).then(function (base) {
+      return Promise.all([
+        crypto.subtle.deriveBits(info('id'), base, 128),
+        crypto.subtle.deriveBits(info('key'), base, 256),
+        crypto.subtle.deriveKey(info('enc'), base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
+      ]);
+    }).then(function (r) {
+      SY.keys = {
+        id: Array.prototype.map.call(new Uint8Array(r[0]), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''),
+        key: b64(r[1]).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
+        enc: r[2]
+      };
+      SY.keysFor = code;
+      return SY.keys;
+    });
+  }
+  function syncReq(op, body) {
+    return fetch(workerUrl() + '/sync/' + op, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); });
+  }
+  function syncSeal(p, k) { return seal(p, k.enc).then(function (x) { return x.iv + '.' + x.ct; }); }
+  function syncOpen(blob, k) { var i = blob.indexOf('.'); return unseal({ iv: blob.slice(0, i), ct: blob.slice(i + 1) }, k.enc); }
+
+  // What travels: everything you enter, not this device's own settings.
+  function syncPayload() {
+    openIntoBox();
+    return {
+      v: 1, entries: entries(), runs: S.data.runs || [], ias: S.data.ias || {}, gx: S.data.gx || {}, oscp: S.data.oscp || {},
+      people: people(), money: S.data.money || {}, notes: notesList(), gone: goneList()
+    };
+  }
+  function hashOf(p) {
+    return crypto.subtle.digest('SHA-256', enc.encode(JSON.stringify(p))).then(function (h) { return b64(h); });
+  }
+  function sanitizeNotes(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (x) { return x && typeof x.id === 'string' && x.id.length < 40 && typeof x.text === 'string'; }).map(function (x) {
+      return {
+        id: x.id, text: x.text.slice(0, 2000), daily: !!x.daily, freq: FREQ[x.freq] ? x.freq : 'day',
+        days: (Array.isArray(x.days) ? x.days : []).filter(function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d); }).slice(-400),
+        created: +x.created || 0, u: +x.u || 0
+      };
+    }).slice(0, 500);
+  }
+  function mergeById(mine, theirs, stamp) {
+    var byId = {}, order = [];
+    (mine || []).forEach(function (x) { byId[x.id] = x; order.push(x.id); });
+    (theirs || []).forEach(function (x) {
+      var ex = byId[x.id];
+      if (!ex) { byId[x.id] = x; order.push(x.id); } else if (stamp && stamp(x) > stamp(ex)) byId[x.id] = x;
+    });
+    return order.map(function (k) { return byId[k]; });
+  }
+  // Put another device's box in place: as it is, or merged with this one's
+  // (mine) when both changed.
+  function syncApply(p, mine) {
+    var gone = goneList();
+    Object.keys(p.gone || {}).forEach(function (k) { var t = p.gone[k]; if (typeof t === 'number' && !(gone[k] >= t)) gone[k] = t; });
+    goneSave(gone);
+    var alive = function (x) { return !(gone[x.id] >= (x.updated || x.u || 0)); };
+    var ents = sanitize(p.entries), rs = sanitizeRuns(p.runs), ppl = sanitizePeople(p.people), nts = sanitizeNotes(p.notes);
+    var ias = sanitizeIas(p.ias), gx = sanitizeGx(p.gx), oscp = sanitizeOscp(p.oscp), money = sanitizeMoney(p.money);
+    if (mine) {
+      ents = mergeEntries(mine.entries, ents).entries;
+      rs = mergeById(mine.runs, rs);
+      ppl = mergePeople(mine.people, ppl);
+      nts = mergeById(mine.notes, nts, function (x) { return x.u || x.created || 0; });
+      ias = mergeIas(mine.ias, ias); gx = mergeGx(mine.gx, gx); oscp = mergeOscp(mine.oscp, oscp); money = mergeMoney(mine.money, money);
+    }
+    S.data.entries = ents.filter(alive); S.data.runs = rs.filter(alive); S.data.people = ppl.filter(alive);
+    S.data.ias = ias; S.data.gx = gx; S.data.oscp = oscp; S.data.money = money;
+    SY.quiet = true;
+    notesSave(nts.filter(alive));
+    openFromBox(true);
+    SY.quiet = false;
+  }
+  function syncOnce() {
+    var sy = S.data.sync, k, p, h;
+    var mine = function () { return JSON.parse(JSON.stringify(syncPayload())); };
+    return syncKeys(sy.code).then(function (kk) { k = kk; p = syncPayload(); return hashOf(p); }).then(function (hh) {
+      h = hh;
+      if (h === sy.h) {
+        // nothing new here: fetch the other device's changes, if any
+        return syncReq('get', { id: k.id, key: k.key, have: sy.rev }).then(function (j) {
+          if (j.status !== 200) throw new Error(j.error || 'Sync failed.');
+          if (j.same) return false;
+          return syncOpen(j.blob, k).then(function (remote) {
+            if (!syncOn() || S.data.sync !== sy) return false;   // locked or turned off meanwhile
+            return hashOf(syncPayload()).then(function (now) {
+              var edited = now !== h;   // something changed here while we were fetching
+              syncApply(remote, edited ? mine() : null);
+              sy.rev = j.rev;
+              if (edited) { sy.h = ''; SY.again = true; return true; }
+              return hashOf(syncPayload()).then(function (after) { sy.h = after; return true; });
+            });
+          });
+        });
+      }
+      return syncSeal(p, k).then(function (blob) {
+        return syncReq('put', { id: k.id, key: k.key, base: sy.rev, blob: blob });
+      }).then(function (j) {
+        if (j.status === 200) { sy.rev = j.rev; sy.h = h; return false; }
+        if (j.status !== 409) throw new Error(j.error || 'Sync failed.');
+        if (!j.blob) { sy.rev = j.rev; SY.again = true; return false; }   // the server copy is gone: upload again
+        return syncOpen(j.blob, k).then(function (remote) {
+          if (!syncOn() || S.data.sync !== sy) return false;
+          syncApply(remote, mine());   // both changed: merge, then upload the result
+          sy.rev = j.rev; sy.h = ''; SY.again = true;
+          return true;
+        });
+      });
+    });
+  }
+  function syncSoon(ms) {
+    if (!syncOn()) return;
+    clearTimeout(SY.timer);
+    SY.timer = setTimeout(syncNow, ms == null ? 2500 : ms);
+  }
+  function syncNow() {
+    clearTimeout(SY.timer);
+    if (!syncOn()) return Promise.resolve();
+    if (SY.busy) { SY.again = true; return SY.busy; }
+    var sy = S.data.sync, before = sy.rev + '|' + sy.h;
+    SY.busy = syncOnce().then(function (changed) {
+      SY.err = ''; SY.at = Date.now();
+      if (!syncOn()) return;
+      if (changed || before !== sy.rev + '|' + sy.h) { SY.quiet = true; persist(); SY.quiet = false; }
+      if (changed) { refreshView(); toast('Updated from your other device'); }
+    }, function (e) {
+      SY.err = e instanceof TypeError ? 'No connection to the sync server.' : (e && e.message) || 'Sync failed.';
+    }).then(function () {
+      SY.busy = null;
+      renderSyncStatus();
+      if (SY.again) { SY.again = false; syncSoon(400); }
+    });
+    renderSyncStatus();
+    return SY.busy;
+  }
+  // Redraw what's on screen after the other device's changes arrive, but
+  // never under someone who is typing.
+  function refreshView() {
+    var a = document.activeElement, v = S.view;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.closest(SCREENS[v])) return;
+    if (v === 'detail' && !entries().some(function (e) { return e.id === S.id; })) { show('vault'); return; }
+    var r = { vault: renderVault, detail: renderDetail, run: renderRun, ias: renderIas, gx: renderGx, notes: renderNotes, money: renderMoney,
+      week: renderWeek, attn: renderAttn, oscp: renderOscp, health: renderHealth }[v];
+    if (r) r();
+  }
+  setInterval(function () { if (document.visibilityState === 'visible' && syncOn() && !SY.busy) syncNow(); }, 30000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') syncSoon(300); });
+  window.addEventListener('online', function () { syncSoon(300); });
+
+  function ago(t) {
+    var m = Math.round((Date.now() - t) / 60000);
+    return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : Math.round(m / 60) + ' h ago';
+  }
+  function renderSyncStatus() {
+    var el = $('#sync-state');
+    if (!el || !syncOn()) return;
+    el.className = 'sync-state' + (SY.err ? ' bad' : '');
+    el.textContent = SY.busy ? 'Syncing…' : SY.err ? 'Not synced: ' + SY.err : SY.at ? 'Synced ' + ago(SY.at) : 'On';
+  }
+  function renderSync() {
+    var el = $('#sync-body');
+    if (!el || !S.data) return;
+    var sy = S.data.sync;
+    if (!sy || !sy.code) {
+      el.innerHTML = '<div class="bk-acts sync-acts"><button class="btn" data-sync="start">Turn on sync</button>' +
+        '<button class="btn ghost" data-sync="linkopen">I have a code from my other device</button></div>' +
+        '<div class="bk-panel" id="sync-link"' + (SY.linking ? '' : ' hidden') + '>' +
+        '<label class="label" for="sync-code-in">Sync code from your other device</label>' +
+        '<input class="input mono" id="sync-code-in" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XX">' +
+        '<button class="btn" data-sync="link">Link this device</button></div>' +
+        '<p class="err" id="sync-err" role="alert"></p>';
+      return;
+    }
+    el.innerHTML = '<p class="sync-state" id="sync-state"></p>' +
+      '<div class="sync-code"><span class="label">Sync code</span><code id="sync-code">' + (SY.show ? esc(codeShow(sy.code)) : '••••-••••-••••-••••-••••-••••-••') + '</code>' +
+      '<button type="button" class="linkish" data-sync="show">' + (SY.show ? 'Hide' : 'Show') + '</button></div>' +
+      '<div class="bk-acts sync-acts"><button class="btn ghost" data-sync="copy">Copy the code</button>' +
+      (navigator.share ? '<button class="btn ghost" data-sync="share">Send the code</button>' : '') +
+      '<button class="btn ghost" data-sync="now">Sync now</button></div>' +
+      '<p class="hint">To add your other device: open Deposit Box there, go to Settings, tap “I have a code from my other device” and enter this code. ' +
+      'Treat it like your passphrase: anyone with it could read the synced box. Once linked, delete it from wherever you sent it.</p>' +
+      '<button type="button" class="linkish rm" data-sync="off">Turn off sync on this device</button>';
+    renderSyncStatus();
+  }
+  $('#sync-sect').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-sync]');
+    if (!b || !S.data) return;
+    var act = b.dataset.sync, sy = S.data.sync, err = function (m) { var e = $('#sync-err'); if (e) e.textContent = m; };
+    if (act === 'linkopen') { SY.linking = !SY.linking; renderSync(); if (SY.linking) $('#sync-code-in').focus(); return; }
+    if (act === 'show') { SY.show = !SY.show; renderSync(); return; }
+    if (act === 'copy') { copyValue(codeShow(sy.code), 'Sync code', b); return; }
+    if (act === 'share') { guardSheet(); navigator.share({ text: codeShow(sy.code) }).catch(function () {}); return; }
+    if (act === 'now') { syncNow(); return; }
+    if (act === 'off') {
+      askConfirm({ title: 'Turn off sync?', body: 'This device stops syncing. Your other devices keep syncing with each other, and nothing in this box changes.', yes: 'Turn off' })
+        .then(function (ok) { if (!ok) return; delete S.data.sync; SY.show = false; persist().then(function () { renderSync(); toast('Sync is off on this device'); }); });
+      return;
+    }
+    if (act === 'start') {
+      S.data.sync = { code: codeNew(), rev: 0, h: '' };
+      SY.show = true; SY.err = '';
+      persist().then(function () { renderSync(); return syncNow(); }).then(function () { if (!SY.err) toast('Sync is on'); });
+      return;
+    }
+    if (act === 'link') {
+      var code = codeClean($('#sync-code-in').value);
+      if (!code) { err('The code is 26 letters and numbers, like ABCD-1234-…'); return; }
+      b.disabled = true; b.textContent = 'Linking…'; err('');
+      var k;
+      syncKeys(code).then(function (kk) { k = kk; return syncReq('get', { id: k.id, key: k.key, have: -1 }); }).then(function (j) {
+        if (j.status !== 200) throw new Error(j.error || 'Sync failed.');
+        if (j.same) throw new Error('Nothing is stored under that code yet. Turn on sync on your other device first, then check the code.');
+        return syncOpen(j.blob, k).catch(function () { throw new Error('That code does not open the synced box.'); }).then(function (remote) {
+          S.data.sync = { code: code, rev: j.rev, h: '' };
+          syncApply(remote, JSON.parse(JSON.stringify(syncPayload())));   // keep what this device has too
+          SY.linking = false;
+          return persist();
+        });
+      }).then(function () {
+        renderSync(); toast('Linked. This device now syncs');
+        return syncNow();
+      }).catch(function (e) {
+        b.disabled = false; b.textContent = 'Link this device';
+        err(e instanceof TypeError ? 'No connection to the sync server.' : e.message);
+      });
+    }
   });
 
   /* ============ Govt exam prep (PSC, SSC, banks, railways) ============
