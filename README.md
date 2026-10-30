@@ -557,7 +557,7 @@ the file. Save a backup before a big change anyway.
 
 Settings → **Sync with your other devices** keeps the box the same on the iPhone and the laptop.
 
-- Turn on sync on one device; it shows a 26-character sync code. On the other device, tap "I have a code from my other device" and enter it. What's already on both devices is merged.
+- Turn on sync on one device; it shows a QR code. On the other device, tap "Scan the code from my other device" (or type the 26-character code). What's already on both devices is merged. A device already syncing with a different code can switch to the other device's code and keeps everything.
 - A random sync code, kept inside each device's encrypted box, gives (through HKDF) an id and key the worker checks and an AES key the worker never sees. Only the encrypted box is uploaded, to a Durable Object (`claude-worker/src/sync.js`) that keeps the newest copy and a revision number.
 - Every upload names the revision it was based on. If the other device changed first, the two are merged on the device and uploaded again. Deletes leave a dated id-only marker (`depositbox.gone`) so a merge doesn't bring things back.
 - Entries, runs, study progress, family, money and notes & rules sync. Settings such as Face ID, stay-unlocked and reminders stay per device, and each device keeps its own passphrase.

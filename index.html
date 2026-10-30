@@ -1037,6 +1037,12 @@ select.input {
 .sync-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .sync-acts .btn { flex: 1 1 auto; width: auto; }
 .sync-more { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 8px; }
+.sync-how { margin: 0 0 14px; padding-left: 20px; color: var(--fg-dim); font-size: 14px; line-height: 1.5; }
+.sync-how li + li { margin-top: 6px; }
+.sync-showqr { margin-bottom: 14px; }
+.sync-qr { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 14px; text-align: center; }
+.sync-qr svg { width: min(240px, 70vw); height: auto; border-radius: 12px; }
+.sync-qr p { margin: 0; color: var(--fg-dim); font-size: 14px; max-width: 34ch; }
 #sync-link { margin-bottom: 8px; }
 #sync-link .btn { margin-top: 10px; }
 .note-meta { flex-wrap: wrap; row-gap: 10px; }
@@ -1840,6 +1846,13 @@ select.input {
     <button type="button" id="cam-shot" aria-label="Take the photo"></button>
     <button type="button" id="cam-lib">Photos</button>
   </div>
+</div>
+
+<div class="cam" id="qrcam" hidden role="dialog" aria-modal="true" aria-label="Scan the sync code">
+  <video id="qrcam-v" playsinline muted autoplay></video>
+  <div class="cam-frame" style="--ar: 1; --fw: 68%"></div>
+  <p class="cam-tip">Point the camera at the QR code in Settings on your other device.</p>
+  <div class="cam-bar"><button type="button" id="qrcam-cancel">Cancel</button></div>
 </div>
 
 <div class="crop" id="crop" hidden role="dialog" aria-modal="true" aria-labelledby="crop-title">
@@ -3871,6 +3884,7 @@ select.input {
     stopOtp();
     scanState = null;
     stopScanner();
+    closeQrCam();
     closeLightbox();
     if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
     S.mk = null;
@@ -4979,7 +4993,7 @@ select.input {
     return 'WIFI:T:' + (open ? 'nopass' : f.security === 'WEP' ? 'WEP' : 'WPA') + ';S:' + q(f.ssid) + ';' +
       (open ? '' : 'P:' + q(f.password) + ';') + (f.hidden === 'Yes' ? 'H:true;' : '') + ';';
   }
-  function qrSvg(text) {
+  function qrSvg(text, label) {
     var lib = window.qrcode;
     if (!lib) return '';
     lib.stringToBytes = lib.stringToBytesFuncs['UTF-8'];
@@ -4990,7 +5004,7 @@ select.input {
     for (var r = 0; r < n; r++) {
       for (var c = 0; c < n; c++) if (qr.isDark(r, c)) d += 'M' + (c + quiet) + ' ' + (r + quiet) + 'h1v1h-1z';
     }
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges" role="img" aria-label="Wi-Fi join code">' +
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges" role="img" aria-label="' + (label || 'Wi-Fi join code') + '">' +
       '<rect width="' + size + '" height="' + size + '" fill="#fff"/><path fill="#000" d="' + d + '"/></svg>';
   }
   function wifiCard(e) {
@@ -10021,21 +10035,28 @@ select.input {
       (sy && sy.code ? '<p class="hint">Everything on this device is kept and added to the other device’s box.</p>' : '') +
       '<button class="btn" data-sync="link">Link this device</button></div>' +
       '<p class="err" id="sync-err" role="alert"></p>';
+    var cam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
     if (!sy || !sy.code) {
-      el.innerHTML = '<div class="bk-acts sync-acts"><button class="btn" data-sync="linkopen">I have a code from my other device</button>' +
-        '<button class="btn ghost" data-sync="start">Turn on sync (first device)</button></div>' + linkPanel;
+      el.innerHTML = '<ol class="sync-how"><li>On the device where sync is already on, open Settings: it shows a QR code. (If sync isn’t on anywhere yet, tap “Turn on sync” there first.)</li>' +
+        '<li>Here, tap “Scan the code” and point the camera at it. That’s it: both devices then hold everything.</li></ol>' +
+        '<div class="bk-acts sync-acts">' + (cam ? '<button class="btn" data-sync="scan">Scan the code from my other device</button>' : '') +
+        '<button class="btn ghost" data-sync="linkopen">Type the code instead</button>' +
+        '<button class="btn ghost" data-sync="start">Turn on sync</button></div>' + linkPanel;
       return;
     }
     el.innerHTML = '<p class="sync-state" id="sync-state"></p>' +
-      '<div class="sync-code"><span class="label">Sync code</span><code id="sync-code">' + esc(SY.show ? codeShow(sy.code) : codeShow(sy.code).replace(/[0-9A-Z](?=.{4})/g, '•')) + '</code>' +
+      (SY.show ? '<div class="sync-qr">' + qrSvg('DBSYNC:' + sy.code, 'Sync code') + '<p>On your other device: open Deposit Box, go to Settings, tap <b>Scan the code from my other device</b> and point it here.</p></div>'
+        : '<button class="btn sync-showqr" data-sync="show">Link another device: show the QR code</button>') +
+      '<div class="sync-code"><span class="label">Sync code</span><code id="sync-code">' + esc(SY.show ? codeShow(sy.code) : codeShow(sy.code).replace(/[0-9A-Z](?=.{7})/g, '•')) + '</code>' +
       '<button type="button" class="linkish" data-sync="show">' + (SY.show ? 'Hide' : 'Show') + '</button></div>' +
       '<div class="bk-acts sync-acts"><button class="btn ghost" data-sync="copy">Copy the code</button>' +
       (navigator.share ? '<button class="btn ghost" data-sync="share">Send the code</button>' : '') +
       '<button class="btn ghost" data-sync="now">Sync now</button></div>' +
-      '<p class="hint">Linked devices show the same code: check that it ends in <b>' + esc(codeShow(sy.code).slice(-4)) + '</b> on both. ' +
-      'To add your other device: open Deposit Box there, go to Settings, tap “I have a code from my other device” and enter this code. ' +
-      'Treat it like your passphrase: anyone with it could read the synced box. Once linked, delete it from wherever you sent it.</p>' +
-      '<div class="sync-more"><button type="button" class="linkish" data-sync="linkopen">Use the code from my other device instead</button>' +
+      '<p class="hint">Linked devices show the same code: check that it ends in <b>' + esc(codeShow(sy.code).slice(-7)) + '</b> on both. ' +
+      'Treat the code like your passphrase: anyone with it could read the synced box. If you sent it somewhere, delete it once linked.</p>' +
+      '<p class="hint">Is your other device using a different code? Link this one to it instead; everything here is kept.</p>' +
+      '<div class="sync-more">' + (cam ? '<button type="button" class="linkish" data-sync="scan">Scan the other device’s code</button>' : '') +
+      '<button type="button" class="linkish" data-sync="linkopen">Type the other device’s code</button>' +
       '<button type="button" class="linkish rm" data-sync="off">Turn off sync on this device</button></div>' + linkPanel;
     renderSyncStatus();
   }
@@ -10066,30 +10087,72 @@ select.input {
       });
       return;
     }
+    if (act === 'scan') { scanSyncQr(); return; }
     if (act === 'link') {
       var code = codeClean($('#sync-code-in').value);
       if (!code) { err('The code is 26 letters and numbers, like ABCD-1234-…'); return; }
-      b.disabled = true; b.textContent = 'Linking…'; err('');
-      var k;
-      syncKeys(code).then(function (kk) { k = kk; return syncReq('get', { id: k.id, key: k.key, have: -1 }); }).then(function (j) {
-        if (j.status !== 200) throw new Error(j.error || 'Sync failed.');
-        if (j.same) throw new Error('Nothing is stored under that code yet. Turn on sync on your other device first, then check the code.');
-        return syncOpen(j.blob, k).catch(function () { throw new Error('That code does not open the synced box.'); }).then(function (remote) {
-          if (S.data.sync && S.data.sync.code === code) { SY.linking = false; return; }   // already linked with this code
-          S.data.sync = { code: code, rev: j.rev, h: '' };
-          syncApply(remote, JSON.parse(JSON.stringify(syncPayload())));   // keep what this device has too
-          SY.linking = false;
-          return persist();
-        });
-      }).then(function () {
-        renderSync(); toast('Linked. This device now syncs');
-        return syncNow();
-      }).catch(function (e) {
-        b.disabled = false; b.textContent = 'Link this device';
-        err(e instanceof TypeError ? 'No connection to the sync server.' : e.message);
-      });
+      syncLink(code, b);
     }
   });
+  function syncLink(code, b) {
+    var err = function (m) { var e = $('#sync-err'); if (e) e.textContent = m; if (m && !b) toast(m); };
+    if (b) { b.disabled = true; b.textContent = 'Linking…'; }
+    err('');
+    var k;
+    if (!b) toast('Linking…');
+    syncKeys(code).then(function (kk) { k = kk; return syncReq('get', { id: k.id, key: k.key, have: -1 }); }).then(function (j) {
+      if (j.status !== 200) throw new Error(j.error || 'Sync failed.');
+      if (j.same) throw new Error('Nothing is stored under that code yet. Turn on sync on your other device first, then check the code.');
+      return syncOpen(j.blob, k).catch(function () { throw new Error('That code does not open the synced box.'); }).then(function (remote) {
+        if (S.data.sync && S.data.sync.code === code) { SY.linking = false; return; }   // already linked with this code
+        S.data.sync = { code: code, rev: j.rev, h: '' };
+        syncApply(remote, JSON.parse(JSON.stringify(syncPayload())));   // keep what this device has too
+        SY.linking = false;
+        return persist();
+      });
+    }).then(function () {
+      renderSync(); toast('Linked. This device now syncs');
+      return syncNow();
+    }).catch(function (e) {
+      if (b) { b.disabled = false; b.textContent = 'Link this device'; }
+      err(e instanceof TypeError ? 'No connection to the sync server.' : e.message);
+    });
+  }
+  var qrStream = null, qrTimer = null;
+  function closeQrCam() {
+    clearTimeout(qrTimer);
+    if (qrStream) qrStream.getTracks().forEach(function (t) { t.stop(); });
+    qrStream = null;
+    $('#qrcam-v').srcObject = null;
+    $('#qrcam').hidden = true;
+  }
+  function typeInstead(msg) { SY.linking = true; renderSync(); toast(msg); var i = $('#sync-code-in'); if (i) i.focus(); }
+  function scanSyncQr() {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { typeInstead('No camera here. Type the code instead.'); return; }
+    guardSheet();   // the camera permission prompt hides the page for a moment
+    Promise.all([loadScriptOnce('lib/ocr/jsQR.js'), navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })]).then(function (r) {
+      var st = r[1];
+      if (!S.key) { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+      qrStream = st;
+      var v = $('#qrcam-v'), c = document.createElement('canvas'), g = c.getContext('2d', { willReadFrequently: true });
+      v.srcObject = st; v.play().catch(function () {});
+      $('#qrcam').hidden = false;
+      var tick = function () {
+        if (!qrStream) return;
+        if (v.videoWidth && window.jsQR) {
+          var sc = Math.min(1, 800 / Math.max(v.videoWidth, v.videoHeight));
+          c.width = Math.round(v.videoWidth * sc); c.height = Math.round(v.videoHeight * sc);
+          g.drawImage(v, 0, 0, c.width, c.height);
+          var hit = window.jsQR(g.getImageData(0, 0, c.width, c.height).data, c.width, c.height, { inversionAttempts: 'dontInvert' });
+          var code = hit && /^DBSYNC:/.test(hit.data) ? codeClean(hit.data.slice(7)) : '';
+          if (code) { closeQrCam(); syncLink(code, null); return; }
+        }
+        qrTimer = setTimeout(tick, 200);
+      };
+      tick();
+    }).catch(function () { closeQrCam(); typeInstead('Camera not available. Type the code instead.'); });
+  }
+  $('#qrcam-cancel').addEventListener('click', closeQrCam);
 
   /* ============ Govt exam prep (PSC, SSC, banks, railways) ============
      Subjects with the standard topic lists of these exams; add your own
