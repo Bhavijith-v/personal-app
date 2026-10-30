@@ -573,3 +573,7 @@ Any entry can hold files (PDF, photos, Word, Excel, anything up to 10 MB, 20 per
 ## Office
 
 An **Office** tab (and home tile) for your job: job details (employee ID, grade, manager, UAN), projects, work tasks, leave, payslips, appraisals and goals, trainings (iEvolve and others), work contacts and office letters. Task due dates and times, upcoming leave, mandatory trainings, appraisal deadlines and project end dates feed Needs attention, the calendar and reminders. The tab shows open and late tasks, what's due this week and leave days used this year. Attach payslip PDFs and letters as files. Keep client data and anything confidential to your employer out.
+
+## Icons
+
+Interface and entry icons are from [Lucide](https://lucide.dev) (ISC licence; lucide-static 0.460.0), inlined in `index.html` as the `LU` table and drawn with `lu(name)`. Brand logos come from Simple Icons (`lib/brands.js`).
