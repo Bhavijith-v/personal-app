@@ -1841,7 +1841,7 @@ select.input {
 
 <div id="toast" role="status" hidden></div>
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
-<input type="file" id="img-in" accept="image/*" hidden>
+<input type="file" id="img-in" accept="image/*,application/pdf,.pdf" hidden>
 <input type="file" id="att-in" multiple hidden>
 <input type="file" id="scan-in" accept="image/*" hidden>
 <input type="file" id="runs-in" accept=".gpx,.tcx,.csv,application/gpx+xml,text/csv,text/xml,application/xml" hidden>
@@ -1866,7 +1866,7 @@ select.input {
     <h2 id="shotsheet-title">Add photo</h2>
     <p>The app straightens the card and trims away the background and fingers.</p>
     <button type="button" class="shotbtn" id="shot-cam">Take a photo with a guide<small>Fit the card inside the frame, on a dark plain surface</small></button>
-    <button type="button" class="shotbtn" id="shot-lib">Choose from my photos<small>Then drag the corners to the card’s edges</small></button>
+    <button type="button" class="shotbtn" id="shot-lib">Choose a photo or PDF<small>Then drag the corners to the card’s edges</small></button>
     <button type="button" class="btn ghost" id="shot-cancel">Cancel</button>
   </div>
 </div>
@@ -2860,6 +2860,20 @@ select.input {
     return c;
   }
   function sourceFromFile(file) {
+    // A PDF (a certificate from DigiLocker or the university) becomes its first page.
+    if (/pdf/.test(file.type) || /\.pdf$/i.test(file.name || '')) {
+      return file.arrayBuffer().then(function (buf) {
+        return loadPdfJs().then(function (lib) {
+          return lib.getDocument({ data: new Uint8Array(buf), isEvalSupported: false, disableFontFace: true, useSystemFonts: false }).promise;
+        });
+      }).then(function (pdf) { return pdf.getPage(1); }).then(function (pg) {
+        var v1 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: 2000 / Math.max(v1.width, v1.height) });
+        var c = document.createElement('canvas');
+        c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+        var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+        return pg.render({ canvasContext: g, viewport: vp }).promise.then(function () { return fitSource(c, c.width, c.height); });
+      });
+    }
     return new Promise(function (res, rej) {
       var fr = new FileReader();
       fr.onload = function () {
@@ -5823,7 +5837,7 @@ select.input {
     var slot = imgTarget;
     var doc = slot === 'img1' || slot === 'img2';
     if (doc) {
-      sourceFromFile(file).then(openCrop, function () { toast('Could not read that image'); });
+      sourceFromFile(file).then(openCrop, function () { toast('Could not read that file. Try a photo or a PDF.'); });
       return;
     }
     readCover(file, doc ? { maxSide: 1400, limit: 700000 } : { maxW: 900, limit: 600000 }).then(function (url) {
@@ -11497,7 +11511,7 @@ select.input {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 41;
+  var APP_VER = 42;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   if ('serviceWorker' in navigator) {
     var hadWorker = !!navigator.serviceWorker.controller, reloading = false;
