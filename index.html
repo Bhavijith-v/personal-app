@@ -965,23 +965,84 @@ select.input {
 .open-go small { font-weight: 400; font-size: 12.5px; color: var(--fg-faint); }
 
 /* ---------- notes & rules ---------- */
-.notes-warn { margin: 0 0 6px; }
-.notes { display: flex; flex-direction: column; gap: 8px; }
-.note { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); }
-.note-tick {
-  flex: 0 0 auto; width: 30px; height: 30px; margin-top: 2px; border-radius: 50%; border: 2px solid var(--line);
-  background: transparent; color: var(--brass-ink); font-weight: 700; font-size: 16px; display: grid; place-items: center;
+.nh {
+  display: flex; align-items: center; gap: 16px; padding: 18px; margin-top: 2px;
+  border-radius: var(--r-lg); border: 1px solid var(--line-soft);
+  background: linear-gradient(145deg, var(--brass-soft), transparent 70%), var(--surface);
 }
-.note-tick[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: #fff; }
-.note-main { flex: 1 1 auto; min-width: 0; }
-.note-text { width: 100%; resize: none; border: none; background: transparent; color: var(--fg); font: inherit; font-size: 15.5px; line-height: 1.45; padding: 4px 0; overflow: hidden; }
+.nh.all { background: linear-gradient(145deg, var(--ok-soft), transparent 70%), var(--surface); border-color: var(--ok); }
+.nh-ring { position: relative; flex: 0 0 auto; width: 72px; height: 72px; }
+.nh-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.nh-track { fill: none; stroke: var(--surface-3); stroke-width: 7; }
+.nh-arc { fill: none; stroke: var(--brass); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 0.5s ease; }
+.nh.all .nh-arc { stroke: var(--ok); }
+.nh-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.nh-ring small { font-size: 13px; font-weight: 600; color: var(--fg-faint); }
+.nh.all .nh-ring span { color: var(--ok); font-size: 26px; }
+.nh-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nh-day { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-faint); }
+.nh-text b { font-size: 18px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.3; }
+.nh-best { display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nh-best svg, .streak svg { width: 13px; height: 13px; flex: 0 0 auto; color: #f08c2e; }
+.note-adds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.note-add {
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 15px; font-weight: 600;
+}
+.note-add span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--brass); color: var(--brass-ink); font-size: 16px; line-height: 1; }
+.rules { display: flex; flex-direction: column; gap: 10px; }
+.rule {
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line-soft); background: var(--surface); transition: border-color 0.2s, background 0.2s;
+}
+.rule.done { border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: linear-gradient(90deg, var(--ok-soft), transparent 60%), var(--surface); }
+.note-tick {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line);
+  background: transparent; display: grid; place-items: center; transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.note-tick svg { width: 22px; height: 22px; fill: none; stroke: transparent; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.note-tick:active { transform: scale(0.9); }
+.note-tick[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); }
+.note-tick[aria-pressed="true"] svg { stroke: #fff; }
+.rule.pop .note-tick { animation: tickpop 0.42s ease-out; }
+@keyframes tickpop { 0% { transform: scale(0.7); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .rule.pop .note-tick { animation: none; } }
+.rule-body { flex: 1 1 auto; min-width: 0; }
+.note-text {
+  width: 100%; resize: none; border: none; background: transparent; color: var(--fg); font: inherit;
+  font-size: 16px; font-weight: 500; line-height: 1.4; padding: 6px 0 4px; overflow: hidden;
+}
 .note-text:focus { outline: none; }
-.note.done .note-text { color: var(--fg-dim); text-decoration: line-through; text-decoration-color: var(--fg-faint); }
-.note-meta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--fg-faint); margin-top: 2px; }
-.note-meta .linkish { font-size: 12.5px; }
+.rule.done .note-text { color: var(--fg-dim); }
+.rule-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.rule-week { display: flex; gap: 6px; }
+.rule-week i { display: flex; flex-direction: column; align-items: center; gap: 3px; font-style: normal; font-size: 10px; font-weight: 600; color: var(--fg-faint); }
+.rule-week i b { width: 10px; height: 10px; border-radius: 50%; background: var(--surface-3); }
+.rule-week i.on b { background: var(--ok); }
+.rule-week i.today { color: var(--fg); }
+.rule-week i.today b { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--fg-faint); }
+.streak { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: rgba(240, 140, 46, 0.13); color: var(--fg); font-size: 12px; font-weight: 600; }
+.streak.none { background: transparent; color: var(--fg-faint); font-weight: 400; padding-inline: 0; }
+.note-meta { display: none; gap: 16px; align-items: center; margin-top: 8px; }
+.rule.open .note-meta, .sticky.open .note-meta { display: flex; }
+.note-more { margin-left: auto; width: 34px; height: 28px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--fg-dim); font-size: 16px; line-height: 1; }
+.note-more[aria-expanded="true"] { color: var(--brass); border-color: var(--brass); }
+.rule-foot .streak + .note-more { margin-left: 0; }
+.note-meta .linkish { font-size: 13px; }
+.stickies { display: flex; flex-direction: column; gap: 10px; }
+.sticky { padding: 12px 14px 10px; border-radius: var(--r-md); border: 1px solid var(--line-soft); position: relative; }
+.sticky.t0 { background: rgba(232, 178, 64, 0.11); }
+.sticky.t1 { background: rgba(84, 150, 230, 0.11); }
+.sticky.t2 { background: rgba(80, 180, 130, 0.11); }
+.sticky.t3 { background: rgba(214, 100, 150, 0.11); }
+.sticky .note-text { font-weight: 400; font-size: 15.5px; line-height: 1.5; }
+.sticky-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sticky-foot > span { font-size: 11.5px; color: var(--fg-faint); }
+.sticky .note-meta { margin-top: 0; }
 .note-ideas { display: flex; flex-wrap: wrap; gap: 8px; }
-.note-idea { padding: 8px 12px; border-radius: 999px; border: 1px dashed var(--line); background: transparent; color: var(--fg-dim); font-size: 13.5px; }
-.note-idea[data-nnew] { border-style: solid; border-color: var(--brass); color: var(--brass); font-weight: 600; }
+.note-idea { padding: 9px 13px; border-radius: 999px; border: 1px dashed var(--line); background: transparent; color: var(--fg-dim); font-size: 13.5px; }
+.note-idea::before { content: '+ '; color: var(--brass); font-weight: 700; }
+.notes-warn { margin: 22px 0 0; text-align: center; }
 .face-nudge { margin: 12px 0 0; }
 
 /* ---------- reminders ---------- */
@@ -9535,28 +9596,64 @@ select.input {
     return n;
   }
   var NOTE_IDEAS = ['Brush two times a day', 'Drink 1 litre of water every day', 'Stretch for 10 minutes', 'Read one IAS chapter', 'Sleep by 10:30 pm'];
+  var lastTick = null, openNote = null;
+  var FLAME = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5c.6 3.1-1.1 4.9-2.6 6.5C7.9 10.6 6.5 12.1 6.5 14.6 6.5 18 9 21 12.2 21c3.4 0 5.8-2.7 5.8-6.2 0-2.6-1.2-4.4-2.4-5.6-.2 1.4-.8 2.4-1.8 3 .3-3.6-.6-6.7-1.8-8.7Z"/></svg>';
   function renderNotes() {
-    var el = $('#notes-body'), list = notesList(), today = toYmd(new Date());
+    var el = $('#notes-body'), list = notesList(), now = new Date(), today = toYmd(now);
     var rules = list.filter(function (x) { return x.daily; }), notes = list.filter(function (x) { return !x.daily; });
     var done = rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length;
-    var item = function (x) {
-      var ticked = (x.days || []).indexOf(today) >= 0, st = streakOf(x.days);
-      return '<div class="note' + (ticked ? ' done' : '') + '" data-note="' + esc(x.id) + '">' +
-        (x.daily ? '<button type="button" class="note-tick" data-ntick="' + esc(x.id) + '" aria-pressed="' + ticked + '" aria-label="Done today">' + (ticked ? '✓' : '') + '</button>' : '') +
-        '<div class="note-main"><textarea class="note-text" data-ntext="' + esc(x.id) + '" rows="1" placeholder="Write something…">' + esc(x.text) + '</textarea>' +
-        '<div class="note-meta">' + (x.daily ? '<span>' + (st ? st + '-day streak' : 'No streak yet') + '</span>' : '') +
-        '<button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">' + (x.daily ? 'Make it a note' : 'Make it a daily rule') + '</button>' +
+    var all = rules.length && done === rules.length;
+    // the last seven days, oldest first
+    var week = [];
+    for (var i = 6; i >= 0; i--) { var d = new Date(now); d.setDate(d.getDate() - i); week.push({ ymd: toYmd(d), l: 'SMTWTFS'.charAt(d.getDay()) }); }
+    var best = rules.reduce(function (m, x) { var s = streakOf(x.days); return s > m.n ? { n: s, t: x.text } : m; }, { n: 0, t: '' });
+
+    // hero: a ring for today
+    var R = 27, C = 2 * Math.PI * R, frac = rules.length ? done / rules.length : 0;
+    var msg = !rules.length ? 'Start with one small daily rule'
+      : all ? 'All done today. Well done!'
+      : !done ? 'A fresh day. Start with one.'
+      : (rules.length - done) + ' more to go today';
+    var hero = '<div class="nh' + (all ? ' all' : '') + '">' +
+      '<div class="nh-ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="nh-track" cx="32" cy="32" r="' + R + '"/>' +
+      '<circle class="nh-arc" cx="32" cy="32" r="' + R + '" stroke-dasharray="' + (C * frac).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>' +
+      '<span>' + (all ? '✓' : done + '<small>/' + rules.length + '</small>') + '</span></div>' +
+      '<div class="nh-text"><span class="nh-day">' + esc(now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })) + '</span>' +
+      '<b>' + esc(msg) + '</b>' +
+      (best.n >= 2 ? '<span class="nh-best">' + FLAME + ' Best streak: ' + best.n + ' days · ' + esc(best.t) + '</span>' : '') + '</div></div>';
+
+    var rule = function (x) {
+      var days = x.days || [], ticked = days.indexOf(today) >= 0, st = streakOf(days);
+      return '<div class="rule' + (ticked ? ' done' : '') + (lastTick === x.id ? ' pop' : '') + (openNote === x.id ? ' open' : '') + '" data-note="' + esc(x.id) + '">' +
+        '<button type="button" class="note-tick" data-ntick="' + esc(x.id) + '" aria-pressed="' + ticked + '" aria-label="' + (ticked ? 'Done today. Tap to undo' : 'Mark done today') + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg></button>' +
+        '<div class="rule-body"><textarea class="note-text" data-ntext="' + esc(x.id) + '" rows="1" placeholder="A daily rule…">' + esc(x.text) + '</textarea>' +
+        '<div class="rule-foot"><div class="rule-week" aria-label="Last 7 days">' + week.map(function (w) {
+          return '<i class="' + (days.indexOf(w.ymd) >= 0 ? 'on' : '') + (w.ymd === today ? ' today' : '') + '"><b></b>' + w.l + '</i>';
+        }).join('') + '</div>' +
+        '<span class="streak' + (st ? '' : ' none') + '">' + (st ? FLAME + st + '-day streak' : 'No streak yet') + '</span>' + '<button type="button" class="note-more" data-nmore="' + esc(x.id) + '" aria-label="Edit options" aria-expanded="' + (openNote === x.id) + '">⋯</button>' + '</div>' +
+        '<div class="note-meta"><button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">Make it a note</button>' +
         '<button type="button" class="linkish rm" data-ndel="' + esc(x.id) + '">Delete</button></div></div></div>';
     };
-    el.innerHTML = '<p class="hint notes-warn">Opens without your passphrase and isn’t encrypted, so don’t write passwords, PINs or account numbers here.</p>' +
-      (rules.length ? '<div class="section-label lab-group">Daily rules <span>' + done + ' / ' + rules.length + ' done today</span></div><div class="notes">' + rules.map(item).join('') + '</div>' : '') +
-      (notes.length ? '<div class="section-label">Notes</div><div class="notes">' + notes.map(item).join('') + '</div>' : '') +
-      '<div class="section-label">Quick add</div><div class="note-ideas">' +
-      '<button type="button" class="note-idea" data-nnew="rule">+ New daily rule</button><button type="button" class="note-idea" data-nnew="note">+ New note</button>' +
-      NOTE_IDEAS.filter(function (t) { return !list.some(function (x) { return x.text === t; }); }).map(function (t) {
+    var note = function (x, i) {
+      return '<div class="sticky t' + (i % 4) + (openNote === x.id ? ' open' : '') + '" data-note="' + esc(x.id) + '">' +
+        '<textarea class="note-text" data-ntext="' + esc(x.id) + '" rows="1" placeholder="Write something…">' + esc(x.text) + '</textarea>' +
+        '<div class="sticky-foot"><span>' + (x.created ? esc(fmtDate(toYmd(new Date(x.created)))) : '') + '</span>' + '<button type="button" class="note-more" data-nmore="' + esc(x.id) + '" aria-label="Edit options" aria-expanded="' + (openNote === x.id) + '">⋯</button>' +
+        '<div class="note-meta"><button type="button" class="linkish" data-ndaily="' + esc(x.id) + '">Make it a daily rule</button>' +
+        '<button type="button" class="linkish rm" data-ndel="' + esc(x.id) + '">Delete</button></div></div></div>';
+    };
+    var ideas = NOTE_IDEAS.filter(function (t) { return !list.some(function (x) { return x.text === t; }); });
+
+    el.innerHTML = hero +
+      '<div class="note-adds"><button type="button" class="note-add" data-nnew="rule"><span>+</span>Daily rule</button><button type="button" class="note-add" data-nnew="note"><span>+</span>Note</button></div>' +
+      (rules.length ? '<div class="section-label lab-group">Daily rules <span>' + done + ' / ' + rules.length + ' done today</span></div><div class="rules">' + rules.map(rule).join('') + '</div>' : '') +
+      (notes.length ? '<div class="section-label">Notes</div><div class="stickies">' + notes.map(note).join('') + '</div>' : '') +
+      (ideas.length ? '<div class="section-label">Ideas · tap to add</div><div class="note-ideas">' + ideas.map(function (t) {
         return '<button type="button" class="note-idea" data-nidea="' + esc(t) + '">' + esc(t) + '</button>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' : '') +
+      '<p class="hint notes-warn">Opens without your passphrase and isn’t encrypted, so keep passwords, PINs and account numbers out of here.</p>';
     Array.prototype.forEach.call(el.querySelectorAll('.note-text'), fitNote);
+    lastTick = null;
   }
   function fitNote(t) { t.style.height = 'auto'; t.style.height = Math.max(26, t.scrollHeight) + 'px'; }
   function addNote(text, daily) {
@@ -9607,11 +9704,12 @@ select.input {
         if (x.id !== b.dataset.ntick) return;
         x.days = x.days || [];
         var i = x.days.indexOf(today);
-        if (i >= 0) x.days.splice(i, 1); else x.days.push(today);
+        if (i >= 0) x.days.splice(i, 1); else { x.days.push(today); lastTick = x.id; }
         x.days = x.days.sort().slice(-120);
       });
       notesSave(list); renderNotes(); return;
     }
+    if ((b = ev.target.closest('[data-nmore]'))) { openNote = openNote === b.dataset.nmore ? null : b.dataset.nmore; renderNotes(); return; }
     if ((b = ev.target.closest('[data-ndaily]'))) {
       list.forEach(function (x) { if (x.id === b.dataset.ndaily) x.daily = !x.daily; });
       notesSave(list); renderNotes(); return;
