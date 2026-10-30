@@ -344,6 +344,15 @@ before.
   keep notes (formulas, shortcuts), add your own topics. Shows a countdown to
   your next exam from Govt jobs.
 
+### Without the passphrase
+
+The lock screen's **Study, running & notes** opens IAS prelims, Govt exam prep,
+OSCP labs, Running and Notes & rules without unlocking. Their data (study
+progress and notes, runs, a summary of races) lives in an open store outside
+the encrypted box, because none of it is secret. The box keeps a copy on every
+save so backups still include it, and an older box moves its progress across
+on the first unlock. Everything else stays encrypted.
+
 ### Notes & rules (no passphrase)
 
 Opens from the lock screen or the home tile without the passphrase. Notes and

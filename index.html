@@ -960,6 +960,10 @@ select.input {
 }
 .qbtn svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--brass); }
 
+/* ---------- the open area ---------- */
+.open-go { margin-top: 10px; flex-direction: column; gap: 2px; }
+.open-go small { font-weight: 400; font-size: 12.5px; color: var(--fg-faint); }
+
 /* ---------- notes & rules ---------- */
 .notes-warn { margin: 0 0 6px; }
 .notes { display: flex; flex-direction: column; gap: 8px; }
@@ -1409,7 +1413,7 @@ select.input {
         Unlock with Face ID
       </button>
       <button class="btn" id="lock-action">Unlock</button>
-      <button class="link-row" id="btn-notes-open">Notes &amp; rules · no passphrase needed</button>
+      <button class="btn ghost open-go" id="btn-open-area">Study, running &amp; notes<small>Opens without the passphrase</small></button>
       <button class="link-row" id="btn-restore-start">Restore from a backup file</button>
       <button class="link-row" id="btn-restore-cancel" hidden>Cancel</button>
 
@@ -1625,6 +1629,10 @@ select.input {
   </section>
 
   <!-- ================= ONE LAB ================= -->
+  <section id="screen-open" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-open-back" aria-label="Back to the lock screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Without the passphrase</h1></div></header>
+    <div class="col gutter page-body" id="open-body"></div>
+  </section>
   <section id="screen-notes" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-notes-back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1>Notes &amp; rules</h1><button class="txt-btn" id="btn-note-add">Add</button></div></header>
     <div class="col gutter page-body" id="notes-body"></div>
@@ -3426,6 +3434,33 @@ select.input {
     });
   }
   function readRec() { return memRec; }
+
+  /* --- the open store ---
+     Study progress (IAS, Govt exam prep, OSCP), runs and a summary of races
+     live here, outside the encrypted box, so they open without the
+     passphrase. Nothing here is secret. The box keeps a copy of it on every
+     save, so backups still carry it. */
+  var OPEN = { v: 0, ias: {}, gx: {}, oscp: {}, runs: [], races: [], oscpWeek: 0 };
+  function openLoad() {
+    var take = function (o) { if (o && typeof o === 'object') Object.keys(OPEN).forEach(function (k) { if (o[k] !== undefined) OPEN[k] = o[k]; }); };
+    if (idb) return idbDo('readonly', function (st) { return st.get('open'); }).then(take, function () {});
+    try { take(JSON.parse(localStorage.getItem('depositbox.open') || 'null')); } catch (e) {}
+    return Promise.resolve();
+  }
+  function saveOpen() {
+    var copy = JSON.parse(JSON.stringify(OPEN));
+    var job = writeChain.then(function () {
+      if (idb) return idbDo('readwrite', function (st) { st.put(copy, 'open'); }).then(function () { return true; }, function () { return false; });
+      try { localStorage.setItem('depositbox.open', JSON.stringify(copy)); return true; } catch (e) { return false; }
+    }).then(function (ok) {
+      if (!ok) toast('Could not save — device storage is full or blocked');
+      else if (S.key) { clearTimeout(boxCopyTimer); boxCopyTimer = setTimeout(function () { if (S.key) persist(); }, 1500); }
+      return ok;
+    });
+    writeChain = job.catch(function () {});
+    return job;
+  }
+  var boxCopyTimer = null;
   function writeRec(rec) {
     var job = writeChain.then(function () {
       if (idb) {
@@ -3635,7 +3670,42 @@ select.input {
   var attempts = 0, idleTimer = null, hideTimer = null, clipTimer = null, toastTimer = null;
   var sheetOpen = false, sheetTimer = null;
 
+  function racesLite() {
+    return entries().filter(function (e) { return e.type === 'race'; }).map(function (e) {
+      var f = e.f || {};
+      return { id: e.id, title: e.title, f: { date: f.date, distance: f.distance, time: f.time, status: f.status, start: f.start, venue: f.venue } };
+    });
+  }
+  function openIntoBox() {
+    if (!S.data || !OPEN.v) return;
+    S.data.ias = OPEN.ias; S.data.gx = OPEN.gx; S.data.oscp = OPEN.oscp; S.data.runs = OPEN.runs;
+    var lite = racesLite();
+    if (JSON.stringify(lite) !== JSON.stringify(OPEN.races)) { OPEN.races = lite; saveOpen(); }
+  }
+  // From the box into the open store: the first time after this update, and
+  // after a restore (replace) or an import (merge).
+  function openFromBox(replace) {
+    if (!S.data) return;
+    if (replace || !OPEN.v) {
+      OPEN.ias = S.data.ias || {}; OPEN.gx = S.data.gx || {}; OPEN.oscp = S.data.oscp || {}; OPEN.runs = S.data.runs || [];
+      if (S.data.goals && S.data.goals.oscpWeek && !OPEN.oscpWeek) OPEN.oscpWeek = S.data.goals.oscpWeek;
+    } else {
+      OPEN.ias = mergeIas(OPEN.ias, sanitizeIas(S.data.ias));
+      OPEN.gx = mergeGx(OPEN.gx, sanitizeGx(S.data.gx));
+      OPEN.oscp = mergeOscp(OPEN.oscp, sanitizeOscp(S.data.oscp));
+      var have = {};
+      OPEN.runs.forEach(function (r) { have[r.id] = 1; });
+      OPEN.runs = OPEN.runs.concat(sanitizeRuns(S.data.runs).filter(function (r) { return !have[r.id]; }));
+    }
+    OPEN.v = 1;
+    OPEN.races = racesLite();
+    saveOpen();
+    if (S.view === 'vault') renderVault();
+  }
+  var openAdopted = false;
+
   function persist() {
+    openIntoBox();
     return seal(S.data, S.key).then(function (sealed) {
       // Keep whatever scheme this vault was built with, PBKDF2 or Argon2id.
       // Carry the wraps across untouched; only the vault ciphertext changes.
@@ -3662,7 +3732,7 @@ select.input {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week', notes: '#screen-notes', gx: '#screen-gx', gxt: '#screen-gxt'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week', notes: '#screen-notes', gx: '#screen-gx', gxt: '#screen-gxt', open: '#screen-open'
   };
   function show(view) {
     S.view = view;
@@ -3683,9 +3753,12 @@ select.input {
     if (view === 'money') renderMoney();
     if (view === 'week') renderWeek();
     if (view === 'notes') renderNotes();
+    if (view === 'open') renderOpen();
     if (view === 'gx') renderGx();
     if (view === 'gxt') renderGxt();
     if (view === 'vault' && !pushOnOpen) { pushOnOpen = true; schedulePushSync(); }
+    // On unlocking: adopt the box's copy the first time, otherwise refresh the box's copy (for backups).
+    if (view === 'vault' && S.data && !openAdopted) { openAdopted = true; if (!OPEN.v) openFromBox(false); else persist(); }
     if (view === 'chap') renderChap();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
@@ -3723,7 +3796,7 @@ select.input {
     iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
     moneyPending = null; moneyBusy = false; moneyEditTx = null; moneyAcctEdit = null;
     moneyView = { acct: null, month: null, cat: null, help: false }; $('#money-body').textContent = '';
-    whoView = 'all'; famEdit = null; whoAdding = false; budgetEdit = false; $('#week-body').textContent = ''; $('#gx-body').textContent = ''; $('#gxt-body').textContent = ''; gxOpen = {}; gxTopic = null; gxAdding = null; $('#whos').textContent = ''; $('#fam-body').textContent = '';
+    whoView = 'all'; famEdit = null; whoAdding = false; budgetEdit = false; openAdopted = false; $('#week-body').textContent = ''; $('#gx-body').textContent = ''; $('#gxt-body').textContent = ''; gxOpen = {}; gxTopic = null; gxAdding = null; $('#whos').textContent = ''; $('#fam-body').textContent = '';
     $('#attn-body').textContent = ''; $('#health-body').textContent = ''; $('#run-body').textContent = '';
     clearTimeout(idleTimer); clearTimeout(hideTimer);
     $('#detail-body').textContent = '';
@@ -4323,7 +4396,7 @@ select.input {
   var pushOnOpen = false;
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') pushOnOpen = false; });
   document.addEventListener('click', function (ev) {
-    if (ev.target.closest('[data-back]')) show('vault');
+    if (ev.target.closest('[data-back]')) show(S.key ? 'vault' : 'open');
   });
 
   function renderVault() {
@@ -5915,6 +5988,7 @@ select.input {
           S.data.people = sanitizePeople(r.data && r.data.people);
           S.data.goals = sanitizeGoals(r.data && r.data.goals);
           S.data.gx = sanitizeGx(r.data && r.data.gx);
+          openFromBox(true);
           S.data.money = sanitizeMoney(r.data && r.data.money);
           return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
         });
@@ -5929,6 +6003,7 @@ select.input {
       S.data.people = mergePeople(people(), sanitizePeople(r.data && r.data.people));
       if (!S.data.goals) S.data.goals = sanitizeGoals(r.data && r.data.goals);
       S.data.gx = mergeGx(S.data.gx, sanitizeGx(r.data && r.data.gx));
+      openFromBox(false);
       S.data.money = mergeMoney(S.data.money, sanitizeMoney(r.data && r.data.money));
       var parts = [];
       if (res.added) parts.push('added ' + res.added);
@@ -5965,6 +6040,7 @@ select.input {
         money: sanitizeMoney(r.data && r.data.money),
         lastExport: (r.data && r.data.lastExport) || null
       };
+      openFromBox(true);
       if (r.raw) {
         return useMasterKey(r.raw).then(function () {
           S.rec = { v: 2, wraps: { pass: r.wrap }, iv: p.iv, ct: p.ct };
@@ -6319,7 +6395,10 @@ select.input {
      distances within 2%, so a GPS-measured 10.08 km counts as a 10K. */
   var PB_DIST = [['5K', 5], ['10K', 10], ['Half', 21.0975], ['Marathon', 42.195]];
   var RUN_KINDS = ['Easy', 'Long', 'Tempo', 'Intervals', 'Race', 'Treadmill'];
-  function runs() { return (S.data && S.data.runs) || []; }
+  function runs() { return OPEN.runs || []; }
+  function raceList() {
+    return S.data ? entries().filter(function (e) { return e.type === 'race'; }) : (OPEN.races || []);
+  }
   function fmtSecs(t) {
     var h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = Math.round(t % 60);
     if (sec === 60) { m += 1; sec = 0; }
@@ -6333,8 +6412,8 @@ select.input {
   }
   function efforts() {
     var out = [];
-    entries().forEach(function (e) {
-      if (e.type !== 'race') return;
+    raceList().forEach(function (e) {
+      if (e.type && e.type !== 'race') return;
       var f = e.f || {}, t = parseTime(f.time), km = DISTANCES[f.distance];
       if (f.date && km && (t || f.status === 'Ran it') && daysUntil(f.date) <= 0) {
         out.push({ date: f.date, km: km, secs: t, label: e.title, race: true });
@@ -6487,6 +6566,7 @@ select.input {
           }).join('') + '</div>'
         : '<div class="empty run-empty"><h2>No runs yet</h2><p>Tap <b>Log a run</b> to add one. Races with a finish time count too.</p></div>');
     $('#run-body').innerHTML = html;
+    if ($('#btn-coach')) $('#btn-coach').hidden = !S.key;
   }
 
   $('#btn-run-add').addEventListener('click', function () {
@@ -6504,8 +6584,8 @@ select.input {
       askConfirm({ title: 'Delete this run?', body: 'It will be removed from your log and totals.', yes: 'Delete' })
         .then(function (ok) {
           if (!ok) return;
-          S.data.runs = runs().filter(function (r) { return r.id !== del.dataset.delrun; });
-          persist().then(function () { renderRun(); toast('Run deleted'); });
+          OPEN.runs = runs().filter(function (r) { return r.id !== del.dataset.delrun; });
+          saveOpen().then(function () { renderRun(); toast('Run deleted'); });
         });
       return;
     }
@@ -6532,11 +6612,11 @@ select.input {
     else if (!(km > 0 && km < 300)) err = 'Enter the distance in kilometres, for example 10.2.';
     else if (time && parseTime(time) === null) err = 'Write the time as h:mm:ss or mm:ss, for example 52:30.';
     if (err) { $('#run-err').textContent = err; return; }
-    S.data.runs = runs().concat([{
+    OPEN.runs = runs().concat([{
       id: uid(), date: date, km: Math.round(km * 100) / 100, time: time,
       kind: $('#run-kind').value, note: $('#run-note').value.trim().slice(0, 300)
     }]);
-    persist().then(function (ok) {
+    saveOpen().then(function (ok) {
       if (!ok) return;
       renderRun();
       toast('Run saved');
@@ -7561,19 +7641,19 @@ select.input {
   var oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };
   var oscpLab = null, oscpNoteTimer = null;
 
-  function labState(id) { return (S.data && S.data.oscp && S.data.oscp[id]) || {}; }
+  function labState(id) { return (OPEN.oscp && OPEN.oscp[id]) || {}; }
   function labStatus(id) { return labState(id).s || 'todo'; }
   function labDiff(l) { return l.difficulty || labState(l.id).diff || ''; }
   function labBucket(l) { return DIFF_BUCKET[labDiff(l)] || 'Unrated'; }
   function setLab(id, patch) {
-    S.data.oscp = S.data.oscp || {};
-    var cur = S.data.oscp[id] || {};
+    OPEN.oscp = OPEN.oscp || {};
+    var cur = OPEN.oscp[id] || {};
     Object.keys(patch).forEach(function (k) {
       if (patch[k] === undefined || patch[k] === '') delete cur[k]; else cur[k] = patch[k];
     });
     cur.u = Date.now();
-    if (!cur.s && !cur.n && !cur.diff) delete S.data.oscp[id]; else S.data.oscp[id] = cur;
-    return persist();
+    if (!cur.s && !cur.n && !cur.diff) delete OPEN.oscp[id]; else OPEN.oscp[id] = cur;
+    return saveOpen();
   }
   function oscpTotals() {
     var t = { all: LABS.length, done: 0, doing: 0 };
@@ -7644,7 +7724,7 @@ select.input {
 
   function renderOscp() {
     var el = $('#oscp-body');
-    if (!el || !S.data) return;
+    if (!el) return;
     if (!LABS.length) { el.innerHTML = '<div class="empty"><h2>Lab list missing</h2><p>lib/oscp-labs.js did not load.</p></div>'; return; }
     var t = oscpTotals(), pct = Math.round(t.done / t.all * 100);
     var shown = LABS.filter(labMatches);
@@ -7712,7 +7792,7 @@ select.input {
 
   function renderLab() {
     var el = $('#lab-body'), l = LAB_BY_ID[oscpLab];
-    if (!el || !l || !S.data) { show('oscp'); return; }
+    if (!el || !l) { show('oscp'); return; }
     var st = labState(l.id), status = labStatus(l.id), d = labDiff(l);
     $('#lab-bar-title').textContent = l.name;
     var src = l.difficulty
@@ -7747,7 +7827,7 @@ select.input {
       }).join('') + '</div>' +
       '<div class="field lab-notes"><label class="label" for="lab-n">Your notes</label>' +
       '<textarea class="input" id="lab-n" rows="8" placeholder="Enumeration, foothold, privesc, what you learned…" spellcheck="false">' + esc(st.n || '') + '</textarea>' +
-      '<p class="hint" id="lab-saved">Saved automatically, encrypted in the box.</p></div>' +
+      '<p class="hint" id="lab-saved">Saved automatically on this phone.</p></div>' +
       '<div class="lab-links">' +
       (open ? '<a class="btn ghost" href="' + esc(open) + '" target="_blank" rel="noopener noreferrer">Open on ' + esc(l.url ? 'GitHub' : l.platform === 'Vulnlab' ? 'HackTheBox' : l.platform.replace(/^PG .*/, 'Proving Grounds')) + '</a>' : '') +
       (l.writeup ? '<a class="btn ghost spoiler" href="' + esc(l.writeup) + '" target="_blank" rel="noopener noreferrer">0xdf write-up (spoilers)</a>' : '') +
@@ -7762,7 +7842,7 @@ select.input {
     if ((labState(oscpLab).n || '') === v) return Promise.resolve();
     return setLab(oscpLab, { n: v }).then(function () {
       var s2 = $('#lab-saved');
-      if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', encrypted in the box.';
+      if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' on this phone.';
     });
   }
   $('#lab-body').addEventListener('input', function (ev) {
@@ -9139,7 +9219,7 @@ select.input {
     return n;
   }
   function oscpWeekHtml() {
-    var tgt = goals().oscpWeek || 0, done = oscpWeekDone();
+    var tgt = OPEN.oscpWeek || 0, done = oscpWeekDone();
     return '<div class="oscp-week"><span>' + (tgt ? 'This week: <b>' + done + ' of ' + tgt + '</b> rooted' + (done >= tgt ? ' ✓' : '') : 'This week: <b>' + done + '</b> rooted') + '</span>' +
       '<label>Weekly goal <select class="input" id="oscp-week">' + [0, 1, 2, 3, 4, 5, 6, 7, 10, 14].map(function (n) {
         return '<option value="' + n + '"' + (n === tgt ? ' selected' : '') + '>' + (n ? n + ' labs' : 'None') + '</option>';
@@ -9147,7 +9227,8 @@ select.input {
   }
   $('#oscp-body').addEventListener('change', function (ev) {
     if (ev.target.id !== 'oscp-week') return;
-    setGoal('oscpWeek', +ev.target.value).then(renderOscp);
+    OPEN.oscpWeek = +ev.target.value || 0;
+    saveOpen().then(renderOscp);
   });
 
   /* ============ running: a plan to the next race, and imports ============
@@ -9157,7 +9238,7 @@ select.input {
   var PEAK_KM = { '3K': 20, '5K': 25, '10K': 35, 'Half marathon (21.1K)': 45, 'Marathon (42.2K)': 65 };
   var LONG_KM = { '3K': 6, '5K': 8, '10K': 14, 'Half marathon (21.1K)': 18, 'Marathon (42.2K)': 32 };
   function nextRace() {
-    return entries().filter(function (e) { return e.type === 'race' && isUpcoming(e) && PEAK_KM[(e.f || {}).distance] && (e.f || {}).status !== 'Skipped'; })
+    return raceList().filter(function (e) { return isUpcoming(e) && PEAK_KM[(e.f || {}).distance] && (e.f || {}).status !== 'Skipped'; })
       .sort(function (a, b) { return a.f.date < b.f.date ? -1 : 1; })[0] || null;
   }
   function runPlan() {
@@ -9250,8 +9331,8 @@ select.input {
         add.push({ id: uid(), date: x.date, km: km, time: x.secs > 0 ? fmtSecs(x.secs) : '', kind: km >= 16 ? 'Long' : 'Easy', note: 'Imported' });
       });
       if (!add.length) { toast('No new runs in that file'); return; }
-      S.data.runs = runs().concat(add);
-      persist().then(function () { renderRun(); toast(add.length + (add.length === 1 ? ' run' : ' runs') + ' added'); });
+      OPEN.runs = runs().concat(add);
+      saveOpen().then(function () { renderRun(); toast(add.length + (add.length === 1 ? ' run' : ' runs') + ' added'); });
     });
   });
   $('#run-body').addEventListener('click', function (ev) {
@@ -9282,7 +9363,7 @@ select.input {
     LABS.forEach(function (l) { var st = labState(l.id); if (st.s === 'done' && st.d && st.d >= from) labs++; });
     var spent = 0, anyTx = false;
     moneyData().tx.forEach(function (t) { if (t.d >= from && t.d <= today) { anyTx = true; if (isSpend(t)) spent += t.amt; } });
-    var ip = iasPlan(), rp = runPlan(), og = goals().oscpWeek || 0, lastBk = S.data.lastExport;
+    var ip = iasPlan(), rp = runPlan(), og = OPEN.oscpWeek || 0, lastBk = S.data.lastExport;
     var dayName = function (a) { return a.days < 0 ? 'Overdue' : a.days === 0 ? 'Today' : a.days === 1 ? 'Tomorrow' : ymdDate(a.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }); };
     var html = '<p class="lead">Week of ' + esc(fmtDate(toYmd(weekStart(now)))) + '. Everything due, for you and your family, plus how the last 7 days went.</p>';
     html += '<div class="section-label">Coming up · next 7 days</div>' + (due.length ? '<div class="att-list">' + due.map(function (a, i) {
@@ -9487,8 +9568,27 @@ select.input {
     if (t && !text) t.focus();
   }
   $('#btn-note-add').addEventListener('click', function () { addNote('', false); });
-  $('#btn-notes-open').addEventListener('click', function () { show('notes'); });
-  $('#btn-notes-back').addEventListener('click', function () { if (S.key) show('vault'); else { renderLock(); show('lock'); } });
+  $('#btn-notes-back').addEventListener('click', function () { show(S.key ? 'vault' : 'open'); });
+  $('#btn-open-area').addEventListener('click', function () { show('open'); });
+  $('#btn-open-back').addEventListener('click', function () { renderLock(); show('lock'); });
+  function renderOpen() {
+    var it = iasTotals(), gt = gxTotals(), ot = oscpTotals(), km = totalsKm().month, nl = notesList();
+    var rules = nl.filter(function (x) { return x.daily; }), today = toYmd(new Date());
+    var tile = function (go, big, label) { return '<button class="hub-tile wide" data-open="' + go + '"><b>' + esc(big) + '</b><span>' + esc(label) + '</span></button>'; };
+    $('#open-body').innerHTML = '<p class="hint" style="margin:0 0 12px">Study progress, runs and notes. Nothing secret lives here, so it opens without your passphrase.</p>' +
+      '<div class="hub" style="margin-top:0">' +
+      tile('ias', it.done + ' / ' + it.all, 'IAS prelims chapters done') +
+      tile('gx', gt.done + ' / ' + gt.all, 'Govt exam prep topics done') +
+      tile('oscp', ot.done + ' / ' + ot.all, 'OSCP labs rooted') +
+      tile('run', kmText(km) + ' km', 'Running this month · log a run') +
+      tile('notes', rules.length ? rules.filter(function (x) { return (x.days || []).indexOf(today) >= 0; }).length + ' / ' + rules.length : String(nl.length), 'Notes & daily rules') +
+      '</div><button class="btn" id="open-unlock" style="margin-top:16px">Unlock the box</button>';
+  }
+  $('#open-body').addEventListener('click', function (ev) {
+    var t = ev.target.closest('[data-open]');
+    if (t) { show(t.dataset.open); return; }
+    if (ev.target.closest('#open-unlock')) { renderLock(); show('lock'); }
+  });
   $('#notes-body').addEventListener('input', function (ev) {
     var t = ev.target.closest('[data-ntext]');
     if (!t) return;
@@ -9557,8 +9657,8 @@ select.input {
   var GX_BY = {};
   GX.forEach(function (s) { GX_BY[s.id] = s; });
   var gxOpen = {}, gxTopic = null, gxAdding = null, gxNoteTimer = null, gxScroll = 0;
-  function gxData() { return (S.data && S.data.gx) || {}; }
-  function gxEnsure() { S.data.gx = S.data.gx || {}; S.data.gx.c = S.data.gx.c || {}; S.data.gx.x = S.data.gx.x || {}; return S.data.gx; }
+  function gxData() { return OPEN.gx || {}; }
+  function gxEnsure() { OPEN.gx = OPEN.gx || {}; OPEN.gx.c = OPEN.gx.c || {}; OPEN.gx.x = OPEN.gx.x || {}; return OPEN.gx; }
   function gxTopics(s) {
     return s.t.map(function (t, i) { return { id: s.id + '.' + (i + 1), t: t }; })
       .concat(((gxData().x || {})[s.id] || []).map(function (x) { return { id: s.id + '.' + x.id, t: x.t, user: true }; }));
@@ -9570,7 +9670,7 @@ select.input {
     Object.keys(patch).forEach(function (k) { if (patch[k] === undefined || patch[k] === '' || patch[k] === 0) delete cur[k]; else cur[k] = patch[k]; });
     cur.u = Date.now();
     if (!cur.s && !cur.n && !cur.r) delete c[id]; else c[id] = cur;
-    return persist();
+    return saveOpen();
   }
   function gxTotals(list) {
     var t = { all: 0, done: 0 };
@@ -9625,9 +9725,9 @@ select.input {
   }
   function renderGx() {
     var el = $('#gx-body');
-    if (!el || !S.data) return;
+    if (!el) return;
     var t = gxTotals(), pct = t.all ? Math.round(t.done / t.all * 100) : 0;
-    var jobs = entries().filter(function (e) { return e.type === 'govjob'; });
+    var jobs = S.data ? entries().filter(function (e) { return e.type === 'govjob'; }) : [];
     var nextExam = jobs.map(function (e) { return { e: e, d: (e.f || {}).examdate ? daysUntil(e.f.examdate) : null }; })
       .filter(function (x) { return x.d !== null && x.d >= 0; }).sort(function (a, b) { return a.d - b.d; })[0];
     el.innerHTML = '<div class="oscp-head"><div class="oscp-count"><b>' + t.done + '</b><span>of ' + t.all + ' topics done</span></div>' +
@@ -9662,7 +9762,7 @@ select.input {
       if (!name) return;
       var x = gxEnsure().x, sid = b.dataset.gaddsave;
       x[sid] = (x[sid] || []).concat([{ id: 'u' + uid().slice(0, 10), t: name.slice(0, 200) }]);
-      persist().then(function () { renderGx(); window.scrollTo(0, y); toast('Topic added'); var i2 = $('#gx-add-in'); if (i2) i2.focus(); });
+      saveOpen().then(function () { renderGx(); window.scrollTo(0, y); toast('Topic added'); var i2 = $('#gx-add-in'); if (i2) i2.focus(); });
     }
   });
   $('#gx-body').addEventListener('keydown', function (ev) {
@@ -9670,7 +9770,7 @@ select.input {
   });
   function renderGxt() {
     var el = $('#gxt-body'), hit = gxFind(gxTopic);
-    if (!el || !hit || !S.data) { show('gx'); return; }
+    if (!el || !hit) { show('gx'); return; }
     var x = hit.x, st = gxState(x.id), status = gxStatus(x.id), prev = hit.list[hit.i - 1], next = hit.list[hit.i + 1];
     $('#gxt-bar-title').textContent = hit.s.name;
     el.innerHTML = '<div class="lab-hero"><p class="chap-where">' + esc(hit.s.name) + '</p><h2>' + esc(x.t) + '</h2></div>' +
@@ -9681,7 +9781,7 @@ select.input {
       '<div><button type="button" class="mini" data-grev="-1"' + (st.r ? '' : ' disabled') + ' aria-label="One less revision">−</button><button type="button" class="mini" data-grev="1" aria-label="Add a revision">+</button></div></div>' +
       '<div class="field lab-notes"><label class="label" for="gxt-n">Your notes</label>' +
       '<textarea class="input" id="gxt-n" rows="10" placeholder="Formulas, shortcuts, tricks, examples, mistakes to avoid…">' + esc(st.n || '') + '</textarea>' +
-      '<p class="hint" id="gxt-saved">Saved automatically, encrypted in the box.</p></div>' +
+      '<p class="hint" id="gxt-saved">Saved automatically on this phone.</p></div>' +
       '<div class="lab-links"><div class="chap-nav">' +
       (prev ? '<button type="button" class="btn ghost" data-ggo="' + esc(prev.id) + '">← Previous</button>' : '') +
       (next ? '<button type="button" class="btn ghost" data-ggo="' + esc(next.id) + '">Next →</button>' : '') + '</div>' +
@@ -9691,7 +9791,7 @@ select.input {
     clearTimeout(gxNoteTimer);
     var box = $('#gxt-n');
     if (!box || !gxTopic || (gxState(gxTopic).n || '') === box.value) return Promise.resolve();
-    return gxSet(gxTopic, { n: box.value }).then(function () { var s2 = $('#gxt-saved'); if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', encrypted in the box.'; });
+    return gxSet(gxTopic, { n: box.value }).then(function () { var s2 = $('#gxt-saved'); if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' on this phone.'; });
   }
   $('#gxt-body').addEventListener('input', function (ev) { if (ev.target.id === 'gxt-n') { clearTimeout(gxNoteTimer); gxNoteTimer = setTimeout(saveGxNotes, 700); } });
   $('#gxt-body').addEventListener('click', function (ev) {
@@ -9714,7 +9814,7 @@ select.input {
         var d = gxEnsure(), sid = hit.s.id, xid = hit.x.id.split('.')[1];
         d.x[sid] = (d.x[sid] || []).filter(function (it) { return it.id !== xid; });
         delete d.c[hit.x.id];
-        persist().then(function () { gxTopic = null; show('gx'); window.scrollTo(0, gxScroll); });
+        saveOpen().then(function () { gxTopic = null; show('gx'); window.scrollTo(0, gxScroll); });
       });
     }
   });
@@ -9733,7 +9833,7 @@ select.input {
   var iasView = { q: '', subj: 'all', status: 'all', src: 'all' };
   var iasOpen = {}, iasChap = null, iasAdding = null, iasExamEdit = false, iasNoteTimer = null, iasScroll = 0;
 
-  function iasData() { return (S.data && S.data.ias) || {}; }
+  function iasData() { return OPEN.ias || {}; }
   function iasChapters(b) {
     var out = (b.ch || []).map(function (t, i) { return { id: b.id + '.' + (i + 1), t: t, no: i + 1 }; });
     return out.concat(((iasData().x || {})[b.id] || []).map(function (x) { return { id: b.id + '.' + x.id, t: x.t, user: true }; }));
@@ -9741,10 +9841,10 @@ select.input {
   function chState(id) { return (iasData().c || {})[id] || {}; }
   function chStatus(id) { return chState(id).s || 'todo'; }
   function iasEnsure() {
-    S.data.ias = S.data.ias || {};
-    S.data.ias.c = S.data.ias.c || {};
-    S.data.ias.x = S.data.ias.x || {};
-    return S.data.ias;
+    OPEN.ias = OPEN.ias || {};
+    OPEN.ias.c = OPEN.ias.c || {};
+    OPEN.ias.x = OPEN.ias.x || {};
+    return OPEN.ias;
   }
   function setChap(id, patch) {
     var c = iasEnsure().c, cur = c[id] || {};
@@ -9753,7 +9853,7 @@ select.input {
     });
     cur.u = Date.now();
     if (!cur.s && !cur.n && !cur.r) delete c[id]; else c[id] = cur;
-    return persist();
+    return saveOpen();
   }
   function findChap(id) {
     var b = IAS_BOOK[String(id).split('.')[0]];
@@ -9887,7 +9987,7 @@ select.input {
 
   function renderIas() {
     var el = $('#ias-body');
-    if (!el || !S.data) return;
+    if (!el) return;
     if (!IAS_BOOKS.length) { el.innerHTML = '<div class="empty"><h2>Reading list missing</h2><p>lib/ias-prelims.js did not load.</p></div>'; return; }
     var t = iasTotals(), pct = t.all ? Math.round(t.done / t.all * 100) : 0;
     var exam = iasData().exam, days = iasExamDays();
@@ -9935,7 +10035,7 @@ select.input {
       (groups || '<div class="empty"><h2>Nothing matches</h2><p>Try fewer filters.</p></div>') +
       '<p class="hint oscp-src">Chapter names follow the full NCERT editions UPSC aspirants read, checked against ncert.nic.in. ' +
       'Current NCERT reprints dropped some chapters in 2022–23 and replaced the Class 6 and 9 books; the older printings still have them. ' +
-      'Tap a book to open it, the circle to mark a chapter, and a chapter for notes. Your progress and notes stay encrypted in the box.</p>';
+      'Tap a book to open it, the circle to mark a chapter, and a chapter for notes. Your progress and notes open without the passphrase (nothing secret belongs here).</p>';
   }
 
   function cycleChap(id) {
@@ -9952,7 +10052,7 @@ select.input {
     if (!name) { if (inp) inp.focus(); return; }
     var x = iasEnsure().x, id = 'u' + uid().slice(0, 10);
     x[bid] = (x[bid] || []).concat([{ id: id, t: name.slice(0, 200) }]);
-    persist().then(function () {
+    saveOpen().then(function () {
       iasAdding = bid;
       iasRerender(true);
       var again = $('#iadd-in');
@@ -9971,7 +10071,7 @@ select.input {
       if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) { toast('Pick a date'); return; }
       var d = iasEnsure();
       if (v) d.exam = v; else delete d.exam;
-      persist().then(function () { iasExamEdit = false; iasRerender(true); });
+      saveOpen().then(function () { iasExamEdit = false; iasRerender(true); });
       return;
     }
     var bk = ev.target.closest('[data-ibook]');
@@ -10014,7 +10114,7 @@ select.input {
 
   function renderChap() {
     var el = $('#chap-body'), hit = findChap(iasChap);
-    if (!el || !hit || !S.data) { show('ias'); return; }
+    if (!el || !hit) { show('ias'); return; }
     var b = hit.b, c = hit.c, st = chState(c.id), status = chStatus(c.id);
     var prev = hit.list[hit.i - 1], next = hit.list[hit.i + 1];
     $('#chap-bar-title').textContent = b.t;
@@ -10031,7 +10131,7 @@ select.input {
       '<button type="button" class="mini" data-irev="1" aria-label="Add a revision">+</button></div></div>' +
       '<div class="field lab-notes"><label class="label" for="chap-n">Your notes</label>' +
       '<textarea class="input" id="chap-n" rows="10" placeholder="Key points, facts, maps, links to current affairs, PYQs from this chapter…">' + esc(st.n || '') + '</textarea>' +
-      '<p class="hint" id="chap-saved">Saved automatically, encrypted in the box.</p></div>' +
+      '<p class="hint" id="chap-saved">Saved automatically on this phone.</p></div>' +
       '<div class="lab-links">' +
       '<div class="chap-nav">' +
       (prev ? '<button type="button" class="btn ghost" data-igo="' + esc(prev.id) + '">← Previous</button>' : '') +
@@ -10048,7 +10148,7 @@ select.input {
     if ((chState(iasChap).n || '') === v) return Promise.resolve();
     return setChap(iasChap, { n: v }).then(function () {
       var s2 = $('#chap-saved');
-      if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', encrypted in the box.';
+      if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' on this phone.';
     });
   }
   $('#chap-body').addEventListener('input', function (ev) {
@@ -10083,7 +10183,7 @@ select.input {
         d.x[bid] = (d.x[bid] || []).filter(function (it) { return it.id !== xid; });
         if (!d.x[bid].length) delete d.x[bid];
         delete d.c[hit.c.id];
-        persist().then(function () { iasChap = null; toast('Chapter deleted'); show('ias'); window.scrollTo(0, iasScroll); });
+        saveOpen().then(function () { iasChap = null; toast('Chapter deleted'); show('ias'); window.scrollTo(0, iasScroll); });
       });
     }
   });
@@ -10351,7 +10451,7 @@ select.input {
     // Wait for the stored box before deciding between "unlock" and "set up",
     // so an existing box is never offered a fresh setup.
     $('#lock-action').disabled = true;
-    loadRec().then(function (rec) {
+    loadRec().then(function (rec) { return openLoad().then(function () { return rec; }); }).then(function (rec) {
       S.rec = rec;
       $('#lock-action').disabled = false;
       renderLock();
