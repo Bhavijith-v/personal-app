@@ -1397,6 +1397,11 @@ select.input {
 .glyph.brand b { font-size: 13px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
 .glyph.brand b.sm { font-size: 10.5px; }
 .glyph.brand.dk { border-color: var(--line); }
+.glyph.brand.pic { background: #fff; border-color: var(--line); padding: 3px; overflow: hidden; }
+.glyph.brand.pic img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.bcover-logo.pic { width: 46px; height: 46px; padding: 5px; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); }
+.bcover-logo.pic img { width: 100%; height: 100%; object-fit: contain; }
+.bcover-bg img { display: none; }
 .detail-head .glyph.brand svg { width: 21px; height: 21px; }
 .detail-head .glyph.brand b { font-size: 16px; }
 .detail-head .glyph.brand b.sm { font-size: 12.5px; }
@@ -3552,11 +3557,21 @@ select.input {
   }
 
   /* ============ brand covers ============
-     Logins, banks and trading accounts wear their site's logo, matched on the
-     name first, then the website, from lib/brands.js. Nothing is fetched, so
-     no third party learns which sites are in the box. A login with no match
-     gets a lettered tile in a colour picked from its name. */
-  var BRAND_KINDS = { login: 1, bank: 1, broker: 1 };
+     Every entry wears its organisation's real logo when there is one (the
+     bank, the IPO's company, the recruiting body, the university, the
+     insurer…), matched on the name first, then the fields that name the
+     organisation, from lib/brands.js and assets/logos/. All of it ships with
+     the app; nothing is fetched, so no third party learns what is in the
+     box. A login with no match gets a lettered tile coloured from its name. */
+  // Which of an entry's fields can name the organisation, by kind of entry.
+  // Every kind matches on its name first. ID documents wear their issuer's logo.
+  var BRAND_KINDS = { login: ['site'], bank: ['bank'], broker: ['broker'], card: ['bank'], ipo: [], govjob: ['org'], cert: ['issuer', 'provider'],
+    edu_10: ['board', 'school'], edu_12: ['board', 'school'], edu_ug: ['university', 'college'], edu_pg: ['university', 'college'], edu_other: ['university', 'college', 'board'],
+    ins: ['insurer'], vehicle: ['model'], warranty: ['brand'], trip: ['via'], job: [], project: ['client'], training: ['platform'], wcontact: ['team'],
+    pay: [], odoc: [], race: [] };
+  var ID_BRAND = { id_aadhaar: 'UIDAI', id_pan: 'Income Tax', id_voter: 'Election Commission', id_passport: 'Passport Seva', id_dl: 'Parivahan' };
+  // The big cover goes on accounts; other kinds keep their own card and just wear the logo.
+  var BRAND_COVER = { login: 1, bank: 1, broker: 1 };
   var MONO = ['4C6EF5', '0CA678', 'E8590C', 'AE3EC9', '1C7ED6', 'D6336C', '2F9E44', 'F08C00', '7048E8', '0B7285'];
   function hostOf(v) {
     var s = String(v || '').trim().toLowerCase().replace(/^[a-z][a-z0-9+.-]*:\/\//, '');
@@ -3570,7 +3585,9 @@ select.input {
     });
   }
   function brandOf(e) {
-    if (!BRAND_KINDS[e.type] || !window.BRANDS) return null;
+    if (!window.BRANDS) return null;
+    if (ID_BRAND[e.type]) return window.BRANDS.filter(function (b) { return b.n === ID_BRAND[e.type]; })[0] || null;
+    if (!BRAND_KINDS[e.type]) return null;
     var f = e.f || {}, list = window.BRANDS, i;
     var title = wordsOf(e.title), host = hostOf(f.site);
     for (i = 0; i < list.length; i++) if (keyHit(list[i], title)) return list[i];
@@ -3579,7 +3596,7 @@ select.input {
         if (list[i].h.some(function (d) { return host === d || host.slice(-d.length - 1) === '.' + d; })) return list[i];
       }
     }
-    var rest = wordsOf([f.site, f.bank, f.broker].filter(Boolean).join(' '));
+    var rest = wordsOf(BRAND_KINDS[e.type].map(function (k) { return f[k]; }).filter(Boolean).join(' '));
     for (i = 0; i < list.length; i++) if (keyHit(list[i], rest)) return list[i];
     return null;
   }
@@ -3595,8 +3612,9 @@ select.input {
     var b = brandOf(e), bg, mark;
     if (b) {
       bg = b.c;
-      mark = b.d ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + b.d + '"/></svg>'
-                 : '<b' + (b.t.length > 2 ? ' class="sm"' : '') + '>' + esc(b.t) + '</b>';
+      mark = b.i ? '<img src="' + esc(b.i) + '" alt="" loading="lazy" decoding="async">'
+        : b.d ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + b.d + '"/></svg>'
+        : '<b' + (b.t.length > 2 ? ' class="sm"' : '') + '>' + esc(b.t) + '</b>';
     } else if (e.type === 'login') {
       var name = String(e.title || '?'), h = 0;
       for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
@@ -3606,9 +3624,10 @@ select.input {
       return null;
     }
     var lum = lumOf(bg);
-    return { name: b ? b.n : '', bg: bg, fg: lum > 0.45 ? '#111' : '#fff', dark: lum < 0.04, mark: mark };
+    return { name: b ? b.n : '', bg: bg, fg: lum > 0.45 ? '#111' : '#fff', dark: lum < 0.04, mark: mark, pic: !!(b && b.i) };
   }
   function brandGlyph(look) {
+    if (look.pic) return '<span class="glyph brand pic" aria-hidden="true">' + look.mark + '</span>';
     return '<span class="glyph brand' + (look.dark ? ' dk' : '') + '" style="background-color:#' + look.bg +
       ';color:' + look.fg + '" aria-hidden="true">' + look.mark + '</span>';
   }
@@ -3616,7 +3635,7 @@ select.input {
     var host = hostOf((e.f || {}).site);
     return '<div class="bcover' + (look.dark ? ' dk' : '') + '" style="background-color:#' + look.bg + ';color:' + look.fg + '">' +
       '<span class="bcover-bg" aria-hidden="true">' + look.mark + '</span>' +
-      '<span class="bcover-logo" aria-hidden="true">' + look.mark + '</span>' +
+      '<span class="bcover-logo' + (look.pic ? ' pic' : '') + '" aria-hidden="true">' + look.mark + '</span>' +
       '<span class="bcover-name">' + esc(look.name || e.title || 'Login') + '</span>' +
       (host ? '<span class="bcover-host">' + esc(host) + '</span>' : '') +
       '</div>';
@@ -5112,7 +5131,7 @@ select.input {
     $('#detail-bar-title').textContent = e.title || 'Untitled';
 
     var look = brandLook(e);
-    var html = (look ? brandCover(e, look) : '') + '<div class="detail-head">' +
+    var html = (look && BRAND_COVER[e.type] ? brandCover(e, look) : '') + '<div class="detail-head">' +
       (look ? brandGlyph(look) : '<span class="glyph" aria-hidden="true">' + ICON[e.type] + '</span>') +
       '<span><h2 class="detail-title">' + esc(e.title || 'Untitled') + '</h2>' +
       '<div class="detail-kind">' + esc(t.name) + (personOf(e) ? ' · ' + esc(personLabel(personOf(e))) : '') +
@@ -11479,7 +11498,7 @@ select.input {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 43;
+  var APP_VER = 44;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   if ('serviceWorker' in navigator) {
     var hadWorker = !!navigator.serviceWorker.controller, reloading = false;

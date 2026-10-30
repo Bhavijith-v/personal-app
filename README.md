@@ -577,3 +577,11 @@ An **Office** tab (and home tile) for your job: job details (employee ID, grade,
 ## Icons
 
 Interface and entry icons are from [Lucide](https://lucide.dev) (ISC licence; lucide-static 0.460.0), inlined in `index.html` as the `LU` table and drawn with `lu(name)`. Brand logos come from Simple Icons (`lib/brands.js`).
+
+## Real logos on every entry
+
+Entries wear their organisation's real logo: the IPO's company (Jio Financial, Tata Technologies…), the recruiting body (UPSC, Kerala PSC, SSC, IBPS, RRB…), the university or board, the certification body (OffSec, CompTIA, EC-Council…), the insurer, the vehicle maker, the airline or IRCTC, your employer (TCS…), and the issuer on ID documents (UIDAI, Income Tax, Election Commission, Passport Seva, Parivahan).
+
+- Vector logos come from Simple Icons; picture logos (`assets/logos/*.webp`, 128 px) were taken once from each organisation's own website or from Wikipedia / Wikimedia Commons and ship with the app, so nothing about an entry is ever sent anywhere.
+- To add or refresh: list the organisation in `tools/brands/orgs.py`, run `fetch_logos.py` (and `commons_logos.py` for sharper files), choose in `logo_picks.py`, render with `raster_logos.mjs`, then rebuild `lib/brands.js` with `build_brands.py`.
+- Brand names and marks belong to their owners; they are shown only to label your own records.
