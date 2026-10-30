@@ -1038,6 +1038,30 @@ select.input {
 .sync-acts .btn { flex: 1 1 auto; width: auto; }
 .sync-more { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 8px; }
 .app-ver { margin-top: 28px; text-align: center; }
+.files { padding: 6px 12px 12px; }
+.file-row { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+.file-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 0; background: none; border: 0; color: inherit; text-align: left; }
+.file-ic { flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 48px; border-radius: 6px; background: var(--surface-3); color: var(--fg-dim); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
+.file-ic[data-kind="pdf"] { background: color-mix(in srgb, #d9655c 22%, var(--surface-3)); color: var(--fg); }
+.file-ic[data-kind="img"] { background: color-mix(in srgb, #5fae7e 22%, var(--surface-3)); color: var(--fg); }
+.file-ic.big { width: 72px; height: 88px; font-size: 15px; border-radius: 10px; }
+.file-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.file-text b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-text small { color: var(--fg-faint); font-size: 12.5px; }
+.file-add { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 0 6px; background: none; border: 0; color: var(--fg); font-weight: 600; font-size: 15px; }
+.file-add span { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--brass); color: var(--brass-ink); font-size: 17px; line-height: 1; }
+.files-hint { margin: 6px 0 0; font-size: 12.5px; }
+.docview { position: fixed; inset: 0; z-index: 57; display: flex; flex-direction: column; background: var(--bg); }
+.docview[hidden] { display: none; }
+.docview-bar { display: flex; align-items: center; gap: 12px; padding: max(10px, env(safe-area-inset-top)) 16px 10px; border-bottom: 1px solid var(--line); }
+.docview-bar h2 { flex: 1; min-width: 0; margin: 0; font-size: 16px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.docview-body { flex: 1; overflow: auto; padding: 12px; -webkit-overflow-scrolling: touch; }
+.docview-page { display: block; width: 100%; height: auto; margin: 0 auto 12px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+.docview-img { display: block; max-width: 100%; margin: 0 auto; border-radius: 6px; }
+.docview-note { color: var(--fg-dim); text-align: center; margin: 24px 16px; }
+.docview-file { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 48px; text-align: center; }
+.docview-file small { color: var(--fg-faint); }
+.docview-file p { color: var(--fg-dim); max-width: 32ch; }
 .sync-how { margin: 0 0 14px; padding-left: 20px; color: var(--fg-dim); font-size: 14px; line-height: 1.5; }
 .sync-how li + li { margin-top: 6px; }
 .sync-showqr { margin-bottom: 14px; }
@@ -1811,6 +1835,7 @@ select.input {
 <div id="toast" role="status" hidden></div>
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*" hidden>
+<input type="file" id="att-in" multiple hidden>
 <input type="file" id="scan-in" accept="image/*" hidden>
 <input type="file" id="runs-in" accept=".gpx,.tcx,.csv,application/gpx+xml,text/csv,text/xml,application/xml" hidden>
 <input type="file" id="stmt-in" accept=".pdf,.xls,.xlsx,.csv,.txt,.htm,.html,application/pdf,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
@@ -1848,6 +1873,15 @@ select.input {
     <button type="button" id="cam-shot" aria-label="Take the photo"></button>
     <button type="button" id="cam-lib">Photos</button>
   </div>
+</div>
+
+<div class="docview" id="docview" hidden role="dialog" aria-modal="true" aria-labelledby="docview-title">
+  <div class="docview-bar">
+    <button type="button" class="txt-btn" id="docview-close">Close</button>
+    <h2 id="docview-title"></h2>
+    <button type="button" class="txt-btn" id="docview-share">Share</button>
+  </div>
+  <div class="docview-body" id="docview-body"></div>
 </div>
 
 <div class="cam" id="qrcam" hidden role="dialog" aria-modal="true" aria-label="Scan the sync code">
@@ -3451,7 +3485,7 @@ select.input {
   }
   function b64(buf) {
     var b = new Uint8Array(buf), s = '';
-    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
     return btoa(s);
   }
   function ub64(str) {
@@ -3887,6 +3921,7 @@ select.input {
     scanState = null;
     stopScanner();
     closeQrCam();
+    closeDoc();
     closeLightbox();
     if (S.mk) { try { S.mk.fill(0); } catch (e) {} }   // wipe the master key
     S.mk = null;
@@ -4952,6 +4987,8 @@ select.input {
     html += rows ? '<div class="card">' + rows + '</div>'
                  : '<div class="notice">No details filled in yet. Tap <b>Edit</b> to add them.</div>';
 
+    html += filesSection(e);
+
     if (e.notes) {
       html += '<div class="section-label">Notes</div><div class="card"><div class="frow">' +
         '<span class="frow-text"><span class="val note">' + esc(e.notes) + '</span></span></div></div>';
@@ -5065,6 +5102,12 @@ select.input {
       return;
     }
 
+    if (ev.target.closest('[data-fadd]')) { pickAttachments(); return; }
+    var fo = ev.target.closest('[data-fopen]');
+    if (fo) { openAttachment(e, fo.dataset.fopen); return; }
+    var fx = ev.target.closest('[data-fdel]');
+    if (fx) { removeAttachment(e, fx.dataset.fdel); return; }
+
     var viewBtn = ev.target.closest('[data-view]');
     if (viewBtn) {
       var src = (e.f || {})[viewBtn.dataset.view];
@@ -5136,6 +5179,7 @@ select.input {
         if (!ok) return;
         S.data.entries = entries().filter(function (x) { return x.id !== e.id; });
         markGone(e.id);
+        (e.files || []).forEach(function (f) { markGone(f.id); fileDel(f.id); });
         persist().then(function () {
           S.id = null;
           toast('Entry deleted');
@@ -5793,7 +5837,8 @@ select.input {
       // device, and leaving it out keeps a backup restorable anywhere.
       wrap: S.rec.wraps.pass,
       iv: S.rec.iv,
-      ct: S.rec.ct
+      ct: S.rec.ct,
+      files: bkFiles || undefined
     };
   }
 
@@ -5862,7 +5907,8 @@ select.input {
         notes: String(e.notes || ''),
         updated: typeof e.updated === 'number' ? e.updated : 0,
         who: typeof e.who === 'string' && /^p[0-9a-f]{6,16}$/.test(e.who) ? e.who : undefined,
-        fav: e.fav === true ? true : undefined
+        fav: e.fav === true ? true : undefined,
+        files: sanitizeFiles(e.files)
       };
     });
   }
@@ -5944,6 +5990,7 @@ select.input {
     updateBkStatus();
     $('#lock-after').value = String(goals().lockAfter || 0);
     renderPushSection();
+    if (fileIdsInUse().length) collectBackupFiles();
     SY.show = false; SY.linking = false;
     renderSync();
     renderFaceSection();
@@ -6001,6 +6048,7 @@ select.input {
   });
 
   function doExport() {
+    if (fileIdsInUse().length && !bkFiles) { toast('Getting your files ready… tap again in a moment'); collectBackupFiles(); return; }
     var text = JSON.stringify(buildBackup(), null, 2);
     var name = 'deposit-box-backup-' + new Date().toISOString().slice(0, 10) + '.json';
     var blob = new Blob([text], { type: 'application/json' });
@@ -6096,7 +6144,9 @@ select.input {
           S.data.gx = sanitizeGx(r.data && r.data.gx);
           openFromBox(true);
           S.data.money = sanitizeMoney(r.data && r.data.money);
-          return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
+          return restoreBackupFiles(p, r.raw, fileIdsInUse()).then(function () {
+            return finishImport('Box replaced — ' + incoming.length + ' ' + plural(incoming.length));
+          });
         });
       }
       var res = mergeEntries(entries(), incoming);
@@ -6111,10 +6161,12 @@ select.input {
       S.data.gx = mergeGx(S.data.gx, sanitizeGx(r.data && r.data.gx));
       openFromBox(false);
       S.data.money = mergeMoney(S.data.money, sanitizeMoney(r.data && r.data.money));
-      var parts = [];
-      if (res.added) parts.push('added ' + res.added);
-      if (res.updated) parts.push('updated ' + res.updated);
-      return finishImport(parts.length ? 'Merged — ' + parts.join(', ') : 'Nothing new in that backup');
+      return restoreBackupFiles(p, r.raw, fileIdsInUse()).then(function () {
+        var parts = [];
+        if (res.added) parts.push('added ' + res.added);
+        if (res.updated) parts.push('updated ' + res.updated);
+        return finishImport(parts.length ? 'Merged — ' + parts.join(', ') : 'Nothing new in that backup');
+      });
     }).catch(function () {
       setImportBusy(false);
       $('#bk-err').textContent = 'That passphrase does not open this backup.';
@@ -6150,7 +6202,7 @@ select.input {
       if (r.raw) {
         return useMasterKey(r.raw).then(function () {
           S.rec = { v: 2, wraps: { pass: r.wrap }, iv: p.iv, ct: p.ct };
-          return persist();
+          return restoreBackupFiles(p, r.raw, fileIdsInUse()).then(function () { return persist(); });
         });
       }
       // An older backup carries no wrapped key, so build a fresh one.
@@ -9819,6 +9871,224 @@ select.input {
     if ((b = ev.target.closest('[data-nnew]'))) addNote('', b.dataset.nnew !== 'note', b.dataset.nnew);
   });
 
+  /* ============ files on entries ============
+     Any file (PDF, Word, photos…) can sit on any entry. The entry only lists
+     them (name, type, size); the bytes are sealed with the box's own key and
+     kept in IndexedDB one record per file, so saving the box never rewrites
+     them. Backups and sync carry them separately, still encrypted. */
+  var FILE_MAX = 10 * 1024 * 1024, FILES_PER = 20, FID_RE = /^f[0-9a-f]{16}$/;
+  function sanitizeFiles(list) {
+    if (!Array.isArray(list)) return undefined;
+    var out = list.filter(function (f) { return f && FID_RE.test(f.id) && typeof f.name === 'string'; }).slice(0, FILES_PER).map(function (f) {
+      return { id: f.id, name: f.name.slice(0, 120) || 'File', type: String(f.type || '').slice(0, 100), size: +f.size || 0, at: +f.at || 0 };
+    });
+    return out.length ? out : undefined;
+  }
+  function fileIdsInUse() {
+    var ids = [];
+    entries().forEach(function (e) { (e.files || []).forEach(function (f) { ids.push(f.id); }); });
+    return ids;
+  }
+  function fileGet(id) {
+    if (!idb) return Promise.resolve(null);
+    return idbDo('readonly', function (st) { return st.get('f:' + id); }).then(function (r) { return r || null; }, function () { return null; });
+  }
+  function filePut(id, rec) {
+    if (!idb) return Promise.resolve(false);
+    return idbDo('readwrite', function (st) { st.put(rec, 'f:' + id); }).then(function () { return true; }, function () { return false; });
+  }
+  function fileDel(id) {
+    if (!idb) return Promise.resolve();
+    return idbDo('readwrite', function (st) { st.delete('f:' + id); }).catch(function () {});
+  }
+  function fileKeys() {
+    if (!idb) return Promise.resolve([]);
+    return idbDo('readonly', function (st) { return st.getAllKeys(); }).then(function (ks) {
+      return (ks || []).filter(function (k) { return typeof k === 'string' && k.indexOf('f:') === 0; }).map(function (k) { return k.slice(2); });
+    }, function () { return []; });
+  }
+  function bytesSeal(buf, key) {
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, buf).then(function (ct) { return { iv: b64(iv), ct: ct }; });
+  }
+  function bytesOpen(rec, key) {
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64(rec.iv) }, key, rec.ct instanceof ArrayBuffer ? rec.ct : ub64(rec.ct));
+  }
+  function fmtSize(n) {
+    return n >= 1048576 ? (n / 1048576).toFixed(1).replace(/\.0$/, '') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+  }
+  function fileExt(f) {
+    var m = /\.([A-Za-z0-9]{1,5})$/.exec(f.name);
+    return (m ? m[1] : (f.type.split('/')[1] || 'file')).slice(0, 4).toUpperCase();
+  }
+  function filesSection(e) {
+    var fl = e.files || [];
+    return '<div class="section-label lab-group">Files' + (fl.length ? ' <span>' + fl.length + '</span>' : '') + '</div><div class="card files">' +
+      fl.map(function (f) {
+        return '<div class="file-row"><button type="button" class="file-open" data-fopen="' + esc(f.id) + '">' +
+          '<span class="file-ic" data-kind="' + esc(/pdf/.test(f.type) ? 'pdf' : /^image\//.test(f.type) ? 'img' : 'doc') + '">' + esc(fileExt(f)) + '</span>' +
+          '<span class="file-text"><b>' + esc(f.name) + '</b><small>' + esc(fmtSize(f.size) + (f.at ? ' · added ' + fmtDate(toYmd(new Date(f.at))) : '')) + '</small></span></button>' +
+          '<button type="button" class="mini" data-fdel="' + esc(f.id) + '" aria-label="Remove ' + esc(f.name) + '">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>';
+      }).join('') +
+      (fl.length < FILES_PER ? '<button type="button" class="file-add" data-fadd><span>+</span>Add a file</button>' : '') +
+      '<p class="hint files-hint">PDFs, photos, Word, Excel, anything up to 10 MB. Encrypted with the rest of the box.</p></div>';
+  }
+  function pickAttachments() {
+    if (!idb) { toast('This browser can’t store files. Try Safari or Chrome.'); return; }
+    var inp = $('#att-in');
+    inp.value = '';
+    guardSheet();   // the file picker hides the page for a moment
+    inp.click();
+  }
+  $('#att-in').addEventListener('change', function () {
+    var e = findEntry(S.id), files = Array.prototype.slice.call(this.files || []);
+    if (!e || !files.length || !S.key) return;
+    var room = FILES_PER - (e.files || []).length, big = files.filter(function (f) { return f.size > FILE_MAX; });
+    files = files.filter(function (f) { return f.size <= FILE_MAX && f.size > 0; }).slice(0, Math.max(0, room));
+    if (big.length) toast(big[0].name + ' is over 10 MB, so it was left out');
+    if (!files.length) return;
+    toast(files.length === 1 ? 'Adding the file…' : 'Adding ' + files.length + ' files…');
+    var added = 0;
+    files.reduce(function (p, file) {
+      return p.then(function () {
+        return file.arrayBuffer().then(function (buf) { return bytesSeal(buf, S.key); }).then(function (rec) {
+          var id = 'f' + uid();
+          return filePut(id, rec).then(function (ok) {
+            if (!ok) throw new Error('store');
+            e.files = (e.files || []).concat([{ id: id, name: file.name || 'File', type: file.type || '', size: file.size, at: Date.now() }]);
+            added++;
+          });
+        });
+      });
+    }, Promise.resolve()).catch(function () {
+      toast('Could not save the file. The phone may be out of space.');
+    }).then(function () {
+      if (!added) return;
+      e.updated = Date.now();
+      persist().then(function () {
+        if (S.view === 'detail' && S.id === e.id) renderDetail();
+        toast(added === 1 ? 'File added' : added + ' files added');
+      });
+    });
+  });
+  function removeAttachment(e, fid) {
+    var f = (e.files || []).filter(function (x) { return x.id === fid; })[0];
+    if (!f) return;
+    askConfirm({ title: 'Remove this file?', body: '“' + f.name + '” will be removed from this entry' + (S.data.sync ? ' and from your other devices' : '') + '.', yes: 'Remove' }).then(function (ok) {
+      if (!ok) return;
+      e.files = sanitizeFiles((e.files || []).filter(function (x) { return x.id !== fid; }));
+      e.updated = Date.now();
+      markGone(fid);
+      fileDel(fid);
+      persist().then(function () { renderDetail(); toast('File removed'); });
+    });
+  }
+
+  // The viewer: photos and PDFs show here; anything else gets Share / Save.
+  var docOpen = null;
+  function closeDoc() {
+    docOpen = null;
+    $('#docview').hidden = true;
+    $('#docview-body').textContent = '';
+  }
+  function openAttachment(e, fid) {
+    var f = (e.files || []).filter(function (x) { return x.id === fid; })[0];
+    if (!f) return;
+    var body = $('#docview-body');
+    $('#docview-title').textContent = f.name;
+    body.innerHTML = '<p class="docview-note">Opening…</p>';
+    $('#docview').hidden = false;
+    var me = docOpen = { f: f, buf: null };
+    fileGet(fid).then(function (rec) {
+      if (!rec) {
+        throw new Error(S.data && S.data.sync ? 'This file hasn’t arrived from your other device yet. Open the app there for a moment, then try again.' : 'This file is missing on this device.');
+      }
+      return bytesOpen(rec, S.key);
+    }).then(function (buf) {
+      if (docOpen !== me) return;
+      me.buf = buf;
+      if (/^image\//.test(f.type)) {
+        return new Promise(function (res) {
+          var fr = new FileReader();
+          fr.onload = function () { if (docOpen === me) body.innerHTML = '<img class="docview-img" alt="" src="' + fr.result + '">'; res(); };
+          fr.readAsDataURL(new Blob([buf], { type: f.type }));
+        });
+      }
+      if (/pdf/.test(f.type) || /\.pdf$/i.test(f.name)) return renderPdfInto(body, buf, me);
+      body.innerHTML = '<div class="docview-file"><span class="file-ic big" data-kind="doc">' + esc(fileExt(f)) + '</span><b>' + esc(f.name) + '</b><small>' + esc(fmtSize(f.size)) + '</small>' +
+        (phoneShare() ? '<p>This kind of file opens in another app. Tap <b>Share</b> to open it, save it to Files or send it.</p>'
+          : '<p>This kind of file opens in another app. Click <b>Save</b> to download it.</p>') + '</div>';
+    }).catch(function (err) {
+      if (docOpen === me) body.innerHTML = '<p class="docview-note">' + esc(err && err.message && err.message.length > 20 ? err.message : 'Could not open this file.') + '</p>';
+    });
+  }
+  function renderPdfInto(body, buf, me) {
+    return loadPdfJs().then(function (lib) {
+      return lib.getDocument({ data: new Uint8Array(buf.slice(0)), isEvalSupported: false, disableFontFace: true, useSystemFonts: false }).promise;
+    }).then(function (pdf) {
+      if (docOpen !== me) return;
+      body.textContent = '';
+      var n = Math.min(pdf.numPages, 60), w = body.clientWidth - 24, dpr = Math.min(2, window.devicePixelRatio || 1);
+      var page = function (i) {
+        if (i > n || docOpen !== me) return Promise.resolve();
+        return pdf.getPage(i).then(function (pg) {
+          var v1 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: (w / v1.width) * dpr });
+          var c = document.createElement('canvas');
+          c.width = Math.round(vp.width); c.height = Math.round(vp.height); c.className = 'docview-page';
+          body.appendChild(c);
+          return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+        }).then(function () { return page(i + 1); });
+      };
+      return page(1).then(function () { if (pdf.numPages > n && docOpen === me) body.insertAdjacentHTML('beforeend', '<p class="docview-note">Showing the first ' + n + ' pages. Tap Share to see all.</p>'); });
+    });
+  }
+  // Phones share (the sheet has Save to Files); computers download.
+  function phoneShare() { return /iPhone|iPad|Android/.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform)); }
+  $('#docview-share').textContent = phoneShare() ? 'Share' : 'Save';
+  $('#docview-close').addEventListener('click', closeDoc);
+  $('#docview-share').addEventListener('click', function () {
+    var d = docOpen;
+    if (!d || !d.buf) return;
+    var file = new File([d.buf], d.f.name, { type: d.f.type || 'application/octet-stream' });
+    if (phoneShare() && navigator.canShare && navigator.canShare({ files: [file] })) {
+      guardSheet();
+      navigator.share({ files: [file] }).catch(function () {});
+      return;
+    }
+    var url = URL.createObjectURL(file), a = document.createElement('a');
+    a.href = url; a.download = d.f.name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 20000);
+  });
+
+  // Backups carry the files too, sealed exactly as they are on this device.
+  var bkFiles = null;
+  function collectBackupFiles() {
+    var ids = fileIdsInUse(), out = {};
+    bkFiles = null;
+    return ids.reduce(function (p, id) {
+      return p.then(function () { return fileGet(id).then(function (r) { if (r) out[id] = { iv: r.iv, ct: r.ct instanceof ArrayBuffer ? b64(r.ct) : r.ct }; }); });
+    }, Promise.resolve()).then(function () { bkFiles = out; return out; });
+  }
+  // From a backup into this device. Same master key: store as is. Otherwise
+  // open with the backup's key and seal again with this box's key.
+  function restoreBackupFiles(p, raw, ids) {
+    var files = p && p.files && typeof p.files === 'object' ? p.files : null;
+    if (!files || !raw) return Promise.resolve(0);
+    var n = 0;
+    return importAes(raw).then(function (bk) {
+      return ids.filter(function (id) { return FID_RE.test(id) && files[id] && files[id].iv && files[id].ct; }).reduce(function (q, id) {
+        return q.then(function () {
+          return fileGet(id).then(function (have) {
+            if (have) return;
+            return bytesOpen(files[id], bk).then(function (buf) { return bytesSeal(buf, S.key); }).then(function (rec) { return filePut(id, rec); }).then(function (ok) { if (ok) n++; }, function () {});
+          });
+        });
+      }, Promise.resolve());
+    }).then(function () { return n; });
+  }
+
   /* ============ sync between devices ============
      Keeps the box the same on the iPhone and the laptop. A random sync code,
      kept inside each device's encrypted box, gives three things through
@@ -9978,6 +10248,45 @@ select.input {
       });
     });
   }
+  // Files go up and come down one at a time, after the box itself, sealed
+  // with the sync key like the box.
+  function syncFiles() {
+    var sy = S.data.sync, k, got = 0, want = fileIdsInUse(), gone = goneList();
+    sy.up = sy.up && typeof sy.up === 'object' ? sy.up : {};
+    var mine = function () { return syncOn() && S.data.sync === sy; };
+    return syncKeys(sy.code).then(function (kk) {
+      k = kk;
+      return want.reduce(function (p, id) {
+        return p.then(function () {
+          if (!mine()) return;
+          return fileGet(id).then(function (rec) {
+            if (rec) {
+              if (sy.up[id]) return;
+              return bytesOpen(rec, S.key).then(function (buf) { return bytesSeal(buf, k.enc); }).then(function (x) {
+                return syncReq('fput', { id: k.id, key: k.key, fid: id, blob: x.iv + '.' + b64(x.ct) });
+              }).then(function (j) { if (j.status === 200 && mine()) sy.up[id] = 1; });
+            }
+            return syncReq('fget', { id: k.id, key: k.key, fid: id }).then(function (j) {
+              if (j.status !== 200 || !j.blob || !mine()) return;
+              var i = j.blob.indexOf('.');
+              return bytesOpen({ iv: j.blob.slice(0, i), ct: j.blob.slice(i + 1) }, k.enc).then(function (buf) { return bytesSeal(buf, S.key); })
+                .then(function (r2) { return filePut(id, r2); }).then(function (ok) { if (ok) { sy.up[id] = 1; got++; } });
+            });
+          });
+        });
+      }, Promise.resolve());
+    }).then(function () {
+      if (!mine()) return 0;
+      // files removed on either device: clear them here and on the server
+      Object.keys(sy.up).forEach(function (id) {
+        if (want.indexOf(id) < 0 && gone[id]) { delete sy.up[id]; syncReq('fdrop', { id: k.id, key: k.key, fid: id }).catch(function () {}); }
+      });
+      return fileKeys().then(function (have) {
+        have.forEach(function (id) { if (want.indexOf(id) < 0 && gone[id]) fileDel(id); });
+        return got;
+      });
+    });
+  }
   function syncSoon(ms) {
     if (!syncOn()) return;
     clearTimeout(SY.timer);
@@ -9987,11 +10296,13 @@ select.input {
     clearTimeout(SY.timer);
     if (!syncOn()) return Promise.resolve();
     if (SY.busy) { SY.again = true; return SY.busy; }
-    var sy = S.data.sync, before = sy.rev + '|' + sy.h;
+    var sy = S.data.sync, before = sy.rev + '|' + sy.h + '|' + JSON.stringify(sy.up || {});
     SY.busy = syncOnce().then(function (changed) {
+      return syncFiles().then(function (got) { return changed || got > 0; }, function () { return changed; });
+    }).then(function (changed) {
       SY.err = ''; SY.at = Date.now();
       if (!syncOn()) return;
-      if (changed || before !== sy.rev + '|' + sy.h) { SY.quiet = true; persist(); SY.quiet = false; }
+      if (changed || before !== sy.rev + '|' + sy.h + '|' + JSON.stringify(sy.up || {})) { SY.quiet = true; persist(); SY.quiet = false; }
       if (changed) { refreshView(); toast('Updated from your other device'); }
     }, function (e) {
       SY.err = e instanceof TypeError ? 'No connection to the sync server.' : (e && e.message) || 'Sync failed.';
@@ -10107,7 +10418,7 @@ select.input {
       if (j.same) throw new Error('Nothing is stored under that code yet. Turn on sync on your other device first, then check the code.');
       return syncOpen(j.blob, k).catch(function () { throw new Error('That code does not open the synced box.'); }).then(function (remote) {
         if (S.data.sync && S.data.sync.code === code) { SY.linking = false; return; }   // already linked with this code
-        S.data.sync = { code: code, rev: j.rev, h: '' };
+        S.data.sync = { code: code, rev: j.rev, h: '', up: {} };
         syncApply(remote, JSON.parse(JSON.stringify(syncPayload())));   // keep what this device has too
         SY.linking = false;
         return persist();
@@ -10994,7 +11305,7 @@ select.input {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 39;
+  var APP_VER = 40;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   if ('serviceWorker' in navigator) {
     var hadWorker = !!navigator.serviceWorker.controller, reloading = false;

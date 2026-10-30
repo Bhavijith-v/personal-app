@@ -562,3 +562,10 @@ Settings → **Sync with your other devices** keeps the box the same on the iPho
 - Every upload names the revision it was based on. If the other device changed first, the two are merged on the device and uploaded again. Deletes leave a dated id-only marker (`depositbox.gone`) so a merge doesn't bring things back.
 - Entries, runs, study progress, family, money and notes & rules sync. Settings such as Face ID, stay-unlocked and reminders stay per device, and each device keeps its own passphrase.
 - Sync runs while the box is unlocked: on unlocking, on coming back to the app, a few seconds after a change, and every 30 seconds.
+
+## Files on entries
+
+Any entry can hold files (PDF, photos, Word, Excel, anything up to 10 MB, 20 per entry): open the entry and tap **Add a file**. PDFs and photos open inside the app; other files open through Share (iPhone) or Save (computer).
+
+- The entry lists the files; the bytes are sealed with the box's key and kept in IndexedDB, one record per file, so saving the box never rewrites them.
+- Backups carry the files, still sealed. Sync uploads each file once, on its own (`fput`/`fget`/`fdrop` in `claude-worker/src/sync.js`), sealed with the sync key; removing a file removes it from the other devices too.
