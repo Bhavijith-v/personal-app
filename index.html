@@ -1036,6 +1036,7 @@ select.input {
 .sync-code code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; letter-spacing: 0.04em; color: var(--fg); overflow-wrap: anywhere; }
 .sync-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .sync-acts .btn { flex: 1 1 auto; width: auto; }
+.sync-more { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 8px; }
 #sync-link { margin-bottom: 8px; }
 #sync-link .btn { margin-top: 10px; }
 .note-meta { flex-wrap: wrap; row-gap: 10px; }
@@ -5927,6 +5928,7 @@ select.input {
     updateBkStatus();
     $('#lock-after').value = String(goals().lockAfter || 0);
     renderPushSection();
+    SY.show = false; SY.linking = false;
     renderSync();
     renderFaceSection();
     famEdit = null;
@@ -10013,25 +10015,28 @@ select.input {
     var el = $('#sync-body');
     if (!el || !S.data) return;
     var sy = S.data.sync;
+    var linkPanel = '<div class="bk-panel" id="sync-link"' + (SY.linking ? '' : ' hidden') + '>' +
+      '<label class="label" for="sync-code-in">Sync code from your other device</label>' +
+      '<input class="input mono" id="sync-code-in" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XX">' +
+      (sy && sy.code ? '<p class="hint">Everything on this device is kept and added to the other device’s box.</p>' : '') +
+      '<button class="btn" data-sync="link">Link this device</button></div>' +
+      '<p class="err" id="sync-err" role="alert"></p>';
     if (!sy || !sy.code) {
-      el.innerHTML = '<div class="bk-acts sync-acts"><button class="btn" data-sync="start">Turn on sync</button>' +
-        '<button class="btn ghost" data-sync="linkopen">I have a code from my other device</button></div>' +
-        '<div class="bk-panel" id="sync-link"' + (SY.linking ? '' : ' hidden') + '>' +
-        '<label class="label" for="sync-code-in">Sync code from your other device</label>' +
-        '<input class="input mono" id="sync-code-in" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XX">' +
-        '<button class="btn" data-sync="link">Link this device</button></div>' +
-        '<p class="err" id="sync-err" role="alert"></p>';
+      el.innerHTML = '<div class="bk-acts sync-acts"><button class="btn" data-sync="linkopen">I have a code from my other device</button>' +
+        '<button class="btn ghost" data-sync="start">Turn on sync (first device)</button></div>' + linkPanel;
       return;
     }
     el.innerHTML = '<p class="sync-state" id="sync-state"></p>' +
-      '<div class="sync-code"><span class="label">Sync code</span><code id="sync-code">' + (SY.show ? esc(codeShow(sy.code)) : '••••-••••-••••-••••-••••-••••-••') + '</code>' +
+      '<div class="sync-code"><span class="label">Sync code</span><code id="sync-code">' + esc(SY.show ? codeShow(sy.code) : codeShow(sy.code).replace(/[0-9A-Z](?=.{4})/g, '•')) + '</code>' +
       '<button type="button" class="linkish" data-sync="show">' + (SY.show ? 'Hide' : 'Show') + '</button></div>' +
       '<div class="bk-acts sync-acts"><button class="btn ghost" data-sync="copy">Copy the code</button>' +
       (navigator.share ? '<button class="btn ghost" data-sync="share">Send the code</button>' : '') +
       '<button class="btn ghost" data-sync="now">Sync now</button></div>' +
-      '<p class="hint">To add your other device: open Deposit Box there, go to Settings, tap “I have a code from my other device” and enter this code. ' +
+      '<p class="hint">Linked devices show the same code: check that it ends in <b>' + esc(codeShow(sy.code).slice(-4)) + '</b> on both. ' +
+      'To add your other device: open Deposit Box there, go to Settings, tap “I have a code from my other device” and enter this code. ' +
       'Treat it like your passphrase: anyone with it could read the synced box. Once linked, delete it from wherever you sent it.</p>' +
-      '<button type="button" class="linkish rm" data-sync="off">Turn off sync on this device</button>';
+      '<div class="sync-more"><button type="button" class="linkish" data-sync="linkopen">Use the code from my other device instead</button>' +
+      '<button type="button" class="linkish rm" data-sync="off">Turn off sync on this device</button></div>' + linkPanel;
     renderSyncStatus();
   }
   $('#sync-sect').addEventListener('click', function (ev) {
@@ -10049,9 +10054,16 @@ select.input {
       return;
     }
     if (act === 'start') {
-      S.data.sync = { code: codeNew(), rev: 0, h: '' };
-      SY.show = true; SY.err = '';
-      persist().then(function () { renderSync(); return syncNow(); }).then(function () { if (!SY.err) toast('Sync is on'); });
+      askConfirm({
+        title: 'Is sync already on on your other device?',
+        body: 'If it is, don’t start a new code here: tap Cancel, then “I have a code from my other device” and enter that device’s code. Two different codes never share anything.',
+        yes: 'Start a new code'
+      }).then(function (ok) {
+        if (!ok) return;
+        S.data.sync = { code: codeNew(), rev: 0, h: '' };
+        SY.show = true; SY.err = '';
+        persist().then(function () { renderSync(); return syncNow(); }).then(function () { if (!SY.err) toast('Sync is on'); });
+      });
       return;
     }
     if (act === 'link') {
@@ -10063,6 +10075,7 @@ select.input {
         if (j.status !== 200) throw new Error(j.error || 'Sync failed.');
         if (j.same) throw new Error('Nothing is stored under that code yet. Turn on sync on your other device first, then check the code.');
         return syncOpen(j.blob, k).catch(function () { throw new Error('That code does not open the synced box.'); }).then(function (remote) {
+          if (S.data.sync && S.data.sync.code === code) { SY.linking = false; return; }   // already linked with this code
           S.data.sync = { code: code, rev: j.rev, h: '' };
           syncApply(remote, JSON.parse(JSON.stringify(syncPayload())));   // keep what this device has too
           SY.linking = false;
