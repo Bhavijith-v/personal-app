@@ -593,6 +593,25 @@ select.input {
 .wk-bar { fill: var(--bar); opacity: .72; }
 .wk-bar.now { opacity: 1; }
 .wk-hit { fill: transparent; cursor: pointer; }
+.pc-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pc-chip { padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--fg-dim); font-size: 13px; font-weight: 600; }
+.pc-chip[aria-pressed="true"] { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); }
+.pc-range { flex: 0 0 auto; }
+.pc-head { display: flex; justify-content: space-between; gap: 10px; min-height: 18px; padding: 0 2px 4px; font-size: 13px; color: var(--fg-dim); }
+.pc-key { display: inline-flex; align-items: center; gap: 6px; color: var(--fg-faint); font-size: 12px; }
+.pc-key-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--chart); }
+.pc-key-race { width: 8px; height: 8px; transform: rotate(45deg); border: 2px solid var(--chart); margin-left: 6px; }
+.pc-line { fill: none; stroke: var(--chart); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.pc-dot { fill: var(--chart); stroke: var(--surface); stroke-width: 2; }
+.pc-race { fill: var(--surface); stroke: var(--chart); stroke-width: 2; stroke-linejoin: round; }
+.pc-trend { stroke: var(--fg-faint); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.pc-axis { font-size: 9.5px; }
+.pc-chart { overflow: visible; }
+.pc-detail { margin: 2px 2px 6px; font-family: var(--data); font-size: 12.5px; color: var(--fg-faint); min-height: 1.4em; }
+.pc-detail.on { color: var(--fg); }
+.pc-sel { fill: none; stroke: var(--fg); stroke-width: 2; pointer-events: none; }
+.pc-empty { padding: 22px 14px; color: var(--fg-dim); font-size: 14px; text-align: center; }
 .wk-tip {
   position: absolute; top: 4px; padding: 5px 10px; border-radius: 999px; white-space: nowrap;
   background: var(--surface-3); color: var(--fg); border: 1px solid var(--line);
@@ -6867,6 +6886,95 @@ select.input {
   }
   var wkCache = [];
 
+  // Timing over time: one line, so no legend box; the heading and the chips
+  // name it. "Pace" plots every timed run as min/km; 5K, 10K, Half and
+  // Marathon plot finish times at that distance. Faster sits higher, which
+  // is how runners read it, and the axis says so. 2px line, 8px dots; a race
+  // is a hollow diamond (shape, not colour, tells them apart, with a key).
+  // The fastest and the latest are labelled; tap any dot for its details.
+  var paceView = { mode: 'pace', range: '6m' }, pcCache = [];
+  var PC_RANGES = [['3m', '3M', 92], ['6m', '6M', 183], ['1y', '1Y', 366], ['all', 'All', 0]];
+  function timingPoints() {
+    var dist = paceView.mode === 'pace' ? null : PB_DIST[+paceView.mode];
+    var days = PC_RANGES.filter(function (r) { return r[0] === paceView.range; })[0][2];
+    var from = days ? toYmd(new Date(Date.now() - days * 86400000)) : '';
+    return efforts().filter(function (x) {
+      return x.secs && x.km > 0 && x.date && daysUntil(x.date) <= 0 && x.date >= from &&
+        (!dist || Math.abs(x.km - dist[1]) <= dist[1] * 0.03);
+    }).map(function (x) {
+      return { date: x.date, t: ymdDate(x.date).getTime(), km: x.km, secs: x.secs, race: !!x.race, label: x.label, v: dist ? x.secs : x.secs / x.km };
+    }).sort(function (a, b) { return a.t - b.t; });
+  }
+  function timingChart() {
+    var dist = paceView.mode === 'pace' ? null : PB_DIST[+paceView.mode];
+    var chip = function (attr, val, label, on) { return '<button type="button" class="pc-chip" data-' + attr + '="' + val + '" aria-pressed="' + on + '">' + label + '</button>'; };
+    var controls = '<div class="pc-controls"><div class="pc-chips" role="group" aria-label="What to show">' +
+      chip('pmode', 'pace', 'Pace', !dist) + PB_DIST.map(function (p, i) { return chip('pmode', i, p[0], paceView.mode === String(i)); }).join('') +
+      '</div><div class="freq-pick pc-range" role="group" aria-label="Time range">' +
+      PC_RANGES.map(function (r) { return '<button type="button" data-prange="' + r[0] + '" aria-pressed="' + (paceView.range === r[0]) + '">' + r[1] + '</button>'; }).join('') + '</div></div>';
+    var pts = timingPoints();
+    pcCache = pts;
+    if (pts.length < 2) {
+      return controls + '<div class="wk-wrap pc-empty">' + (pts.length ? 'One ' + (dist ? dist[0] + ' time' : 'timed run') + ' so far. ' : 'No ' + (dist ? dist[0] + ' times' : 'timed runs') + ' in this range. ') +
+        (dist ? 'Log runs or races at this distance with a time to see the line.' : 'Log runs with a time to see your pace over time.') + '</div>';
+    }
+    var fmt = function (v) { return fmtSecs(v); };
+    var W = 400, H = 180, padL = 44, padR = 12, padT = 20, padB = 24, plotW = W - padL - padR, plotH = H - padT - padB;
+    var lo = Math.min.apply(null, pts.map(function (p) { return p.v; })), hi = Math.max.apply(null, pts.map(function (p) { return p.v; }));
+    var step = dist ? (hi - lo > 1200 ? 600 : hi - lo > 300 ? 120 : 60) : (hi - lo > 120 ? 30 : hi - lo > 40 ? 15 : 5);
+    lo = Math.floor(lo / step) * step - (hi === lo ? step : 0); hi = Math.ceil(hi / step) * step + (hi === lo ? step : 0);
+    if (hi === lo) hi = lo + step;
+    var t0 = pts[0].t, t1 = pts[pts.length - 1].t, span = Math.max(1, t1 - t0);
+    var x = function (t) { return padL + (pts.length === 1 ? plotW / 2 : (t - t0) / span * plotW); };
+    var y = function (v) { return padT + (v - lo) / (hi - lo) * plotH; };   // faster (smaller) is higher
+    var svg = '<svg class="wk-chart pc-chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
+      esc((dist ? dist[0] + ' finish times' : 'Pace per kilometre') + ' over time, ' + pts.length + ' runs. Fastest ' + fmt(Math.min.apply(null, pts.map(function (p) { return p.v; }))) + '.') + '">';
+    var ticks = [lo, (lo + hi) / 2, hi];
+    ticks.forEach(function (v) {
+      svg += '<line class="wk-grid" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+        '<text class="wk-tick" x="' + (padL - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' + fmt(Math.round(v)) + '</text>';
+    });
+    svg += '<text class="wk-tick pc-axis" x="' + (padL - 6) + '" y="' + (padT - 8) + '" text-anchor="end">Faster ↑</text>';
+    var dl = function (t) { return new Date(t).toLocaleDateString('en-IN', span > 300 * 86400000 ? { month: 'short', year: '2-digit' } : { day: 'numeric', month: 'short' }); };
+    [[t0, 'start'], [t0 + span / 2, 'middle'], [t1, 'end']].forEach(function (k) {
+      if (pts.length === 1 && k[1] !== 'middle') return;
+      svg += '<text class="wk-tick" x="' + x(k[0]) + '" y="' + (H - 6) + '" text-anchor="' + k[1] + '">' + esc(dl(k[0])) + '</text>';
+    });
+    // trend: least squares over the points, drawn faint and dashed
+    var n = pts.length, mt = 0, mv = 0, sxy = 0, sxx = 0;
+    pts.forEach(function (p) { mt += p.t / n; mv += p.v / n; });
+    pts.forEach(function (p) { sxy += (p.t - mt) * (p.v - mv); sxx += (p.t - mt) * (p.t - mt); });
+    var slope = sxx ? sxy / sxx : 0;
+    if (n >= 4 && sxx) svg += '<line class="pc-trend" x1="' + x(t0) + '" y1="' + y(mv + slope * (t0 - mt)) + '" x2="' + x(t1) + '" y2="' + y(mv + slope * (t1 - mt)) + '"/>';
+    svg += '<path class="pc-line" d="' + pts.map(function (p, i) { return (i ? 'L' : 'M') + x(p.t).toFixed(1) + ' ' + y(p.v).toFixed(1); }).join('') + '"/>';
+    var best = 0;
+    pts.forEach(function (p, i) { if (p.v < pts[best].v) best = i; });
+    pts.forEach(function (p, i) {
+      var cx = x(p.t), cy = y(p.v);
+      svg += p.race ? '<path class="pc-race" d="M' + cx + ' ' + (cy - 5.5) + 'L' + (cx + 5.5) + ' ' + cy + 'L' + cx + ' ' + (cy + 5.5) + 'L' + (cx - 5.5) + ' ' + cy + 'Z"/>'
+        : '<circle class="pc-dot" cx="' + cx + '" cy="' + cy + '" r="4"/>';
+    });
+    [best, n - 1].filter(function (i, k, a) { return a.indexOf(i) === k; }).forEach(function (i) {
+      var p = pts[i], cx = x(p.t), cy = y(p.v), lab = (i === best ? 'Best ' : '') + fmt(p.v);
+      var anchor = cx > W - 60 ? 'end' : cx < padL + 40 ? 'start' : 'middle';
+      svg += '<text class="wk-val" x="' + cx + '" y="' + (cy - 9) + '" text-anchor="' + anchor + '">' + esc(lab) + '</text>';
+    });
+    svg += '<circle class="pc-sel" id="pc-sel" r="7.5" cx="-99" cy="-99"/>';
+    pts.forEach(function (p, i) { svg += '<circle class="wk-hit" data-pp="' + i + '" cx="' + x(p.t) + '" cy="' + y(p.v) + '" r="13"/>'; });
+    svg += '</svg>';
+    var perMonth = slope * 30 * 86400000, trend = '';
+    if (n >= 4) {
+      trend = Math.abs(perMonth) < (dist ? 5 : 1) ? 'Holding steady'
+        : (perMonth < 0 ? 'Getting faster: ' : 'Slowing down: ') + fmt(Math.abs(Math.round(perMonth))) + (dist ? '' : ' /km') + ' a month';
+    }
+    var hasRace = pts.some(function (p) { return p.race; });
+    var head = '<div class="pc-head"><span>' + esc(trend) + '</span>' +
+      (hasRace ? '<span class="pc-key"><i class="pc-key-dot"></i>Run <i class="pc-key-race"></i>Race</span>' : '') + '</div>';
+    var table = '<table class="sr-only"><caption>' + (dist ? dist[0] + ' times' : 'Pace per km') + '</caption><tr><th>Date</th><th>Distance</th><th>Time</th><th>Pace</th></tr>' +
+      pts.map(function (p) { return '<tr><td>' + esc(fmtDate(p.date)) + '</td><td>' + kmText(p.km) + ' km</td><td>' + fmtSecs(p.secs) + '</td><td>' + paceText(p.secs, p.km) + '</td></tr>'; }).join('') + '</table>';
+    return controls + '<div class="wk-wrap pc-wrap">' + head + svg + '<p class="pc-detail" id="pc-tip" aria-live="polite">Tap a dot to see that run.</p></div>' + table;
+  }
+
   function renderRun() {
     var pbs = personalBests(), t = totalsKm();
     var list = efforts().filter(function (x) { return x.date && daysUntil(x.date) <= 0; })
@@ -6896,6 +7004,8 @@ select.input {
           '<b>' + (p.best ? fmtSecs(p.best.secs) : '—') + '</b>' +
           '<small>' + (p.best ? esc(fmtDate(p.best.date)) + (p.best.race ? ' · race' : '') : 'No time yet') + '</small></div>';
       }).join('') + '</div>' +
+
+      '<div class="section-label">Your timing</div>' + timingChart() +
 
       '<div class="section-label">Distance</div><div class="totals">' +
       [['This week', t.week], ['This month', t.month], ['This year', t.year]].map(function (x) {
@@ -6940,6 +7050,20 @@ select.input {
           markGone(del.dataset.delrun);
           saveOpen().then(function () { renderRun(); toast('Run deleted'); });
         });
+      return;
+    }
+    var pm = ev.target.closest('[data-pmode]'), pr = ev.target.closest('[data-prange]');
+    if (pm || pr) {
+      if (pm) paceView.mode = pm.dataset.pmode; else paceView.range = pr.dataset.prange;
+      var y0 = window.scrollY; renderRun(); window.scrollTo(0, y0);
+      return;
+    }
+    var pp = ev.target.closest('[data-pp]'), ptip = $('#pc-tip');
+    if (pp && ptip) {
+      var p = pcCache[+pp.dataset.pp], sel = $('#pc-sel');
+      ptip.textContent = fmtDate(p.date) + ' · ' + kmText(p.km) + ' km · ' + fmtSecs(p.secs) + ' · ' + paceText(p.secs, p.km) + (p.race ? ' · ' + p.label : '');
+      ptip.classList.add('on');
+      sel.setAttribute('cx', pp.getAttribute('cx')); sel.setAttribute('cy', pp.getAttribute('cy'));
       return;
     }
     var hit = ev.target.closest('[data-wk]');
@@ -11498,7 +11622,7 @@ select.input {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 44;
+  var APP_VER = 45;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   if ('serviceWorker' in navigator) {
     var hadWorker = !!navigator.serviceWorker.controller, reloading = false;
