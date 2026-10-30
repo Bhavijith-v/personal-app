@@ -1037,6 +1037,7 @@ select.input {
 .sync-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .sync-acts .btn { flex: 1 1 auto; width: auto; }
 .sync-more { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 8px; }
+.app-ver { margin-top: 28px; text-align: center; }
 .sync-how { margin: 0 0 14px; padding-left: 20px; color: var(--fg-dim); font-size: 14px; line-height: 1.5; }
 .sync-how li + li { margin-top: 6px; }
 .sync-showqr { margin-bottom: 14px; }
@@ -1683,6 +1684,7 @@ select.input {
         </div>
       </div>
 
+      <p class="hint app-ver" id="app-ver"></p>
     </div>
   </section>
 
@@ -10989,9 +10991,23 @@ select.input {
     });
   }
 
+  /* Updates: a Home Screen app can stay in memory for days, so look for a
+     new version whenever it comes back to the front, and switch to it at the
+     lock screen, where nothing is open or half typed. */
+  var APP_VER = 39;
+  $('#app-ver').textContent = 'App version ' + APP_VER;
   if ('serviceWorker' in navigator) {
+    var hadWorker = !!navigator.serviceWorker.controller, reloading = false;
+    var swCheck = function () { navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update().catch(function () {}); }).catch(function () {}); };
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') swCheck(); });
+    setInterval(swCheck, 30 * 60000);
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadWorker || reloading) return;
+      var go = function () { if (!S.key && !reloading) { reloading = true; location.reload(); } };
+      if (!S.key) go(); else document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') setTimeout(go, 50); });
     });
   }
 })();

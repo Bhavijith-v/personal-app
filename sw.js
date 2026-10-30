@@ -5,7 +5,7 @@
 
 /* Bump this whenever you change index.html so phones pick the new version up.
    Changing this string is what makes the browser reinstall the worker. */
-const CACHE = 'depositbox-v38';
+const CACHE = 'depositbox-v39';
 
 const SHELL = [
   './',
@@ -67,7 +67,8 @@ self.addEventListener('fetch', (event) => {
   // Offline, the cached copy answers immediately.
   if (req.mode === 'navigate' || url.pathname.endsWith('.html')) {
     event.respondWith(
-      fetch(req).then(save).catch(() =>
+      // no-store: skip the browser's own HTTP cache too (Pages allows 10 minutes)
+      fetch(req, { cache: 'no-store' }).then(save).catch(() =>
         caches.match(req, { ignoreSearch: true }).then((hit) => hit || caches.match('./index.html'))
       )
     );
