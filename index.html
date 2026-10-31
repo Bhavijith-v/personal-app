@@ -1156,7 +1156,7 @@ select.input {
 .bud + .bud { margin-top: 12px; }
 .bud-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
 .bud-top span { font-family: var(--data); color: var(--fg-dim); font-size: 13px; }
-.bud .meter { margin: 6px 0 4px; }
+.bud .meter:not(#meter) { margin: 6px 0 4px; }
 .bud-note { margin: 0; font-size: 12.5px; color: var(--fg-faint); }
 .bud-note.bad { color: var(--danger); font-weight: 600; }
 .bud-note.warn { color: var(--warn); }
@@ -1310,10 +1310,10 @@ select.input {
 .ctable th, .ctable td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line-soft); }
 .ctable th { color: var(--fg-faint); font-weight: 600; font-size: 11.5px; }
 .ctable .num { text-align: right; font-family: var(--data); font-variant-numeric: tabular-nums; }
-.meter { height: 10px; border-radius: 5px; background: var(--brass-soft); overflow: hidden; margin: 12px 0 8px; }
-.meter i { display: block; height: 100%; border-radius: 5px; background: var(--chart); }
-.meter.warn { background: var(--warn-soft); } .meter.warn i { background: var(--warn); }
-.meter.bad { background: var(--danger-soft); } .meter.bad i { background: var(--danger); }
+.meter:not(#meter) { height: 10px; border-radius: 5px; background: var(--brass-soft); overflow: hidden; margin: 12px 0 8px; }
+.meter:not(#meter) i { display: block; height: 100%; border-radius: 5px; background: var(--chart); }
+.meter.warn:not(#meter) { background: var(--warn-soft); } .meter.warn:not(#meter) i { background: var(--warn); }
+.meter.bad:not(#meter) { background: var(--danger-soft); } .meter.bad:not(#meter) i { background: var(--danger); }
 .m-meter-l { margin: 0 0 4px; font-size: 13.5px; color: var(--fg-dim); }
 .m-meter-l b { color: var(--fg); }
 .m-cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
@@ -1506,6 +1506,68 @@ select.input {
   padding: 10px 16px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
   box-shadow: var(--shadow); pointer-events: none; max-width: calc(100% - 32px); text-align: center;
 }
+
+/* ---------- light and motion ----------
+   A warm glow behind the top of every screen; cards, tiles and rows lift
+   and catch a soft spotlight that follows the pointer (laptop); a gentle
+   press on touch; screens and lists fade in. All of it stays still when
+   the phone asks for reduced motion. */
+body {
+  background:
+    radial-gradient(120% 60% at 50% -12%, color-mix(in srgb, var(--brass) 13%, transparent), transparent 62%) fixed,
+    var(--bg);
+}
+.hub-tile, .row, .site-card, .pb, .tot, .sticky, .rule, .att-main, .ibook, .card.files {
+  position: relative; isolation: isolate;
+}
+.hub-tile::after, .row::after, .site-card::after, .att-main::after, .ibook::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: -1;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, -60%), color-mix(in srgb, var(--brass) 16%, transparent), transparent 62%);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.btn:not(.ghost):not(.danger) {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 6px 18px -8px color-mix(in srgb, var(--brass) 70%, transparent);
+}
+.mark { box-shadow: 0 0 0 1px var(--line), 0 10px 40px -10px color-mix(in srgb, var(--brass) 60%, transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .hub-tile, .row, .site-card, .btn, .icon-btn, .tab, .pc-chip, .site-link, .note-add, .kindpick button, .att-main, .ibook, .txt-btn, .linkish, .file-add {
+    transition: transform 0.18s cubic-bezier(.2, .8, .2, 1), box-shadow 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.2s ease, filter 0.2s ease;
+  }
+  .hub-tile:active, .row:active, .site-card:active, .btn:active, .icon-btn:active, .tab:active, .pc-chip:active,
+  .site-link:active, .note-add:active, .kindpick button:active, .att-main:active { transform: scale(0.975); }
+  .screen:not([hidden]) > .col, .screen:not([hidden]) > .page-body, .screen:not([hidden]) > .gutter > .col { animation: db-in 0.32s cubic-bezier(.2, .8, .2, 1) both; }
+  .list .row { animation: db-in 0.36s cubic-bezier(.2, .8, .2, 1) both; }
+  .list .row:nth-child(2) { animation-delay: 30ms; } .list .row:nth-child(3) { animation-delay: 60ms; }
+  .list .row:nth-child(4) { animation-delay: 90ms; } .list .row:nth-child(5) { animation-delay: 120ms; }
+  .list .row:nth-child(n+6) { animation-delay: 150ms; }
+  .hub-tile.alert .hub-ic svg { animation: db-ring 2.8s ease-in-out infinite; transform-origin: 50% 10%; }
+  .mark { animation: db-glow 4s ease-in-out infinite; }
+  @keyframes db-in { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes db-ring { 0%, 86%, 100% { transform: rotate(0); } 89% { transform: rotate(12deg); } 93% { transform: rotate(-10deg); } 96% { transform: rotate(5deg); } }
+  @keyframes db-glow { 50% { box-shadow: 0 0 0 1px var(--line), 0 12px 52px -8px color-mix(in srgb, var(--brass) 85%, transparent); } }
+}
+@media (hover: hover) and (pointer: fine) {
+  .hub-tile:hover, .row:hover, .site-card:hover, .att-main:hover, .ibook:hover {
+    border-color: color-mix(in srgb, var(--brass) 50%, var(--line));
+    box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--brass) 75%, transparent), 0 2px 8px -4px rgba(0, 0, 0, 0.25);
+  }
+  .hub-tile:hover::after, .row:hover::after, .site-card:hover::after, .att-main:hover::after, .ibook:hover::after { opacity: 1; }
+  .hub-tile:hover .hub-ic { color: var(--brass); }
+  .row:hover .chev { color: var(--brass); transform: translateX(2px); }
+  .btn:not(.ghost):not(.danger):hover { filter: brightness(1.07) saturate(1.05); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 10px 26px -8px color-mix(in srgb, var(--brass) 85%, transparent); }
+  .btn.ghost:hover, .icon-btn:hover, .tab:hover, .pc-chip:hover, .site-link:hover, .note-add:hover, .kindpick button:hover {
+    border-color: color-mix(in srgb, var(--brass) 60%, var(--line)); color: var(--fg);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 14%, transparent);
+  }
+  .icon-btn:hover svg, .site-link:hover svg { color: var(--brass); }
+  .txt-btn:hover, .linkish:hover { filter: brightness(1.15); text-decoration: underline; text-underline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hub-tile:hover, .row:hover, .site-card:hover, .att-main:hover, .ibook:hover { transform: translateY(-2px); }
+    .btn:hover, .note-add:hover, .kindpick button:hover { transform: translateY(-1px); }
+  }
+}
+.chev { transition: transform 0.2s ease, color 0.2s ease; }
 @media (prefers-reduced-motion: no-preference) {
   #toast { animation: rise 0.18s ease-out; }
   @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } }
@@ -11725,8 +11787,19 @@ select.input {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 47;
+  var APP_VER = 48;
   $('#app-ver').textContent = 'App version ' + APP_VER;
+  // The spotlight on cards follows the pointer (mouse or trackpad only).
+  if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.addEventListener('pointermove', function (ev) {
+      var t = ev.target.closest && ev.target.closest('.hub-tile, .row, .site-card, .att-main, .ibook');
+      if (!t) return;
+      var r = t.getBoundingClientRect();
+      t.style.setProperty('--mx', (ev.clientX - r.left) + 'px');
+      t.style.setProperty('--my', (ev.clientY - r.top) + 'px');
+    }, { passive: true });
+  }
+
   if ('serviceWorker' in navigator) {
     var hadWorker = !!navigator.serviceWorker.controller, reloading = false;
     var swCheck = function () { navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update().catch(function () {}); }).catch(function () {}); };
