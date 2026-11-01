@@ -593,3 +593,11 @@ Running → **Your timing**: a line chart of pace (min/km) for every timed run, 
 ## Exam websites
 
 Official sites to apply, download admit cards and check results (UPSC, Kerala PSC/Thulasi, SSC, NTA, IBPS, SBI, RBI, NABARD, LIC, RRB, India Post GDS, Army, Navy, Air Force, ISRO, Kerala High Court, CMD, K-TET, LBS, CEE). Open them from Govt exam prep or the Govt jobs tab; a Govt job entry shows its recruiting body's links and fills in its website. Each link was checked to open the real page; sites with expired or mismatched certificates are left out. The list is `EXAM_SITES` in `index.html`.
+
+## Fill with AI
+
+On the New entry screen, **✨ Fill with AI** reads what you give it (a name like "Kochi Spice Coast Marathon 2026", a pasted email or message, or up to four photos or PDFs) and fills the right kind of entry. With **Search the web** on, it looks up the official details (date, venue, start time, links) and lists the pages it used. Filled fields are marked "filled by AI"; nothing is saved until you tap Save.
+
+- Runs on Claude Opus 5.5 through your own worker (`claude-worker/src/fill.js`, route `/fill`, the Ask Claude access token). Needs the same setup as Ask Claude: an `ANTHROPIC_API_KEY` secret on the worker, and the server address and token saved in Running → Ask Claude.
+- What you type or attach is sent to Anthropic to be read. ID documents, bank accounts, cards, logins, trading accounts and Wi-Fi never take part, secret fields are never offered, and the app checks every value (dates, times, options, links) before filling it.
+- Claude answers through one strict tool (`fill_entry`), so the result always has the same shape; long web searches that pause are continued automatically.

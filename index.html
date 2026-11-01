@@ -1184,6 +1184,39 @@ select.input {
 
 /* ---------- booked exams ---------- */
 .paste-box textarea { font-size: 15px; }
+.ai-row { margin-bottom: 6px; }
+.ai-open { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 13px 14px; border-radius: var(--r-md);
+  border: 1px solid color-mix(in srgb, var(--brass) 55%, var(--line)); color: var(--fg);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--brass) 16%, var(--surface)), var(--surface) 70%); }
+.ai-open > svg { width: 22px; height: 22px; color: var(--brass); flex: 0 0 auto; }
+.ai-open b { display: block; font-size: 15px; }
+.ai-open small { display: block; color: var(--fg-dim); font-size: 12.5px; margin-top: 1px; }
+.ai-box { padding: 14px; border-radius: var(--r-md); border: 1px solid var(--brass);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--brass) 10%, var(--surface)), var(--surface) 60%);
+  box-shadow: 0 12px 34px -20px color-mix(in srgb, var(--brass) 80%, transparent); }
+.ai-box .label { display: flex; align-items: center; gap: 6px; color: var(--brass); }
+.ai-box .label svg { width: 15px; height: 15px; }
+.ai-box textarea { font-size: 15px; }
+.ai-files { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 4px; }
+.ai-file { display: inline-flex; align-items: center; gap: 6px; padding: 5px 6px 5px 11px; border-radius: 999px; background: var(--surface-3); font-size: 13px; }
+.ai-file small { color: var(--fg-faint); }
+.ai-file button { width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--surface); color: var(--fg-dim); line-height: 1; }
+.ai-web { display: flex; align-items: center; gap: 8px; margin: 8px 0 2px; font-size: 14px; color: var(--fg); }
+.ai-web input { width: 18px; height: 18px; accent-color: var(--brass); }
+.ai-send { margin: 6px 0 0; font-size: 12.5px; }
+.ai-need { margin-top: 10px; }
+.ai-box .btn-row { margin-top: 10px; }
+.ai-go svg { width: 17px; height: 17px; }
+.ai-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; display: inline-block; }
+@media (prefers-reduced-motion: no-preference) { .ai-spin { animation: ai-spin 0.8s linear infinite; } @keyframes ai-spin { to { transform: rotate(360deg); } } }
+.ai-done { margin-top: 8px; padding: 10px 12px; border-radius: var(--r-md); background: var(--brass-soft); font-size: 13.5px; line-height: 1.45; }
+.ai-done b { display: flex; align-items: center; gap: 6px; color: var(--fg); }
+.ai-done b svg { width: 15px; height: 15px; color: var(--brass); flex: 0 0 auto; }
+.ai-done p { margin: 6px 0 0; color: var(--fg-dim); }
+.ai-src { margin-top: 6px; color: var(--fg-dim); }
+.ai-src a { color: var(--brass); }
+.field.ai-filled .input { border-color: var(--brass); box-shadow: 0 0 0 3px var(--brass-soft); }
+.field.ai-filled .label::after { content: ' · filled by AI'; color: var(--brass); text-transform: none; letter-spacing: 0; font-weight: 600; }
 .paste-box .btn-row { margin-top: 8px; }
 .exam { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
 .exam-when { margin: 0; }
@@ -1922,6 +1955,7 @@ body {
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*,application/pdf,.pdf" hidden>
 <input type="file" id="att-in" multiple hidden>
+<input type="file" id="ai-file" accept="image/*,application/pdf,.pdf" multiple hidden>
 <input type="file" id="scan-in" accept="image/*" hidden>
 <input type="file" id="runs-in" accept=".gpx,.tcx,.csv,application/gpx+xml,text/csv,text/xml,application/xml" hidden>
 <input type="file" id="stmt-in" accept=".pdf,.xls,.xlsx,.csv,.txt,.htm,.html,application/pdf,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
@@ -4161,7 +4195,7 @@ body {
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
-    if (view !== 'edit') { scanState = null; whoAdding = false; certPasteOpen = false; }
+    if (view !== 'edit') { scanState = null; whoAdding = false; certPasteOpen = false; if (!ai.busy) ai = { open: false, text: '', web: true, files: [], busy: false, done: null }; }
     if (view !== 'lock') armIdle();
   }
 
@@ -5565,6 +5599,8 @@ body {
         '</div>';
     }
 
+    if (aiAllowed(d.type) || S.isNew) html += aiPanel(d);
+
     if (S.isNew || d.type === 'cert') {
       html += certPasteOpen
         ? '<div class="field paste-box"><label class="label" for="cert-paste">Paste an email or SMS</label>' +
@@ -5661,6 +5697,155 @@ body {
     if (groupOf(d.type) === 'id') renderScan();
   }
 
+  /* ============ fill with AI ============
+     Claude reads what the user types, pastes or attaches (photo or PDF) and,
+     if allowed, searches the web for the official details of a public event
+     by name. It goes through the user's own worker (the Ask Claude server).
+     Only the kinds below take part: ID documents, bank accounts, cards,
+     logins, trading accounts and Wi-Fi never do, and no secret field is ever
+     offered. Nothing is saved until the user checks the filled fields. */
+  var AI_KINDS = ['race', 'govjob', 'cert', 'ipo', 'edu_10', 'edu_12', 'edu_ug', 'edu_pg', 'edu_other', 'ins', 'vehicle', 'warranty', 'trip',
+    'task', 'leave', 'project', 'job', 'pay', 'appraisal', 'training', 'wcontact', 'odoc'];
+  var ai = { open: false, text: '', web: true, files: [], busy: false, done: null };
+  function aiAllowed(t) { return AI_KINDS.indexOf(t) >= 0 && !!TYPES[t]; }
+  function aiFieldType(fd) {
+    if (fd.date) return 'date YYYY-MM-DD';
+    if (fd.opts) return 'option';
+    if (fd.time) return 'duration h:mm:ss';
+    if (/time/.test(fd.k) || /time|24-hour/i.test(fd.l)) return 'time HH:MM';
+    if (fd.num) return 'number';
+    return '';
+  }
+  function aiKinds(only) {
+    return (only ? [only] : AI_KINDS).filter(aiAllowed).map(function (k) {
+      var t = TYPES[k];
+      return { k: k, name: t.name + (t.titleLabel ? ' (title = ' + t.titleLabel.toLowerCase() + ')' : ''),
+        fields: t.fields.filter(function (fd) { return !fd.secret; }).map(function (fd) {
+          var o = { k: fd.k, l: fd.l };
+          var ty = aiFieldType(fd); if (ty) o.t = ty;
+          if (fd.opts) o.opts = fd.opts;
+          return o;
+        }) };
+    });
+  }
+  function aiPanel(d) {
+    var conf = claudeConf();
+    if (!ai.open) {
+      return '<div class="field ai-row"><button type="button" class="ai-open" data-ai="open">' + lu('sparkles') +
+        '<span><b>Fill with AI</b><small>Type an event or exam name, paste a message, or attach a photo or PDF</small></span></button>' +
+        (ai.done ? '<div class="ai-done">' + ai.done + '</div>' : '') + '</div>';
+    }
+    var nFiles = ai.files.length;
+    return '<div class="field ai-box">' +
+      '<label class="label" for="ai-in">' + lu('sparkles') + 'Fill with AI</label>' +
+      '<textarea class="input" id="ai-in" rows="4" placeholder="e.g. Kochi Spice Coast Marathon 2026 — or paste a booking email, hall ticket text, payslip details…">' + esc(ai.text) + '</textarea>' +
+      '<div class="ai-files">' + ai.files.map(function (f, i) {
+        return '<span class="ai-file">' + esc(f.name) + ' <small>' + esc(fmtSize(f.size)) + '</small><button type="button" data-aidel="' + i + '" aria-label="Remove ' + esc(f.name) + '">×</button></span>';
+      }).join('') + (nFiles < 4 ? '<button type="button" class="linkish" data-ai="attach">+ Photo or PDF</button>' : '') + '</div>' +
+      '<label class="ai-web"><input type="checkbox" id="ai-web"' + (ai.web ? ' checked' : '') + '> Search the web for the official details (dates, venue, links)</label>' +
+      (conf ? '<p class="hint ai-send">Sends this text' + (nFiles ? ' and ' + nFiles + (nFiles === 1 ? ' file' : ' files') : '') + ' to Claude through your server. Leave out passwords, card and Aadhaar numbers.</p>'
+        : '<p class="notice ai-need">AI needs your server. Set it up once in <b>Running → Ask Claude</b> (server address and access token), then come back.</p>') +
+      '<div class="btn-row"><button type="button" class="btn ghost" data-ai="close">Cancel</button>' +
+      '<button type="button" class="btn ai-go" data-ai="go"' + (conf && !ai.busy ? '' : ' disabled') + '>' + (ai.busy ? '<i class="ai-spin" aria-hidden="true"></i>' + (ai.web ? 'Searching and filling…' : 'Reading…') : lu('sparkles') + 'Fill') + '</button></div>' +
+      '</div>';
+  }
+  function aiCollect() {
+    var t = $('#ai-in'), w = $('#ai-web');
+    if (t) ai.text = t.value;
+    if (w) ai.web = w.checked;
+  }
+  function aiReadFile(file) {
+    if (/pdf/.test(file.type) || /\.pdf$/i.test(file.name)) {
+      if (file.size > 5 * 1024 * 1024) return Promise.reject(new Error('PDFs up to 5 MB'));
+      return file.arrayBuffer().then(function (buf) { return { name: file.name, size: file.size, type: 'application/pdf', data: b64(buf) }; });
+    }
+    return fileToCanvas(file, 1600).then(function (c) {
+      var url = c.toDataURL('image/jpeg', 0.85);
+      return { name: file.name || 'photo.jpg', size: Math.round(url.length * 0.75), type: 'image/jpeg', data: url.slice(url.indexOf(',') + 1) };
+    });
+  }
+  $('#ai-file').addEventListener('change', function () {
+    var files = Array.prototype.slice.call(this.files || []).slice(0, 4 - ai.files.length);
+    if (!files.length) return;
+    files.reduce(function (p, f) {
+      return p.then(function () { return aiReadFile(f).then(function (x) { ai.files.push(x); }, function (e) { toast(f.name + ': ' + (e.message || 'could not read it')); }); });
+    }, Promise.resolve()).then(function () { collectDraft(); renderEdit(); });
+  });
+  // Every value is checked against the field before it goes in.
+  function aiValue(fd, v) {
+    v = String(v == null ? '' : v).trim();
+    if (!v) return '';
+    if (fd.opts) { var o = fd.opts.filter(function (x) { return x.toLowerCase() === v.toLowerCase(); })[0]; return o || ''; }
+    if (fd.date) return /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(ymdDate(v).getTime()) ? v : '';
+    if (fd.time) return parseTime(v) !== null ? v : '';
+    if (/time/.test(fd.k) || /time|24-hour/i.test(fd.l)) return /^([01]?\d|2[0-3]):[0-5]\d$/.test(v) ? v.padStart(5, '0') : '';
+    if (fd.num) { v = v.replace(/[^\d.]/g, ''); return v && isFinite(+v) ? v : ''; }
+    if (fd.k === 'link') return safeLink(v) ? v : '';
+    v = v.slice(0, 300);
+    return fd.upper ? v.toUpperCase() : v;
+  }
+  function aiApply(r) {
+    var kind = aiAllowed(r.kind) ? r.kind : null;
+    if (!kind || (!S.isNew && kind !== S.draft.type)) kind = S.draft.type;
+    if (!aiAllowed(kind)) throw new Error('Claude picked a kind of record that AI can’t fill.');
+    if (S.draft.type !== kind) switchType(kind);
+    collectDraft();
+    var filled = [];
+    (Array.isArray(r.fields) ? r.fields : []).forEach(function (p) {
+      var fd = (TYPES[kind].fields.filter(function (x) { return x.k === (p && p.key); })[0]);
+      if (!fd || fd.secret) return;
+      var v = aiValue(fd, p.value);
+      if (v) { S.draft.f[fd.k] = v; filled.push(fd.k); }
+    });
+    var title = String(r.title || '').trim().slice(0, 120);
+    if (title && (!S.draft.title || S.isNew)) { S.draft.title = title; filled.push('title'); }
+    var src = (Array.isArray(r.sources) ? r.sources : []).filter(function (u) { return safeLink(u); }).slice(0, 5);
+    ai.done = '<b>' + lu('sparkles') + 'Filled ' + filled.length + (filled.length === 1 ? ' detail' : ' details') + ' as ' + esc(TYPES[kind].name.toLowerCase()) + '.</b> Check the highlighted fields, then Save.' +
+      (r.note ? '<p>' + esc(String(r.note).slice(0, 400)) + '</p>' : '') +
+      (src.length ? '<div class="ai-src">From: ' + src.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(hostOf(u) || u) + '</a>'; }).join(' · ') + '</div>' : '');
+    ai.open = false; ai.text = ''; ai.files = [];
+    renderEdit();
+    filled.forEach(function (k) {
+      var el = k === 'title' ? $('#in-title') : $('[data-key="' + k + '"]', $('#edit-body'));
+      var box = el && el.closest('.field');
+      if (box) box.classList.add('ai-filled');
+    });
+    return filled.length;
+  }
+  function aiGo() {
+    var conf = claudeConf();
+    aiCollect();
+    if (!conf) return;
+    if (!ai.text.trim() && !ai.files.length) { toast('Type a name, paste some text, or attach a photo or PDF'); return; }
+    collectDraft();
+    ai.busy = true; renderEdit();
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 150000);
+    fetch(String(conf.url).replace(/\/+$/, '') + '/fill', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + conf.token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kinds: aiKinds(S.isNew ? null : S.draft.type), kind: aiAllowed(S.draft.type) ? S.draft.type : null, text: ai.text, web: ai.web, today: toYmd(new Date()),
+        files: ai.files.map(function (f) { return { type: f.type, data: f.data }; })
+      }),
+      signal: ctl ? ctl.signal : undefined
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (j) {
+        if (!res.ok) throw new Error(j.error || 'The server answered ' + res.status + '.');
+        return j;
+      });
+    }).then(function (j) {
+      ai.busy = false;
+      if (S.view !== 'edit' || !S.draft) return;
+      var n = aiApply(j);
+      toast(n ? 'Filled ' + n + ' details. Check them, then Save.' : 'Claude couldn’t find details to fill. Try adding more.');
+    }).catch(function (e) {
+      ai.busy = false;
+      if (S.view === 'edit') renderEdit();
+      toast(e && e.name === 'AbortError' ? 'That took too long. Try again.' : e instanceof TypeError ? 'Couldn’t reach your server.' : (e.message || 'Something went wrong.'));
+    }).then(function () { clearTimeout(timer); });
+  }
+
   function collectDraft() {
     var d = S.draft;
     d.title = ($('#in-title') ? $('#in-title').value : '').trim();
@@ -5715,6 +5900,17 @@ body {
       });
       return;
     }
+    var ab = ev.target.closest('[data-ai]');
+    if (ab) {
+      var act = ab.dataset.ai;
+      aiCollect();
+      if (act === 'open') { collectDraft(); ai.open = true; ai.done = null; renderEdit(); var ta0 = $('#ai-in'); if (ta0) ta0.focus(); return; }
+      if (act === 'close') { collectDraft(); ai.open = false; renderEdit(); return; }
+      if (act === 'attach') { guardSheet(); var fi = $('#ai-file'); fi.value = ''; fi.click(); return; }
+      if (act === 'go') { aiGo(); return; }
+    }
+    var adel = ev.target.closest('[data-aidel]');
+    if (adel) { aiCollect(); collectDraft(); ai.files.splice(+adel.dataset.aidel, 1); renderEdit(); return; }
     var cp = ev.target.closest('[data-certpaste]');
     if (cp) { collectDraft(); certPasteOpen = cp.dataset.certpaste === 'open'; renderEdit(); var ta = $('#cert-paste'); if (ta) ta.focus(); return; }
     if (ev.target.closest('[data-certfill]') && S.isNew) {
@@ -9665,10 +9861,11 @@ body {
     var out = [], today = toYmd(new Date());
     Object.keys(groups).forEach(function (k) {
       var g = groups[k].sort(function (a, b) { return a.d < b.d ? -1 : 1; }), byM = {};
-      g.forEach(function (t) { var mk = t.d.slice(0, 7); byM[mk] = (byM[mk] || 0) + t.amt; });
+      g.forEach(function (t) { byM[t.d.slice(0, 7)] = 1; });
       var ms = Object.keys(byM).sort();
       if (ms.length < 2) return;
-      var vals = ms.map(function (m) { return byM[m]; }), med = median(vals);
+      // compare single payments: a bill paid on the 1st and the 31st of one month is still one bill a month
+      var vals = g.map(function (t) { return t.amt; }), med = median(vals);
       if (vals.filter(function (v) { return Math.abs(v - med) <= med * 0.25; }).length < 2) return;
       var last = g[g.length - 1];
       if (latest && daysBetween(last.d, latest) > 70) return;   // stopped
@@ -11787,7 +11984,7 @@ body {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 48;
+  var APP_VER = 49;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   // The spotlight on cards follows the pointer (mouse or trackpad only).
   if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {

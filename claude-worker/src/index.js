@@ -11,6 +11,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { handlePush, runPushes } from './push.js';
 import { handleSync } from './sync.js';
+import { handleFill } from './fill.js';
 
 export { SyncBox } from './sync.js';
 
@@ -100,6 +101,12 @@ export default {
     let body;
     try { body = await request.json(); } catch { return reply(400, { error: 'Request was not JSON.' }, cors.headers); }
     if (body && body.ping) return reply(200, { ok: true, model: MODEL }, cors.headers);
+
+    // AI fill: read what the user gave, or look an event up, and return one entry's fields.
+    if (path === '/fill') {
+      const [status, out] = await handleFill(body, env);
+      return reply(status, out, cors.headers);
+    }
 
     const msgs = body && body.messages;
     const context = typeof (body && body.context) === 'string' ? body.context : '';
