@@ -1204,7 +1204,12 @@ select.input {
 .ai-web { display: flex; align-items: center; gap: 8px; margin: 8px 0 2px; font-size: 14px; color: var(--fg); }
 .ai-web input { width: 18px; height: 18px; accent-color: var(--brass); }
 .ai-send { margin: 6px 0 0; font-size: 12.5px; }
-.ai-need { margin-top: 10px; }
+.ai-conn { margin: 4px 0 0; font-size: 12.5px; }
+.ai-setup { margin-top: 10px; padding: 12px; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line); }
+.ai-setup b { display: block; margin-bottom: 4px; }
+.ai-setup p { margin: 0 0 10px; color: var(--fg-dim); font-size: 13.5px; line-height: 1.45; }
+.ai-setup .label { margin-top: 8px; }
+.ai-setup .err { margin: 8px 0 0; }
 .ai-box .btn-row { margin-top: 10px; }
 .ai-go svg { width: 17px; height: 17px; }
 .ai-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; display: inline-block; }
@@ -4195,7 +4200,7 @@ body {
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
-    if (view !== 'edit') { scanState = null; whoAdding = false; certPasteOpen = false; if (!ai.busy) ai = { open: false, text: '', web: true, files: [], busy: false, done: null }; }
+    if (view !== 'edit') { scanState = null; whoAdding = false; certPasteOpen = false; if (!ai.busy) ai = { open: false, text: '', web: true, files: [], busy: false, done: null, url: '', token: '', err: '' }; }
     if (view !== 'lock') armIdle();
   }
 
@@ -5706,7 +5711,7 @@ body {
      offered. Nothing is saved until the user checks the filled fields. */
   var AI_KINDS = ['race', 'govjob', 'cert', 'ipo', 'edu_10', 'edu_12', 'edu_ug', 'edu_pg', 'edu_other', 'ins', 'vehicle', 'warranty', 'trip',
     'task', 'leave', 'project', 'job', 'pay', 'appraisal', 'training', 'wcontact', 'odoc'];
-  var ai = { open: false, text: '', web: true, files: [], busy: false, done: null };
+  var ai = { open: false, text: '', web: true, files: [], busy: false, done: null, url: '', token: '', err: '' };
   function aiAllowed(t) { return AI_KINDS.indexOf(t) >= 0 && !!TYPES[t]; }
   function aiFieldType(fd) {
     if (fd.date) return 'date YYYY-MM-DD';
@@ -5743,16 +5748,52 @@ body {
         return '<span class="ai-file">' + esc(f.name) + ' <small>' + esc(fmtSize(f.size)) + '</small><button type="button" data-aidel="' + i + '" aria-label="Remove ' + esc(f.name) + '">×</button></span>';
       }).join('') + (nFiles < 4 ? '<button type="button" class="linkish" data-ai="attach">+ Photo or PDF</button>' : '') + '</div>' +
       '<label class="ai-web"><input type="checkbox" id="ai-web"' + (ai.web ? ' checked' : '') + '> Search the web for the official details (dates, venue, links)</label>' +
-      (conf ? '<p class="hint ai-send">Sends this text' + (nFiles ? ' and ' + nFiles + (nFiles === 1 ? ' file' : ' files') : '') + ' to Claude through your server. Leave out passwords, card and Aadhaar numbers.</p>'
-        : '<p class="notice ai-need">AI needs your server. Set it up once in <b>Running → Ask Claude</b> (server address and access token), then come back.</p>') +
+      (conf && !ai.setup ? '<p class="hint ai-send">Sends this text' + (nFiles ? ' and ' + nFiles + (nFiles === 1 ? ' file' : ' files') : '') + ' to Claude through your server. Leave out passwords, card and Aadhaar numbers.</p>' +
+          '<p class="hint ai-conn">Server: <b>' + esc(hostOf(conf.url) || conf.url) + '</b> · <button type="button" class="linkish" data-ai="change">Change</button></p>'
+        : '<div class="ai-setup"><b>Connect AI (one time)</b>' +
+          '<p>AI runs through your own server, which holds your Anthropic API key. Enter its address and the access token you set for it.</p>' +
+          '<label class="label" for="ai-url">Server address</label>' +
+          '<input class="input mono" id="ai-url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(ai.url || WORKER_URL) + '">' +
+          '<p class="hint" style="margin:4px 0 0">Your server is <b>' + esc(hostOf(WORKER_URL)) + '</b> unless you made another one.</p>' +
+          '<label class="label" for="ai-token">Access token</label>' +
+          '<input class="input mono" id="ai-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(ai.token || '') + '">' +
+          '<p class="err" id="ai-err" role="alert">' + esc(ai.err || '') + '</p></div>') +
       '<div class="btn-row"><button type="button" class="btn ghost" data-ai="close">Cancel</button>' +
-      '<button type="button" class="btn ai-go" data-ai="go"' + (conf && !ai.busy ? '' : ' disabled') + '>' + (ai.busy ? '<i class="ai-spin" aria-hidden="true"></i>' + (ai.web ? 'Searching and filling…' : 'Reading…') : lu('sparkles') + 'Fill') + '</button></div>' +
+      (conf && !ai.setup
+        ? '<button type="button" class="btn ai-go" data-ai="go"' + (ai.busy ? ' disabled' : '') + '>' + (ai.busy ? '<i class="ai-spin" aria-hidden="true"></i>' + (ai.web ? 'Searching and filling…' : 'Reading…') : lu('sparkles') + 'Fill') + '</button>'
+        : '<button type="button" class="btn ai-go" data-ai="connect">Test and connect</button>') + '</div>' +
       '</div>';
   }
   function aiCollect() {
-    var t = $('#ai-in'), w = $('#ai-web');
+    var t = $('#ai-in'), w = $('#ai-web'), u = $('#ai-url'), k = $('#ai-token');
     if (t) ai.text = t.value;
     if (w) ai.web = w.checked;
+    if (u) ai.url = u.value;
+    if (k) ai.token = k.value;
+  }
+  function aiConnect() {
+    aiCollect();
+    var url = String(ai.url || '').trim().replace(/\/+$/, ''), token = String(ai.token || '').trim();
+    var fail = function (m) { ai.err = m; var e = $('#ai-err'); if (e) e.textContent = m; };
+    if (!serverUrlOk(url)) { fail('The address should look like https://deposit-box-claude.you.workers.dev'); return; }
+    if (token.length < 8) { fail('Enter the access token you set on the server (at least 8 characters).'); return; }
+    fail('');
+    var btn = $('[data-ai="connect"]'); if (btn) { btn.disabled = true; btn.textContent = 'Testing…'; }
+    fetch(url, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ ping: true }) })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (j) {
+          if (!res.ok) throw new Error(j.error || 'The server answered with error ' + res.status + '.');
+          S.data.claude = { url: url, token: token, model: String(j.model || '') };
+          return persist();
+        });
+      }).then(function () {
+        ai.token = ''; ai.err = ''; ai.setup = false;
+        collectDraft(); renderEdit();
+        toast('AI connected');
+      }).catch(function (e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Test and connect'; }
+        fail(e && e.message && !/Failed to fetch|NetworkError|Load failed/i.test(e.message) ? e.message : 'Could not reach that address. Check it and your internet.');
+      });
   }
   function aiReadFile(file) {
     if (/pdf/.test(file.type) || /\.pdf$/i.test(file.name)) {
@@ -5831,7 +5872,7 @@ body {
       signal: ctl ? ctl.signal : undefined
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (j) {
-        if (!res.ok) throw new Error(j.error || 'The server answered ' + res.status + '.');
+        if (!res.ok) throw new Error((hostOf(conf.url) || 'Your server') + ' said: ' + (j.error || 'error ' + res.status) + (res.status === 401 ? ' Tap Change to enter the token again.' : ''));
         return j;
       });
     }).then(function (j) {
@@ -5908,6 +5949,8 @@ body {
       if (act === 'close') { collectDraft(); ai.open = false; renderEdit(); return; }
       if (act === 'attach') { guardSheet(); var fi = $('#ai-file'); fi.value = ''; fi.click(); return; }
       if (act === 'go') { aiGo(); return; }
+      if (act === 'connect') { aiConnect(); return; }
+      if (act === 'change') { collectDraft(); ai.setup = true; ai.url = (claudeConf() || {}).url || WORKER_URL; ai.token = ''; ai.err = ''; renderEdit(); return; }
     }
     var adel = ev.target.closest('[data-aidel]');
     if (adel) { aiCollect(); collectDraft(); ai.files.splice(+adel.dataset.aidel, 1); renderEdit(); return; }
@@ -10766,7 +10809,7 @@ body {
     openIntoBox();
     return {
       v: 1, entries: entries(), runs: S.data.runs || [], ias: S.data.ias || {}, gx: S.data.gx || {}, oscp: S.data.oscp || {},
-      people: people(), money: S.data.money || {}, notes: notesList(), gone: goneList()
+      people: people(), money: S.data.money || {}, notes: notesList(), gone: goneList(), claude: S.data.claude || null
     };
   }
   function hashOf(p) {
@@ -10809,6 +10852,7 @@ body {
     }
     S.data.entries = ents.filter(alive); S.data.runs = rs.filter(alive); S.data.people = ppl.filter(alive);
     S.data.ias = ias; S.data.gx = gx; S.data.oscp = oscp; S.data.money = money;
+    if (!S.data.claude) { var cl = sanitizeClaude(p.claude); if (cl) S.data.claude = cl; }   // set AI up once, on either device
     SY.quiet = true;
     notesSave(nts.filter(alive));
     openFromBox(true);
@@ -11984,7 +12028,7 @@ body {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 49;
+  var APP_VER = 50;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   // The spotlight on cards follows the pointer (mouse or trackpad only).
   if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {

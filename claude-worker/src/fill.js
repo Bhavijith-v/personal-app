@@ -125,6 +125,7 @@ export async function handleFill(body, env) {
       usage.input += res.usage.input_tokens || 0;
       usage.output += res.usage.output_tokens || 0;
       usage.searches += (res.usage.server_tool_use && res.usage.server_tool_use.web_search_requests) || 0;
+      console.log('fill round', round, 'stop', res.stop_reason, 'blocks', res.content.map((b) => b.type).join(','));
       if (res.stop_reason === 'refusal') return [422, { error: 'Claude declined to read this.' }];
       const call = res.content.find((b) => b.type === 'tool_use' && b.name === 'fill_entry');
       if (call) return [200, { ...call.input, model: res.model, usage }];
@@ -136,6 +137,7 @@ export async function handleFill(body, env) {
     }
     return [502, { error: 'Claude did not finish. Try again.' }];
   } catch (err) {
+    console.log('fill error', err && err.status, err && err.name, String((err && err.message) || '').slice(0, 300));   // for troubleshooting; never the user's text
     if (err instanceof Anthropic.AuthenticationError) return [502, { error: 'Anthropic rejected the API key stored on your server.' }];
     if (err instanceof Anthropic.PermissionDeniedError) return [502, { error: 'Your Anthropic account is not allowed to use this model.' }];
     if (err instanceof Anthropic.RateLimitError) return [429, { error: 'Too many requests, or the account is out of credit. Wait a minute and try again.' }];
