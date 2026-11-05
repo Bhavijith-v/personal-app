@@ -12,6 +12,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { handlePush, runPushes } from './push.js';
 import { handleSync } from './sync.js';
 import { handleFill } from './fill.js';
+import { handleTidy } from './tidy.js';
 
 export { SyncBox } from './sync.js';
 
@@ -103,6 +104,10 @@ export default {
     if (body && body.ping) return reply(200, { ok: true, model: MODEL }, cors.headers);
 
     // AI fill: read what the user gave, or look an event up, and return one entry's fields.
+    if (path === '/tidy') {
+      const [tstatus, tout] = await handleTidy(body, env);
+      return reply(tstatus, tout, cors.headers);
+    }
     if (path === '/fill') {
       const [status, out] = await handleFill(body, env);
       return reply(status, out, cors.headers);

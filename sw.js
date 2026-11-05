@@ -5,7 +5,7 @@
 
 /* Bump this whenever you change index.html so phones pick the new version up.
    Changing this string is what makes the browser reinstall the worker. */
-const CACHE = 'depositbox-v50';
+const CACHE = 'depositbox-v53';
 
 const SHELL = [
   './',
@@ -14,6 +14,7 @@ const SHELL = [
   './lib/oscp-labs.js',
   './lib/qrcode.js',
   './lib/brands.js',
+  './lib/icons.js',
   './lib/ias-prelims.js',
   './assets/race-week-2026.webp',
   './assets/race-georgian-2026.webp',

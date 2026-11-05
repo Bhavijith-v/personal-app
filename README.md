@@ -359,6 +359,19 @@ Opens from the lock screen or the home tile without the passphrase. Notes and
 daily rules ("Brush two times a day") with a tick for today and a streak. Kept
 outside the encrypted box (localStorage), so nothing secret goes here.
 
+- **Repeats:** daily, weekly, monthly or yearly, each with its own streak.
+- **Charts:** a Consistency heat map for all daily rules (18 weeks, 30-day rate, perfect days). The chart button on a rule shows its own heat map, best streak and weekly bars.
+- **Make it short & easy** (in a rule's ⋯ menu) rewrites what you typed into one formal line with an emoji. It works on the phone; with Ask Claude set up it uses the server's `/tidy`. **Undo** brings the original back.
+- **Alerts:** Off, Nudge (banner and notification at check-in time) or Strict (a Rules check screen blocks the app until each open rule is ticked or skipped with a reason).
+- **⋯ menu on a rule:** a group (Morning, Health, Study…), reminder times, a count goal (+1 button, for example 8 glasses), rest weekdays, and "ticks itself when" (a run is logged, or an IAS chapter, Govt exam topic or OSCP lab is marked).
+- **Views:** By repeat, Today (only what's open, earliest reminder first) or By group.
+- **Streaks are kind:** rest weekdays, up to 4 rest days a month, and one free streak freeze per rule each month don't break a streak.
+- **Badges** at 7, 30, 100 and 365 in a row. **Week in review** compares the last 7 days with the week before and suggests one fix.
+- **Journal:** a mood and one line a day, with a mood heat map.
+- **Notes:** pin, colour, checklists, `#tags`, and search across notes and rules.
+- **Voice note:** speak and it types. Start with "daily rule…" to make a rule. Your phone's speech service does the listening.
+- **Share** a rule's streak as text and an image card, to someone who keeps you honest.
+
 ### Less typing
 
 - **Face ID** (Settings): the home screen suggests it until it is on.
@@ -577,6 +590,8 @@ An **Office** tab (and home tile) for your job: job details (employee ID, grade,
 ## Icons
 
 Interface and entry icons are from [Lucide](https://lucide.dev) (ISC licence; lucide-static 0.460.0), inlined in `index.html` as the `LU` table and drawn with `lu(name)`. Brand logos come from Simple Icons (`lib/brands.js`).
+
+**Your own icons:** open an entry, tap Edit, then **Change icon**. Settings → **Icons** changes a whole kind of entry or a home tile. Choose from about 260 icons (`lib/icons.js`, Lucide), any emoji, or an image you upload (shrunk to 96 px). They're kept in the encrypted box and sync and back up with it.
 
 ## Real logos on every entry
 
