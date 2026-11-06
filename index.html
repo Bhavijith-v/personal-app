@@ -2182,6 +2182,7 @@ body {
 <input type="file" id="file-in" accept="application/json,.json,.txt" hidden>
 <input type="file" id="img-in" accept="image/*,application/pdf,.pdf" hidden>
 <input type="file" id="att-in" multiple hidden>
+<input type="file" id="lab-file-in" multiple hidden>
 <input type="file" id="ai-file" accept="image/*,application/pdf,.pdf" multiple hidden>
 <input type="file" id="scan-in" accept="image/*" hidden>
 <input type="file" id="runs-in" accept=".gpx,.tcx,.csv,application/gpx+xml,text/csv,text/xml,application/xml" hidden>
@@ -8731,7 +8732,7 @@ body {
       if (patch[k] === undefined || patch[k] === '') delete cur[k]; else cur[k] = patch[k];
     });
     cur.u = Date.now();
-    if (!cur.s && !cur.n && !cur.diff && !(cur.g && cur.g.length)) delete OPEN.oscp[id]; else OPEN.oscp[id] = cur;
+    if (!cur.s && !cur.n && !cur.diff && !(cur.g && cur.g.length) && !(cur.files && cur.files.length)) delete OPEN.oscp[id]; else OPEN.oscp[id] = cur;
     return saveOpen();
   }
   function oscpTotals() {
@@ -8751,8 +8752,10 @@ body {
       if (typeof v.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.d)) c.d = v.d;
       if (DIFF_BUCKET[v.diff]) c.diff = v.diff;
       if (Array.isArray(v.g)) { var g = v.g.filter(function (k, i, a) { return k === Math.floor(k) && k >= 0 && k < 60 && a.indexOf(k) === i; }); if (g.length) c.g = g; }
+      var fl = sanitizeFiles(v.files);
+      if (fl) c.files = fl;
       c.u = typeof v.u === 'number' ? v.u : 0;
-      if (c.s || c.n || c.diff || c.g) out[id] = c;
+      if (c.s || c.n || c.diff || c.g || c.files) out[id] = c;
     });
     return out;
   }
@@ -8909,6 +8912,7 @@ body {
       '<div class="field lab-notes"><label class="label" for="lab-n">Your notes</label>' +
       '<textarea class="input" id="lab-n" rows="8" placeholder="Enumeration, foothold, privesc, what you learned…" spellcheck="false">' + esc(st.n || '') + '</textarea>' +
       '<p class="hint" id="lab-saved">Saved automatically on this phone.</p></div>' +
+      '<div class="lab-files">' + filesSection({ files: st.files }) + '</div>' +
       '<div class="lab-links">' +
       (open ? '<a class="btn ghost" href="' + esc(open) + '" target="_blank" rel="noopener noreferrer">Open on ' + esc(l.url ? 'GitHub' : l.platform === 'Vulnlab' ? 'HackTheBox' : l.platform.replace(/^PG .*/, 'Proving Grounds')) + '</a>' : '') +
       (l.writeup ? '<a class="btn ghost spoiler" href="' + esc(l.writeup) + '" target="_blank" rel="noopener noreferrer">0xdf write-up (spoilers)</a>' : '') +
@@ -9000,6 +9004,24 @@ body {
       }, function () { toast('Could not copy. Long-press the command instead.'); });
       return;
     }
+    if (ev.target.closest('[data-fadd]')) {
+      if (!S.key) { toast('Unlock your box first to add files'); return; }
+      if (!idb) { toast('This browser can’t store files. Try Safari or Chrome.'); return; }
+      saveLabNotes();
+      var li = $('#lab-file-in');
+      li.value = '';
+      guardSheet();   // the file picker hides the page for a moment
+      li.click();
+      return;
+    }
+    var fo = ev.target.closest('[data-fopen]');
+    if (fo) {
+      if (!S.key) { toast('Unlock your box first to open files'); return; }
+      openAttachment({ files: labState(oscpLab).files }, fo.dataset.fopen);
+      return;
+    }
+    var fd = ev.target.closest('[data-fdel]');
+    if (fd) { removeLabFile(oscpLab, fd.dataset.fdel); return; }
     var gs = ev.target.closest('[data-gstep]');
     if (gs) {
       var i = +gs.dataset.gstep, have = (labState(oscpLab).g || []).slice(), at = have.indexOf(i);
@@ -9022,6 +9044,52 @@ body {
       renderLab();
     });
   });
+  // Files on a lab (your own PDF notes, screenshots…): sealed with the box key
+  // like files on entries, so the box must be unlocked to add or open them.
+  $('#lab-file-in').addEventListener('change', function () {
+    var lab = oscpLab, files = Array.prototype.slice.call(this.files || []);
+    if (!lab || !files.length || !S.key) return;
+    var room = FILES_PER - (labState(lab).files || []).length, big = files.filter(function (f) { return f.size > FILE_MAX; });
+    files = files.filter(function (f) { return f.size <= FILE_MAX && f.size > 0; }).slice(0, Math.max(0, room));
+    if (big.length) toast(big[0].name + ' is over 10 MB, so it was left out');
+    if (!files.length) return;
+    toast(files.length === 1 ? 'Adding the file…' : 'Adding ' + files.length + ' files…');
+    var added = [];
+    files.reduce(function (p, file) {
+      return p.then(function () {
+        return file.arrayBuffer().then(function (buf) { return bytesSeal(buf, S.key); }).then(function (rec) {
+          var id = 'f' + uid();
+          return filePut(id, rec).then(function (ok) {
+            if (!ok) throw new Error('store');
+            added.push({ id: id, name: file.name || 'File', type: file.type || '', size: file.size, at: Date.now() });
+          });
+        });
+      });
+    }, Promise.resolve()).catch(function () {
+      toast('Could not save the file. The phone may be out of space.');
+    }).then(function () {
+      if (!added.length) return;
+      setLab(lab, { files: (labState(lab).files || []).concat(added) }).then(function () {
+        if (S.view === 'lab' && oscpLab === lab) { var y = window.scrollY; renderLab(); window.scrollTo(0, y); }
+        toast(added.length === 1 ? 'File added' : added.length + ' files added');
+      });
+    });
+  });
+  function removeLabFile(lab, fid) {
+    var f = (labState(lab).files || []).filter(function (x) { return x.id === fid; })[0];
+    if (!f) return;
+    askConfirm({ title: 'Remove this file?', body: '“' + f.name + '” will be removed from this lab' + (S.data && S.data.sync ? ' and from your other devices' : '') + '.', yes: 'Remove' }).then(function (ok) {
+      if (!ok) return;
+      markGone(fid);
+      fileDel(fid);
+      saveLabNotes().then(function () {
+        return setLab(lab, { files: sanitizeFiles((labState(lab).files || []).filter(function (x) { return x.id !== fid; })) });
+      }).then(function () {
+        if (S.view === 'lab' && oscpLab === lab) { var y = window.scrollY; renderLab(); window.scrollTo(0, y); }
+        toast('File removed');
+      });
+    });
+  }
   $('#btn-lab-back').addEventListener('click', function () {
     saveLabNotes().then(function () { show('oscp'); window.scrollTo(0, oscpScroll); });
   });
@@ -11815,6 +11883,12 @@ body {
   function fileIdsInUse() {
     var ids = [];
     entries().forEach(function (e) { (e.files || []).forEach(function (f) { ids.push(f.id); }); });
+    // files attached to OSCP labs (the list lives with the lab, the bytes here)
+    [OPEN.oscp, S.data && S.data.oscp].forEach(function (o) {
+      Object.keys(o || {}).forEach(function (id) {
+        ((o[id] && o[id].files) || []).forEach(function (f) { if (f && ids.indexOf(f.id) < 0) ids.push(f.id); });
+      });
+    });
     return ids;
   }
   function fileGet(id) {
@@ -13339,7 +13413,7 @@ body {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 59;
+  var APP_VER = 60;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   // The spotlight on cards follows the pointer (mouse or trackpad only).
   if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {
