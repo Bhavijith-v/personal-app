@@ -8704,6 +8704,13 @@ body {
   var LAB_META = window.OSCP_META || {};
   var LAB_BY_ID = {};
   LABS.forEach(function (l) { LAB_BY_ID[l.id] = l; });
+  // labs that aren't on TJ Null's list come in with their walkthrough (lib/oscp-guides.js)
+  Object.keys(window.OSCP_GUIDES || {}).forEach(function (id) {
+    var g = window.OSCP_GUIDES[id];
+    if (LAB_BY_ID[id] || !g.lab || !/^[a-z]{2,4}-[a-z0-9]{1,48}$/.test(id)) return;
+    var l = { id: id, name: g.lab.name, platform: g.lab.platform, os: g.lab.os, tracks: [g.lab.os], source: 'guide' };
+    LABS = LABS.concat([l]); LAB_BY_ID[id] = l;
+  });
   var OSCP_PLATFORMS = ['HackTheBox', 'PG Practice', 'PG Play', 'Vulnlab', 'Self-hosted'];
   var OSCP_TYPES = ['Linux', 'Windows', 'Active Directory', 'Post-OSCP', 'Pro Lab'];
   // Platforms name tiers differently; filters group them.
@@ -13332,7 +13339,7 @@ body {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 55;
+  var APP_VER = 56;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   // The spotlight on cards follows the pointer (mouse or trackpad only).
   if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {
