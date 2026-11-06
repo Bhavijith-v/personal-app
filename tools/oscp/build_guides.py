@@ -262,8 +262,11 @@ kevin = {
     '1️⃣ Keep Metasploit as your **single allowed use**. Get the manual EDB route working first.'],
 }
 
+import os
+exec(io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'guides_batch2.py'), encoding='utf-8').read())
+
 out = ('/* Step-by-step walkthroughs for labs, shown on the lab page.\n'
        '   Built by build_guides.py. {K} is your Kali IP and {T} the target IP. */\n'
-       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav, 'pgp-kevin': kevin}, ensure_ascii=False, indent=1) + ';\n')
+       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav, 'pgp-kevin': kevin, **BATCH2}, ensure_ascii=False, indent=1) + ';\n')
 io.open(r'C:\Users\bhavi\Desktop\Personal_App\lib\oscp-guides.js', 'w', encoding='utf-8', newline='\n').write(out)
 print(len(out))
