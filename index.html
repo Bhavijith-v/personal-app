@@ -41,6 +41,8 @@
   --warn: #e39446;
   --warn-soft: rgba(227, 148, 70, 0.14);
   --ok-soft: rgba(95, 174, 126, 0.13);
+  --guide: #d9b44a;
+  --guide-soft: rgba(217, 180, 74, 0.12);
   --bar: #b88a40;
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 
@@ -73,6 +75,8 @@
     --warn: #b4570f;
     --warn-soft: rgba(180, 87, 15, 0.10);
     --ok-soft: rgba(47, 125, 80, 0.10);
+    --guide: #9a7400;
+    --guide-soft: rgba(154, 116, 0, 0.09);
     --bar: #95660f;
     --shadow: 0 12px 32px rgba(27, 30, 34, 0.14);
     color-scheme: light;
@@ -748,6 +752,9 @@ select.input {
 .diff.d-medium { color: var(--warn); border-color: var(--warn); }
 .diff.d-hard { color: var(--danger); border-color: var(--danger); }
 .diff.d-insane { color: var(--bg); background: var(--danger); border-color: var(--danger); }
+/* labs with a walkthrough: gold stripe + chip, so they stand out while scrolling */
+.lab.has-guide .lab-main { border-left: 4px solid var(--guide); background: linear-gradient(90deg, var(--guide-soft), var(--surface) 60%); }
+.gchip { flex: 0 0 auto; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; color: var(--guide); border: 1px solid var(--guide); white-space: nowrap; }
 .oscp-src { margin-top: 20px; }
 .lab-hero { padding-block: 6px 14px; }
 .lab-hero h2 { font-size: 24px; font-weight: 600; letter-spacing: -.015em; margin: 10px 0 4px; }
@@ -782,19 +789,125 @@ select.input {
 .glist { padding-left: 20px; }
 .gstep code, .gtake code { font-family: var(--data); font-size: 13px; padding: 1px 5px; border-radius: 5px; background: var(--surface-3); overflow-wrap: anywhere; }
 .gcode, .gout { margin: 8px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-soft); }
-.gcode-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px 4px 10px; background: var(--surface-3); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-faint); }
+.gcode-bar { display: flex; flex-wrap: wrap; gap: 4px; justify-content: space-between; align-items: center; padding: 4px 6px 4px 10px; background: var(--surface-3); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-faint); }
 .gcopy { padding: 5px 12px; border-radius: 7px; border: 1px solid var(--brass); background: var(--brass-soft); color: var(--brass); font-size: 12.5px; font-weight: 700; text-transform: none; letter-spacing: 0; }
-.gcode pre, .gout pre { margin: 0; padding: 10px 12px; font-family: var(--data); font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; background: #0d0f13; color: #e6e1d6; }
+.gbtns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.gedit { padding: 5px 12px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--fg-dim); font-size: 12.5px; font-weight: 700; text-transform: none; letter-spacing: 0; }
+.gcode.mine { border-color: var(--guide); }
+.gmine { font-style: normal; color: var(--guide); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.gedit-box { display: block; width: 100%; box-sizing: border-box; margin: 0; padding: 10px 12px; border: 0; resize: vertical; font-family: var(--data); font-size: 16px; line-height: 1.5; background: #0d0f13; color: #e6e1d6; outline: 2px solid var(--guide); outline-offset: -2px; }
+.gedit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; padding: 6px; background: var(--surface-3); }
+.gcode pre, .gout pre { margin: 0; padding: 10px 12px; font-family: var(--data); font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal; tab-size: 4; background: #0d0f13; color: #e6e1d6; }
 .gout { border-style: dashed; }
-.gout span { display: block; padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ok); background: var(--ok-soft); }
+.gout-h { display: flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ok); background: var(--ok-soft); }
+.gout-h > span:first-child { flex: 1 1 auto; }
 .gout pre { background: transparent; color: var(--fg-dim); }
 .gwarn { padding: 8px 10px; border-radius: 8px; background: var(--warn-soft); }
 .gflag { padding: 8px 10px; border-radius: 8px; background: var(--ok-soft); font-weight: 600; }
 .gdone { display: block; width: 100%; margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--fg); font-size: 14px; font-weight: 600; }
 .gdone[aria-pressed="true"] { border-color: var(--ok); color: var(--ok); }
+.gtoolbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.gedit.on { border-color: var(--guide); color: var(--guide); background: var(--guide-soft); }
+.gst { padding: 5px 9px; border-radius: 7px; border: 1px dashed var(--line); background: transparent; color: var(--fg-faint); font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.gst.ok { border: 1px solid var(--ok); color: var(--ok); background: var(--ok-soft); }
+.gst.un { border: 1px solid var(--warn); color: var(--warn); background: var(--warn-soft); }
+.gst.bad { border: 1px solid var(--danger); color: var(--danger); background: var(--danger-soft); }
+.gblk.gpara { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; }
+.gpara-c { flex: 1 1 auto; min-width: 0; font-size: 14.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.gpara-c .glist { margin: 0; }
+.gpara.gwarn, .gpara.gtip, .gpara.gflag { padding: 8px 10px; border-radius: 8px; }
+.gtip { background: var(--guide-soft); }
+.gpara.mine { box-shadow: inset 3px 0 0 var(--guide); padding-left: 10px; border-radius: 4px; }
+.gside { flex: 0 0 auto; align-items: center; }
+.gpen { width: 30px; height: 28px; padding: 0; border-radius: 7px; border: 1px solid var(--line-soft); background: transparent; color: var(--fg-faint); font-size: 14px; line-height: 1; }
+.gout.mine { border-color: var(--guide); }
+.gtools { display: flex; flex-wrap: wrap; gap: 4px; margin: -2px 0 10px; }
+.gtools button, .gchoose button { padding: 4px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--fg-dim); font-size: 12px; font-weight: 600; }
+.gtools button:disabled { opacity: .35; }
+.gtools .gdel { color: var(--danger); border-color: var(--danger); margin-left: auto; }
+.gsteptools { margin: 8px 0 4px; padding: 6px; border-radius: 8px; background: var(--surface-3); }
+.gchoose { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 6px 0; padding: 6px; border: 1px dashed var(--guide); border-radius: 8px; font-size: 12px; color: var(--guide); }
+.gadd-blk, .gadd-step { display: block; width: 100%; margin: 8px 0; padding: 8px; border-radius: 8px; border: 1px dashed var(--guide); background: transparent; color: var(--guide); font-size: 13px; font-weight: 600; }
+.geditor { margin: 8px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--guide); }
+.geditor.gline { padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--surface-3); }
+.geditor.gline .gedit-row { background: transparent; padding: 0; }
+.gtype { font-size: 12px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.gsp { flex: 1 1 auto; }
+.ghist { padding: 0 6px 6px; background: var(--surface-3); }
+.ghist-row { display: flex; gap: 8px; align-items: center; padding: 6px 4px; border-top: 1px solid var(--line-soft); }
+.ghist-row span { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; font-size: 12.5px; }
+.ghist-row small { color: var(--fg-faint); font-family: var(--data); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gfix-l { display: block; margin-top: 10px; }
+.gfix-l > span { display: block; font-size: 12px; font-weight: 700; color: var(--fg-faint); margin-bottom: 4px; }
+.gfix { width: 100%; box-sizing: border-box; font-family: var(--data); font-size: 14px; min-height: 0; resize: vertical; }
+.gfix-l.has > span { color: var(--guide); }
+.gfix-l.has .gfix { border-color: var(--guide); background: var(--guide-soft); }
+.gpanel { margin: 0 0 12px; padding: 10px; border: 1px solid var(--guide); border-radius: 10px; background: var(--guide-soft); }
+.gpanel textarea { width: 100%; box-sizing: border-box; font-family: var(--data); font-size: 13px; margin-top: 6px; }
+.gpanel .gedit-row { background: transparent; padding: 6px 0 0; }
+.gempty p { margin: 0 0 10px; color: var(--fg-dim); }
+.guide-ips { margin-bottom: 4px; }
+.srcchip { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--guide); color: var(--guide); }
+.lab-track { margin-top: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 14px; }
+.lab-track .field { margin: 0; }
+.lflag { display: grid; grid-template-columns: 112px 1fr; gap: 8px; align-items: center; margin-top: 6px; }
+.lflag label { display: flex; align-items: center; gap: 8px; font-family: var(--data); font-size: 14px; }
+.lflag input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--ok); }
+.lflag .input { font-family: var(--data); font-size: 14px; min-width: 0; }
+.ltags, .ltag-sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ltag-sugg { margin-top: 8px; }
+.ltag { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--guide); background: var(--guide-soft); color: var(--guide); font-size: 12.5px; font-weight: 600; }
+.ltag-in { flex: 1 1 140px; min-width: 120px; }
+.ltag-sugg button { padding: 3px 9px; border-radius: 999px; border: 1px dashed var(--line); background: transparent; color: var(--fg-faint); font-size: 12px; }
+.fchip { flex: 0 0 auto; font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--fg-dim); white-space: nowrap; }
+.fchip.full { color: var(--ok); border-color: var(--ok); }
 .gtake { border-top: 1px solid var(--line-soft); padding-top: 12px; margin-top: 4px; font-size: 15px; }
+/* --- lab PDF (Save as PDF from the print dialog) --- */
+#print-sheet { display: none; }
+@media print {
+  @page { margin: 14mm 13mm; }
+  html, body { background: #fff !important; }
+  body > *:not(#print-sheet) { display: none !important; }
+  #print-sheet { display: block; color: #1d2024; font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #print-sheet h1 { font-size: 24pt; line-height: 1.15; margin: 0 0 2px; letter-spacing: -.01em; }
+  #print-sheet .ps-sub { margin: 0 0 10px; color: #5a616b; font-size: 11pt; }
+  #print-sheet .ps-rule { height: 3px; background: #c99a2e; border-radius: 2px; margin: 0 0 12px; }
+  #print-sheet .ps-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  #print-sheet .ps-chip { border: 1px solid #cfd3d8; border-radius: 999px; padding: 1px 9px; font-size: 9pt; color: #3b4048; }
+  #print-sheet .ps-chip.ok { border-color: #2f7d50; color: #2f7d50; }
+  #print-sheet .ps-chip.warn { border-color: #b4570f; color: #b4570f; }
+  #print-sheet .ps-chip.bad { border-color: #b03a31; color: #b03a31; }
+  #print-sheet table.ps-ips { border-collapse: collapse; margin: 0 0 14px; font-size: 9.5pt; }
+  #print-sheet table.ps-ips td { border: 1px solid #dde0e4; padding: 3px 10px; }
+  #print-sheet table.ps-ips td:first-child { background: #f4f5f7; font-weight: 600; }
+  #print-sheet h2 { font-size: 13pt; margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 1px solid #e3e5e8; break-after: avoid; page-break-after: avoid; }
+  #print-sheet h2 .ps-n { display: inline-block; min-width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; background: #1d2024; color: #fff; font-size: 9.5pt; margin-right: 7px; }
+  #print-sheet h2.done .ps-n { background: #2f7d50; }
+  #print-sheet h2 .ps-done { font-size: 9pt; font-weight: 600; color: #2f7d50; margin-left: 6px; }
+  #print-sheet p { margin: 4px 0; }
+  #print-sheet code { font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 9.2pt; background: #f1f2f4; padding: 0 3px; border-radius: 3px; }
+  #print-sheet .ps-box { margin: 6px 0; border: 1px solid #dde0e4; border-left: 3px solid #1d2024; border-radius: 4px; break-inside: avoid; page-break-inside: avoid; }
+  #print-sheet .ps-box.out { border-left-color: #9aa2ad; }
+  #print-sheet .ps-box.mine { border-left-color: #c99a2e; }
+  #print-sheet .ps-lbl { font-size: 7.5pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b737e; padding: 3px 8px 0; }
+  #print-sheet .ps-box.mine .ps-lbl { color: #9a7400; }
+  #print-sheet pre { margin: 0; padding: 3px 8px 6px; font: 9pt/1.45 ui-monospace, Consolas, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+  #print-sheet .ps-box.out pre { color: #4a5058; }
+  #print-sheet ul { margin: 4px 0; padding-left: 18px; }
+  #print-sheet .ps-warn { background: #fdf3e7; border-left: 3px solid #b4570f; padding: 4px 8px; border-radius: 3px; break-inside: avoid; }
+  #print-sheet .ps-tip { background: #f7f3e8; border-left: 3px solid #c99a2e; padding: 4px 8px; border-radius: 3px; break-inside: avoid; }
+  #print-sheet .ps-fix { margin: 6px 0; background: #f7f3e8; border: 1px solid #e6d9b5; border-radius: 4px; padding: 5px 9px; white-space: pre-wrap; font-size: 9.5pt; break-inside: avoid; }
+  #print-sheet .ps-st { font-weight: 700; }
+  #print-sheet .ps-st.ok { color: #2f7d50; } #print-sheet .ps-st.un { color: #b4570f; } #print-sheet .ps-st.bad { color: #b03a31; }
+  #print-sheet .ps-chip.gold { border-color: #c99a2e; color: #9a7400; }
+  #print-sheet .ps-flag { background: #eaf5ee; border-left: 3px solid #2f7d50; padding: 4px 8px; border-radius: 3px; font-weight: 600; }
+  #print-sheet .ps-take { margin-top: 16px; background: #f7f3e8; border: 1px solid #e6d9b5; border-radius: 6px; padding: 8px 12px; break-inside: avoid; }
+  #print-sheet .ps-notes { white-space: pre-wrap; border: 1px solid #dde0e4; border-radius: 4px; padding: 8px 10px; font-size: 10pt; }
+  #print-sheet .ps-foot { margin-top: 18px; padding-top: 6px; border-top: 1px solid #e3e5e8; font-size: 8.5pt; color: #8b939d; }
+}
 .lab-links { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding-bottom: 20px; }
 .lab-links .btn { text-decoration: none; }
+.lab-pdf { width: 100%; margin-top: 10px; }
 .lab-links .spoiler { color: var(--warn); border-color: var(--warn); }
 
 /* ---------- education + certifications ---------- */
@@ -1668,6 +1781,66 @@ button.rtag.tag { background: var(--brass-soft); color: var(--brass); }
 .chap-rev b { color: var(--fg); font-family: var(--data); font-weight: 500; }
 .chap-rev div { display: flex; gap: 6px; }
 .chap-rev .mini { font-size: 16px; font-weight: 600; }
+.seg2 { grid-template-columns: 1fr 1fr; margin: 14px 0 6px; }
+.icls-s { font-size: 12px; color: var(--fg-faint); }
+.icls-m { font-size: 12.5px; color: var(--guide); font-weight: 600; }
+.ncempty { margin: 4px 2px 10px; }
+.nbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 10px 0; }
+.nbtn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--fg-dim); font-size: 12.5px; font-weight: 600; }
+.nbtn.pri { border-color: var(--brass); background: var(--brass-soft); color: var(--brass); }
+.nbtn.danger { border-color: var(--danger); color: var(--danger); }
+.ntoc { display: flex; gap: 6px; overflow-x: auto; padding: 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.ntoc::-webkit-scrollbar { display: none; }
+.ntoc button { flex: 0 0 auto; display: inline-flex; gap: 5px; align-items: center; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); border-left: 3px solid var(--nh); background: var(--surface-2); color: var(--fg); font-size: 12.5px; white-space: nowrap; }
+.ntoc button span { color: var(--fg-dim); }
+.nsec { border-top: 1px solid var(--line-soft); }
+.nsec > summary { display: flex; align-items: center; gap: 10px; padding: 12px 12px; cursor: pointer; list-style: none; font-weight: 650; font-size: 15.5px; border-left: 4px solid var(--nh); }
+.nsec > summary::-webkit-details-marker { display: none; }
+.nsec-i { flex: 0 0 auto; width: 26px; text-align: center; font-size: 19px; line-height: 1; }
+.nsec-t { flex: 1 1 auto; min-width: 0; }
+.nsec-ok { display: none; color: var(--ok); font-weight: 700; }
+.nsec.read .nsec-ok { display: inline; }
+.nsec.read > summary { color: var(--fg-dim); }
+.nsec[open] > summary { background: linear-gradient(90deg, rgba(128, 128, 128, .08), transparent 70%); }
+.nsec-b { padding: 4px 14px 10px 14px; border-left: 4px solid var(--nh); font-size: 14.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.nintro { border-left-color: transparent; padding-top: 10px; }
+.nsec-b p { margin: 8px 0; }
+.nsec-b b { font-weight: 700; color: var(--fg); background: rgba(201, 154, 46, .16); border-radius: 3px; padding: 0 2px; }
+.nsec-b code { font-family: var(--data); font-size: 13px; padding: 1px 5px; border-radius: 5px; background: var(--surface-3); }
+.nlist { margin: 6px 0; padding-left: 20px; }
+.nlist .nlist { margin: 2px 0; }
+.nlist li { margin: 3px 0; }
+.nh4 { margin: 14px 0 4px; font-size: 15px; font-weight: 700; color: var(--nh, var(--brass)); }
+.ncall { margin: 10px 0; padding: 9px 12px; border-radius: 8px; border-left: 3px solid var(--brass); background: var(--brass-soft); font-size: 14px; }
+.ncall.tip { border-left-color: var(--guide); background: var(--guide-soft); }
+.ncall.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.ncall.mem { border-left-color: var(--ok); background: var(--ok-soft); }
+.ntable { overflow-x: auto; margin: 10px 0; border: 1px solid var(--line-soft); border-radius: 8px; -webkit-overflow-scrolling: touch; }
+.ntable table { border-collapse: collapse; width: 100%; font-size: 13px; line-height: 1.4; }
+.ntable td.nw { white-space: nowrap; }
+.ntable table, .ntable td, .ntable th { overflow-wrap: normal; word-break: normal; }
+.ntable th { text-align: left; padding: 7px 9px; background: var(--surface-3); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-faint); white-space: nowrap; }
+.ntable td { padding: 7px 9px; border-top: 1px solid var(--line-soft); vertical-align: top; }
+.ntable tbody tr:nth-child(even) td { background: rgba(128, 128, 128, .05); }
+.nchips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.nchips-l { margin: 10px 0 0; }
+.nchip { display: inline-flex; gap: 5px; align-items: baseline; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); font-size: 12.5px; line-height: 1.35; }
+.nchip b { background: none; padding: 0; color: var(--nh, var(--brass)); }
+.nchip em { font-style: normal; color: var(--fg-dim); }
+.nfig { margin: 12px 0; }
+.nfig svg { display: block; width: 100%; height: auto; border-radius: 10px; }
+.nfig figcaption { margin-top: 4px; font-size: 12px; color: var(--fg-faint); text-align: center; }
+.cnote { margin: 8px 0; border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--surface); overflow: hidden; }
+.cnote-h { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 9px 12px; background: var(--surface-3); }
+.cnote-h small { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-faint); }
+.cnote-h button { padding: 0; border: 0; background: none; color: var(--brass); font-size: 14.5px; font-weight: 600; text-align: left; }
+.cnote-b { padding: 4px 12px 10px; font-size: 14.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.ned { padding: 10px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line-soft); }
+.ned-l { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--fg-faint); }
+.ned-l .input { font-size: 16px; width: 100%; box-sizing: border-box; }
+.ned-l textarea { font-family: var(--data); font-size: 13.5px; line-height: 1.5; resize: vertical; }
+.ned-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ned .hint { margin: 0; }
 .chap-nav { display: flex; gap: 8px; }
 .chap-nav .btn { flex: 1 1 0; padding: 12px 10px; font-size: 14.5px; }
 .lab-notes textarea#chap-n { font-family: var(--ui); font-size: 15.5px; line-height: 1.55; min-height: 220px; }
@@ -1826,6 +1999,7 @@ body {
 </style>
 </head>
 <body>
+<div id="print-sheet" aria-hidden="true"></div>
 <div id="app">
 
   <!-- ================= LOCK ================= -->
@@ -2127,6 +2301,10 @@ body {
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-chap-back" aria-label="Back to the reading list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h1 id="chap-bar-title">Chapter</h1></div></header>
     <div class="col gutter page-body" id="chap-body"></div>
   </section>
+  <section id="screen-icls" class="screen" hidden>
+    <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-icls-back" aria-label="Back to the reading list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h1 id="icls-bar-title">Class notes</h1></div></header>
+    <div class="col gutter page-body" id="icls-body"></div>
+  </section>
   <section id="screen-lab" class="screen" hidden>
     <header class="topbar"><div class="topbar-in col gutter"><button class="icon-btn" id="btn-lab-back" aria-label="Back to the lab list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h1 id="lab-bar-title">Lab</h1></div></header>
     <div class="col gutter page-body" id="lab-body"></div>
@@ -2300,6 +2478,9 @@ body {
 <script src="lib/oscp-guides.js"></script>
 <!-- UPSC prelims reading list: subjects, NCERT books and chapters. -->
 <script src="lib/ias-prelims.js"></script>
+<!-- Class notes: Markdown note sets and the pictures they use. -->
+<script src="lib/ncert-figs.js"></script>
+<script src="lib/ncert-notes.js"></script>
 
 <script>
 (function () {
@@ -4410,7 +4591,7 @@ body {
     lock: '#screen-lock', vault: '#screen-vault', detail: '#screen-detail',
     edit: '#screen-edit', backup: '#screen-backup',
     attn: '#screen-attn', health: '#screen-health', run: '#screen-run', coach: '#screen-coach', oscp: '#screen-oscp', lab: '#screen-lab',
-    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', money: '#screen-money', week: '#screen-week', notes: '#screen-notes', gx: '#screen-gx', gxt: '#screen-gxt', open: '#screen-open', sites: '#screen-sites'
+    share: '#screen-share', got: '#screen-got', ias: '#screen-ias', chap: '#screen-chap', icls: '#screen-icls', money: '#screen-money', week: '#screen-week', notes: '#screen-notes', gx: '#screen-gx', gxt: '#screen-gxt', open: '#screen-open', sites: '#screen-sites'
   };
   function show(view) {
     S.view = view;
@@ -4440,6 +4621,7 @@ body {
     // On unlocking: adopt the box's copy the first time, otherwise refresh the box's copy (for backups).
     if (view === 'vault' && S.data && !openAdopted) { openAdopted = true; if (!OPEN.v) openFromBox(false); else persist(); }
     if (view === 'chap') renderChap();
+    if (view === 'icls') renderIcls();
     if (view !== 'detail') { stopOtp(); closeLightbox(); clearTimeout(wifiTimer); ipoAllotting = null; }
     if (view !== 'share') { S.share = null; $('#share-body').textContent = ''; }
     if (view !== 'got') wipeGot();
@@ -4473,9 +4655,11 @@ body {
     query = ''; $('#q').value = '';
     coachReset();
     $('#oscp-body').textContent = ''; $('#lab-body').textContent = ''; oscpLab = null;
-    oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };   // like the main list's tab
+    var psh = document.getElementById('print-sheet'); if (psh) psh.innerHTML = '';
+    oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all', guide: 'all', os: 'all', tag: 'all' };   // like the main list's tab
     $('#ias-body').textContent = ''; $('#chap-body').textContent = '';
     iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; iasOpen = {}; iasChap = null; iasAdding = null; iasExamEdit = false;
+    $('#icls-body').textContent = ''; iasMode = 'subj'; iasClass = null; iasCV = { q: '', s: 'all' }; iasCOpen = {}; iasCEdit = null; iasFrom = null;
     moneyPending = null; moneyBusy = false; moneyEditTx = null; moneyAcctEdit = null;
     moneyView = { acct: null, month: null, cat: null, help: false }; $('#money-body').textContent = '';
     whoView = 'all'; famEdit = null; whoAdding = false; budgetEdit = false; openAdopted = false; $('#week-body').textContent = ''; $('#gx-body').textContent = ''; $('#gxt-body').textContent = ''; gxOpen = {}; gxTopic = null; gxAdding = null; $('#whos').textContent = ''; $('#fam-body').textContent = '';
@@ -8718,7 +8902,7 @@ body {
   var DIFF_BUCKET = { Easy: 'Easy', Medium: 'Medium', Intermediate: 'Medium', Hard: 'Hard', Insane: 'Insane', 'Very Hard': 'Insane' };
   var DIFF_ORDER = { Easy: 1, Medium: 2, Hard: 3, Insane: 4 };
   var STATUS_NAME = { todo: 'To do', doing: 'In progress', done: 'Rooted' };
-  var oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };
+  var oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all', guide: 'all', os: 'all', tag: 'all' };
   var oscpLab = null, oscpNoteTimer = null;
 
   function labState(id) { return (OPEN.oscp && OPEN.oscp[id]) || {}; }
@@ -8732,8 +8916,54 @@ body {
       if (patch[k] === undefined || patch[k] === '') delete cur[k]; else cur[k] = patch[k];
     });
     cur.u = Date.now();
-    if (!cur.s && !cur.n && !cur.diff && !(cur.g && cur.g.length) && !(cur.files && cur.files.length)) delete OPEN.oscp[id]; else OPEN.oscp[id] = cur;
+    if (!labKeep(cur)) delete OPEN.oscp[id]; else OPEN.oscp[id] = cur;
     return saveOpen();
+  }
+  function labKeep(c) {
+    function some(o) { return !!(o && Object.keys(o).length); }
+    return !!(c.s || c.n || c.diff || (c.g && c.g.length) || (c.files && c.files.length) || some(c.ce) || c.cg || some(c.fx) || c.src || some(c.vr) || some(c.fl) || (c.tg && c.tg.length));
+  }
+  // A lab's own copy of its walkthrough comes back from backups and sync, so
+  // check every part of it before it's used.
+  function sanitizeGuideCopy(g) {
+    if (!g || typeof g !== 'object' || !Array.isArray(g.steps)) return null;
+    var n = 0, TYPES = { code: 1, out: 1, tip: 1, warn: 1, p: 1, flag: 1, list: 1 };
+    function str(x, max) { return typeof x === 'string' ? x.slice(0, max) : ''; }
+    function arr(x) { return Array.isArray(x) ? x.filter(function (y) { return typeof y === 'string'; }).slice(0, 80).map(function (y) { return y.slice(0, 4000); }) : null; }
+    function id(x) { return typeof x === 'number' && x === Math.floor(x) && x >= 0 && x < 200 ? x : (typeof x === 'string' && /^[\w.-]{1,40}$/.test(x) ? x : null); }
+    function blk(b) {
+      if (!b || typeof b !== 'object' || !TYPES[b.t] || ++n > 1500) return null;
+      var o = { id: id(b.id), t: b.t };
+      if (o.id === null) o.id = 'n' + (n + 1000).toString(36) + Math.random().toString(36).slice(2, 6);
+      if (b.t === 'list') { o.v = arr(b.v); if (!o.v) return null; } else o.v = str(b.v, 30000);
+      if (typeof b.lang === 'string' && b.lang) o.lang = b.lang.slice(0, 20);
+      if (b.o !== undefined) { var oo = b.t === 'list' ? arr(b.o) : (typeof b.o === 'string' ? b.o.slice(0, 30000) : null); if (oo !== null) o.o = oo; }
+      if (b.st === 'ok' || b.st === 'un' || b.st === 'bad') o.st = b.st;
+      if (b.nw) o.nw = 1;
+      if (Array.isArray(b.hist)) {
+        var h = b.hist.filter(function (x) { return x && typeof x.at === 'number' && (typeof x.v === 'string' || Array.isArray(x.v)); }).slice(0, 10)
+          .map(function (x) { return { at: x.at, v: Array.isArray(x.v) ? arr(x.v) : x.v.slice(0, 30000) }; });
+        if (h.length) o.hist = h;
+      }
+      return o;
+    }
+    function sec(x, withId) {
+      if (!x || typeof x !== 'object' || !Array.isArray(x.b)) return null;
+      var o = { h: str(x.h, 300), b: x.b.slice(0, 200).map(blk).filter(Boolean) };
+      if (withId) { o.id = id(x.id); if (o.id === null) o.id = 'n' + Math.random().toString(36).slice(2, 12); }
+      if (typeof x.o === 'string') o.o = x.o.slice(0, 300);
+      if (x.nw) o.nw = 1;
+      return o;
+    }
+    var out = { title: str(g.title, 300), steps: g.steps.slice(0, 80).map(function (x) { return sec(x, true); }).filter(Boolean) };
+    if (g.ips && typeof g.ips === 'object') out.ips = { K: str(g.ips.K, 60), T: str(g.ips.T, 60) };
+    var su = sec(g.setup), bk = sec(g.backup);
+    if (su) out.setup = su;
+    if (bk) out.backup = bk;
+    var tk = g.tk && g.tk.t === 'list' ? blk(g.tk) : null;
+    out.tk = tk || { t: 'list', v: [] };
+    out.tk.id = 'tk';
+    return out;
   }
   function oscpTotals() {
     var t = { all: LABS.length, done: 0, doing: 0 };
@@ -8751,11 +8981,43 @@ body {
       if (typeof v.n === 'string' && v.n) c.n = v.n.slice(0, 20000);
       if (typeof v.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.d)) c.d = v.d;
       if (DIFF_BUCKET[v.diff]) c.diff = v.diff;
-      if (Array.isArray(v.g)) { var g = v.g.filter(function (k, i, a) { return k === Math.floor(k) && k >= 0 && k < 60 && a.indexOf(k) === i; }); if (g.length) c.g = g; }
+      if (Array.isArray(v.g)) { var g = v.g.filter(function (k, i, a) { return ((typeof k === 'number' && k === Math.floor(k) && k >= 0 && k < 200) || (typeof k === 'string' && /^n[a-z0-9]{4,30}$/.test(k))) && a.indexOf(k) === i; }).slice(0, 200); if (g.length) c.g = g; }
       var fl = sanitizeFiles(v.files);
       if (fl) c.files = fl;
       c.u = typeof v.u === 'number' ? v.u : 0;
-      if (c.s || c.n || c.diff || c.g || c.files) out[id] = c;
+      if (v.ce && typeof v.ce === 'object') {
+        var ce = {};
+        Object.keys(v.ce).slice(0, 300).forEach(function (k) {
+          if (/^(\d{1,2}|b|s)\.\d{1,2}$/.test(k) && typeof v.ce[k] === 'string') ce[k] = v.ce[k].slice(0, 8000);
+        });
+        if (Object.keys(ce).length) c.ce = ce;
+      }
+      var cg = sanitizeGuideCopy(v.cg);
+      if (cg) c.cg = cg;
+      if (v.fx && typeof v.fx === 'object') {
+        var fx = {};
+        Object.keys(v.fx).slice(0, 200).forEach(function (k) { if (/^[\w-]{1,40}$/.test(k) && typeof v.fx[k] === 'string' && v.fx[k]) fx[k] = v.fx[k].slice(0, 8000); });
+        if (Object.keys(fx).length) c.fx = fx;
+      }
+      if (v.src === 'official' || v.src === 'memory' || v.src === 'run') c.src = v.src;
+      if (v.vr && typeof v.vr === 'object') {
+        var vr = {};
+        ['P', 'D', 'U', 'W'].forEach(function (k) { if (typeof v.vr[k] === 'string' && v.vr[k]) vr[k] = v.vr[k].slice(0, 200); });
+        if (Object.keys(vr).length) c.vr = vr;
+      }
+      if (v.fl && typeof v.fl === 'object') {
+        var fl = {};
+        if (v.fl.l === true) fl.l = true;
+        if (v.fl.p === true) fl.p = true;
+        if (typeof v.fl.lv === 'string' && v.fl.lv) fl.lv = v.fl.lv.slice(0, 300);
+        if (typeof v.fl.pv === 'string' && v.fl.pv) fl.pv = v.fl.pv.slice(0, 300);
+        if (Object.keys(fl).length) c.fl = fl;
+      }
+      if (Array.isArray(v.tg)) {
+        var tg = v.tg.filter(function (t, i, a) { return typeof t === 'string' && t.trim() && a.indexOf(t) === i; }).slice(0, 20).map(function (t) { return t.trim().slice(0, 30); });
+        if (tg.length) c.tg = tg;
+      }
+      if (labKeep(c)) out[id] = c;
     });
     return out;
   }
@@ -8774,8 +9036,11 @@ body {
     if (v.diff !== 'all' && labBucket(l) !== v.diff) return false;
     if (v.type !== 'all' && (l.tracks || []).indexOf(v.type) < 0) return false;
     if (v.status !== 'all' && labStatus(l.id) !== v.status) return false;
+    if (v.guide === 'yes' && !labHasGuide(l.id)) return false;
+    if (v.os && v.os !== 'all' && l.os !== v.os) return false;
+    if (v.tag && v.tag !== 'all' && (labState(l.id).tg || []).indexOf(v.tag) < 0) return false;
     if (v.q) {
-      var hay = [l.name, l.platform, l.os, (l.tracks || []).join(' '), (l.tags || []).join(' '), labDiff(l)].join(' ').toLowerCase();
+      var hay = [l.name, l.platform, l.os, (l.tracks || []).join(' '), (l.tags || []).join(' '), (labState(l.id).tg || []).join(' '), labDiff(l), labGuideText(l.id)].join(' ').toLowerCase();
       if (!v.q.split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; })) return false;
     }
     return true;
@@ -8794,14 +9059,26 @@ body {
       }).join('') + '</div></div>';
   }
 
+  function labHasGuide(id) { return !!(window.OSCP_GUIDES && window.OSCP_GUIDES[id]) || !!labState(id).cg; }
+  // What the search box looks through: the walkthrough's titles, commands, text and takeaways.
+  function labGuideText(id) {
+    if (!labHasGuide(id)) return '';
+    var g = effGuide(id), out = [g.title];
+    g.steps.forEach(function (s) { out.push(s.h); });
+    gEachBlock(g, function (b) { out.push(Array.isArray(b.v) ? b.v.join(' ') : b.v); });
+    return out.join(' ');
+  }
   function labRow(l) {
-    var st = labStatus(l.id), d = labDiff(l), b = labBucket(l), state = labState(l.id);
-    var meta = [l.os, (l.tracks || []).filter(function (t) { return t !== l.os; }).join(', '), (l.tags || []).join(', ')]
+    var st = labStatus(l.id), d = labDiff(l), b = labBucket(l), state = labState(l.id), g = labHasGuide(l.id);
+    var meta = [l.os, (l.tracks || []).filter(function (t) { return t !== l.os; }).join(', '), (l.tags || []).join(', '), (state.tg || []).map(function (t) { return '#' + t; }).join(' ')]
       .filter(Boolean).join(' · ');
-    return '<div class="lab ' + st + '">' +
+    var fl = state.fl || {}, flags = (fl.l ? 1 : 0) + (fl.p ? 1 : 0);
+    return '<div class="lab ' + st + (g ? ' has-guide' : '') + '">' +
       '<button class="lab-st" data-cycle="' + esc(l.id) + '" aria-label="' + esc(l.name) + ': ' + STATUS_NAME[st] + '. Tap to change.">' + STATUS_ICON[st] + '</button>' +
       '<button class="lab-main" data-lab="' + esc(l.id) + '">' +
       '<span class="lab-text"><b>' + esc(l.name) + '</b><small>' + esc(meta) + (state.n ? ' · notes' : '') + '</small></span>' +
+      (flags ? '<span class="fchip' + (flags === 2 ? ' full' : '') + '">🏁 ' + flags + '/2</span>' : '') +
+      (g ? '<span class="gchip">📘 Guide</span>' : '') +
       '<span class="diff d-' + b.toLowerCase() + '">' + esc(d || 'Unrated') + '</span></button></div>';
   }
 
@@ -8811,7 +9088,7 @@ body {
     if (!LABS.length) { el.innerHTML = '<div class="empty"><h2>Lab list missing</h2><p>lib/oscp-labs.js did not load.</p></div>'; return; }
     var t = oscpTotals(), pct = Math.round(t.done / t.all * 100);
     var shown = LABS.filter(labMatches);
-    var filtered = oscpView.q || ['platform', 'diff', 'type', 'status'].some(function (k) { return oscpView[k] !== 'all'; });
+    var filtered = oscpView.q || ['platform', 'diff', 'type', 'status', 'guide', 'os', 'tag'].some(function (k) { return oscpView[k] && oscpView[k] !== 'all'; });
     var groups = OSCP_PLATFORMS.map(function (p) {
       var items = shown.filter(function (l) { return l.platform === p; }).sort(function (a, b) {
         var da = DIFF_ORDER[labBucket(a)] || 9, db = DIFF_ORDER[labBucket(b)] || 9;
@@ -8828,11 +9105,18 @@ body {
       (t.doing ? ' · ' + t.doing + ' in progress' : '') + '</span></div>' +
       '<div class="oscp-bar" role="img" aria-label="' + pct + ' percent rooted"><i style="width:' + pct + '%"></i></div>' + oscpWeekHtml() + '</div>' +
       '<div class="search oscp-search">' + lu('search') +
-      '<input class="input" id="oscp-q" type="search" placeholder="Search labs" value="' + esc(oscpView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search labs"></div>' +
+      '<input class="input" id="oscp-q" type="search" placeholder="Search labs, commands, takeaways" value="' + esc(oscpView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search labs"></div>' +
       chipRow('Difficulty', 'diff', [['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard'], ['Insane', 'Insane'], ['Unrated', 'Unrated']]) +
       chipRow('Platform', 'platform', OSCP_PLATFORMS.map(function (p) { return [p, p]; })) +
       chipRow('Type', 'type', OSCP_TYPES.map(function (p) { return [p, p]; })) +
       chipRow('Status', 'status', [['todo', 'To do'], ['doing', 'In progress'], ['done', 'Rooted']]) +
+      chipRow('OS', 'os', LABS.reduce(function (a, l) { if (l.os && a.indexOf(l.os) < 0) a.push(l.os); return a; }, []).sort().map(function (o) { return [o, o]; })) +
+      chipRow('Walkthrough', 'guide', [['yes', '📘 Has guide']]) +
+      (function () {
+        var all = [];
+        LABS.forEach(function (l) { (labState(l.id).tg || []).forEach(function (t) { if (all.indexOf(t) < 0) all.push(t); }); });
+        return all.length ? chipRow('Tag', 'tag', all.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); }).map(function (t) { return [t, '#' + t]; })) : '';
+      })() +
       '<div class="oscp-showing"><span>' + shown.length + ' of ' + t.all + ' labs</span>' +
       (filtered ? '<button type="button" class="linkish" id="oscp-clear">Clear filters</button>' : '') + '</div>' +
       (groups || '<div class="empty"><h2>No labs match</h2><p>Try fewer filters.</p></div>') +
@@ -8855,13 +9139,13 @@ body {
     var f = ev.target.closest('[data-f]');
     if (f) { oscpView[f.dataset.f] = f.dataset.v; renderOscp(); return; }
     if (ev.target.closest('#oscp-clear')) {
-      oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all' };
+      oscpView = { q: '', platform: 'all', diff: 'all', type: 'all', status: 'all', guide: 'all', os: 'all', tag: 'all' };
       renderOscp(); return;
     }
     var c = ev.target.closest('[data-cycle]');
     if (c) { var y = window.scrollY; cycleLab(c.dataset.cycle).then(function () { renderOscp(); window.scrollTo(0, y); }); return; }
     var open = ev.target.closest('[data-lab]');
-    if (open) { oscpLab = open.dataset.lab; oscpScroll = window.scrollY; show('lab'); }
+    if (open) { oscpLab = open.dataset.lab; gLabSeen = null; oscpScroll = window.scrollY; show('lab'); }
   });
   $('#oscp-body').addEventListener('input', function (ev) {
     if (ev.target.id !== 'oscp-q') return;
@@ -8893,12 +9177,15 @@ body {
     ].filter(function (x) { return x[1]; });
     el.innerHTML =
       '<div class="lab-hero ' + status + '"><span class="diff d-' + labBucket(l).toLowerCase() + '">' + esc(d || 'Unrated') + '</span>' +
+      (st.src ? ' <span class="srcchip">' + esc(SRC_NAME[st.src]) + '</span>' : '') +
       '<h2>' + esc(l.name) + '</h2><p>' + esc(src) + '</p></div>' +
       '<div class="seg" role="radiogroup" aria-label="Status">' +
       ['todo', 'doing', 'done'].map(function (k) {
         return '<button type="button" role="radio" data-setst="' + k + '" aria-checked="' + (status === k) + '">' + STATUS_ICON[k] + STATUS_NAME[k] + '</button>';
       }).join('') + '</div>' +
       (status === 'done' && st.d ? '<p class="hint lab-when">Rooted on ' + esc(fmtDate(st.d)) + '</p>' : '') +
+      '<button type="button" class="btn ghost lab-pdf" data-lprint>📄 Save as PDF</button>' +
+      labTrackHtml(l, st) +
       (!l.difficulty
         ? '<div class="field lab-rate"><label class="label" for="lab-diff">Your rating</label><select class="input" id="lab-diff">' +
           ['', 'Easy', 'Medium', 'Hard', 'Insane'].map(function (o) {
@@ -8919,57 +9206,444 @@ body {
       '</div>';
   }
 
-  /* --- walkthroughs (lib/oscp-guides.js): your IPs filled into every command --- */
+  /* --- walkthroughs ---
+     The built-in guides (lib/oscp-guides.js) are read-only. The first time you
+     change anything in a lab's walkthrough, a full copy of it is kept in that
+     lab's data (st.cg) and every later change edits the copy. "Reset" puts one
+     block back; "Reset all" drops the copy. Your values (IPs, LPORT, domain,
+     user, password) are kept as {K} {T} {LPORT} {DOMAIN} {USER} {PASS} inside
+     the text, so changing a field rewrites every command that uses it. */
   var GIP_KEY = 'depositbox.oscp.ips';
-  function guideIps(g) {
+  var GVARS = [
+    { k: 'K', label: 'Kali IP', tok: '{K}', mode: 'decimal' },
+    { k: 'T', label: 'Target IP', tok: '{T}', mode: 'decimal' },
+    { k: 'P', label: 'LPORT', tok: '{LPORT}', mode: 'numeric' },
+    { k: 'D', label: 'Domain', tok: '{DOMAIN}', mode: 'text' },
+    { k: 'U', label: 'Username', tok: '{USER}', mode: 'text' },
+    { k: 'W', label: 'Password', tok: '{PASS}', mode: 'text' }
+  ];
+  var GTYPES = { code: 'BASH', out: 'OUTPUT', tip: 'TIP', warn: 'WARNING', p: 'TEXT', flag: 'FLAG', list: 'LIST' };
+  var GST = { ok: '✅ Tested', un: '⚠️ Untested', bad: '❌ Didn\'t work' };
+  var GST_NEXT = { '': 'ok', ok: 'un', un: 'bad', bad: '' };
+  var SRC_NAME = { official: '📗 Official walkthrough', memory: '🧠 From memory', run: '🏃 My run' };
+  var TAG_SUGGEST = ['SUID', 'sudo', 'cron', 'potato', 'RBCD', 'GPO', 'file upload', 'docker', 'kernel', 'SQLi', 'LFI', 'BOF', 'password reuse', 'AD'];
+  // Page state for the walkthrough you're looking at (not saved).
+  var gLabSeen = null, gEditMode = false, gEditing = null, gAdd = null, gPanel = null, gOpen = {}, gFixTimer = null, gFlagTimer = null;
+
+  function gid() { return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function gClone(o) { return JSON.parse(JSON.stringify(o)); }
+  function gSidVal(s) { return /^\d+$/.test(String(s)) ? +s : String(s); }
+  function fmtWhen(ts) { return new Date(ts).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+
+  function guideVars(g) {
     var o = {};
     try { o = JSON.parse(localStorage.getItem(GIP_KEY) || '{}') || {}; } catch (e) {}
-    return { K: o.K || (g.ips && g.ips.K) || '', T: (o.T && o.T[oscpLab]) || (g.ips && g.ips.T) || '' };
+    var vr = labState(oscpLab).vr || {}, ips = (g && g.ips) || {};
+    return { K: o.K || ips.K || '', T: (o.T && o.T[oscpLab]) || ips.T || '', P: vr.P || '', D: vr.D || '', U: vr.U || '', W: vr.W || '' };
   }
-  function guideFill(v, ip) { return String(v).replace(/\{K\}/g, ip.K || 'KALI_IP').replace(/\{T\}/g, ip.T || 'TARGET_IP'); }
+  function guideIps(g) { return guideVars(g); }
+  function guideFill(v, ip) {
+    var out = String(v == null ? '' : v);
+    GVARS.forEach(function (x) {
+      var val = ip && ip[x.k];
+      out = out.split(x.tok).join(val || (x.k === 'K' ? 'KALI_IP' : x.k === 'T' ? 'TARGET_IP' : x.tok));
+    });
+    return out;
+  }
   function guideInline(v, ip) {
     return esc(guideFill(v, ip)).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   }
-  function guideBlocks(bs, ip) {
-    return bs.map(function (b) {
-      if (b.t === 'code') return '<div class="gcode"><div class="gcode-bar"><span>' + esc(b.lang) + '</span><button type="button" class="gcopy" data-gcopy>Copy</button></div><pre>' + esc(guideFill(b.v, ip)) + '</pre></div>';
-      if (b.t === 'out') return '<div class="gout"><span>Output</span><pre>' + esc(guideFill(b.v, ip)) + '</pre></div>';
-      if (b.t === 'list') return '<ul class="glist">' + b.v.map(function (x) { return '<li>' + guideInline(x, ip) + '</li>'; }).join('') + '</ul>';
-      if (b.t === 'warn') return '<p class="gwarn">⚠️ ' + guideInline(b.v, ip) + '</p>';
-      if (b.t === 'flag') return '<p class="gflag">🏁 ' + guideInline(b.v, ip) + '</p>';
-      return '<p>' + guideInline(b.v, ip) + '</p>';
-    }).join('');
+  // Replace a value only where it stands as a whole word, so 10.0.0.1 never
+  // matches inside 10.0.0.15 and "admin" never matches inside "sysadmin".
+  function gWordReplace(text, val, tok) {
+    var s = String(text), out = '', i = 0, w = /[A-Za-z0-9_]/;
+    for (;;) {
+      var at = s.indexOf(val, i);
+      if (at < 0) break;
+      var b = at > 0 ? s.charAt(at - 1) : '', a = s.charAt(at + val.length);
+      var okB = !b || !w.test(b) || !w.test(val.charAt(0)), okA = !a || !w.test(a) || !w.test(val.charAt(val.length - 1));
+      out += s.slice(i, at) + (okB && okA ? tok : val);
+      i = at + val.length;
+    }
+    return out + s.slice(i);
+  }
+  function guideUnfill(v, ip, kinds) {
+    var out = String(v);
+    GVARS.forEach(function (x) {
+      var val = ip && ip[x.k];
+      if (!val || (kinds && kinds.indexOf(x.k) < 0)) return;
+      if ((x.k === 'K' || x.k === 'T') && val.length < 7) return;
+      if (x.k === 'P' && !/^\d{2,5}$/.test(val)) return;
+      if (val.length < 3 && x.k !== 'P') return;
+      out = gWordReplace(out, val, x.tok);
+    });
+    return out;
+  }
+
+  /* the walkthrough as it stands for a lab: your copy, or the built-in one */
+  function gBlockFrom(b, id) {
+    var o = { id: id, t: b.t, v: b.t === 'list' ? (b.v || []).slice() : String(b.v == null ? '' : b.v) };
+    if (b.lang) o.lang = b.lang;
+    return o;
+  }
+  function gSec(sec, pre) { return sec ? { h: sec.h, b: sec.b.map(function (b, j) { return gBlockFrom(b, pre + '.' + j); }) } : null; }
+  function genericSetup(id) {
+    var name = String(id).split('-').slice(1).join('-') || 'lab';
+    return { h: 'Setup: lab folder + session log', b: [
+      { id: 's.0', t: 'p', v: 'Do this first, in every new terminal, so everything you run is **saved for later**:' },
+      { id: 's.1', t: 'code', lang: 'bash', v: 'mkdir -p ~/oscp/' + name + '/{scans,loot,exploits} && cd ~/oscp/' + name + '\nscript -a -q session_$(date +%F_%H%M).log      # records everything you type and see\nexport T={T}; echo "T=$T" >> notes.txt' }] };
+  }
+  function effGuide(id) {
+    var st = labState(id), B = window.OSCP_GUIDES && window.OSCP_GUIDES[id];
+    if (st.cg) return st.cg;
+    if (!B) return null;
+    var g = { title: B.title || '', ips: B.ips || {}, setup: gSec(B.setup, 's'), backup: gSec(B.backup, 'b'),
+      steps: B.steps.map(function (s, i) { return { id: i, h: s.h, b: s.b.map(function (b, j) { return gBlockFrom(b, i + '.' + j); }) }; }),
+      tk: { id: 'tk', t: 'list', v: (B.takeaways || []).slice() } };
+    if (!g.setup) delete g.setup;
+    if (!g.backup) delete g.backup;
+    var ce = st.ce || {};   // command edits made before full copies existed
+    Object.keys(ce).forEach(function (k) { var l = gLoc(g, k); if (l && l.b.t === 'code') { l.b.o = l.b.v; l.b.v = ce[k]; } });
+    return g;
+  }
+  function gEachBlock(g, fn) {
+    if (g.setup) g.setup.b.forEach(fn);
+    g.steps.forEach(function (s) { s.b.forEach(fn); });
+    if (g.backup) g.backup.b.forEach(fn);
+    if (g.tk) fn(g.tk);
+  }
+  function gLoc(g, bid) {
+    if (bid === 'tk') return g.tk ? { b: g.tk } : null;
+    var secs = (g.setup ? [g.setup] : []).concat(g.steps, g.backup ? [g.backup] : []);
+    for (var i = 0; i < secs.length; i++) {
+      for (var j = 0; j < secs[i].b.length; j++) {
+        if (String(secs[i].b[j].id) === String(bid)) return { b: secs[i].b[j], arr: secs[i].b, j: j, sec: secs[i] };
+      }
+    }
+    return null;
+  }
+  function gStep(g, sid) {
+    for (var i = 0; i < g.steps.length; i++) if (String(g.steps[i].id) === String(sid)) return { s: g.steps[i], i: i };
+    return null;
+  }
+  function gMine(b) { return b.o !== undefined && JSON.stringify(b.o) !== JSON.stringify(b.v); }
+  function gStepDone(st, sid) { return (st.g || []).some(function (x) { return String(x) === String(sid); }); }
+  function gRe() { var y = window.scrollY; renderLab(); window.scrollTo(0, y); }
+  // Copy the walkthrough into this lab (the first time), change it, save, redraw.
+  function gMutate(fn, msg) {
+    var lab = oscpLab, cur = effGuide(lab);
+    if (!cur) return Promise.resolve();
+    var g = gClone(cur);
+    if (fn(g) === false) return Promise.resolve();
+    return saveLabNotes().then(function () { return setLab(lab, { cg: g, ce: undefined }); })
+      .then(function () { if (oscpLab === lab && S.view === 'lab') gRe(); if (msg) toast(msg); });
+  }
+
+  /* --- drawing --- */
+  function gBadge(b) { return gMine(b) ? ' <em class="gmine">✏️ Edited</em>' : b.nw ? ' <em class="gmine">✏️ Added</em>' : ''; }
+  function gBlockHtml(b, ip) {
+    var bid = esc(String(b.id)), mine = gMine(b) || !!b.nw;
+    var reset = gMine(b) ? '<button type="button" class="gedit" data-greset>Reset</button>' : '';
+    if (b.t === 'code') {
+      return '<div class="gblk gcode' + (mine ? ' mine' : '') + '" data-bid="' + bid + '"><div class="gcode-bar"><span class="glang">' + esc(b.lang || 'bash') + gBadge(b) + '</span>' +
+        '<span class="gbtns"><button type="button" class="gst' + (b.st ? ' ' + b.st : '') + '" data-gstat title="Tap to change">' + (GST[b.st] || '◌ Status') + '</button>' + reset +
+        '<button type="button" class="gedit" data-gedit>Edit</button><button type="button" class="gcopy" data-gcopy>Copy</button></span></div>' +
+        '<pre>' + esc(guideFill(b.v, ip)) + '</pre></div>';
+    }
+    var side = '<span class="gbtns gside">' + reset + '<button type="button" class="gpen" data-gedit aria-label="Edit">✎</button></span>';
+    if (b.t === 'out') {
+      return '<div class="gblk gout' + (mine ? ' mine' : '') + '" data-bid="' + bid + '"><div class="gout-h"><span>Output' + gBadge(b) + '</span>' + side + '</div><pre>' + esc(guideFill(b.v, ip)) + '</pre></div>';
+    }
+    var inner = b.t === 'list'
+      ? (b.v.length ? '<ul class="glist">' + b.v.map(function (x) { return '<li>' + guideInline(x, ip) + '</li>'; }).join('') + '</ul>' : '<span class="hint">Empty. Tap ✎ to add items, one per line.</span>')
+      : ({ warn: '⚠️ ', tip: '💡 ', flag: '🏁 ' }[b.t] || '') + (b.v ? guideInline(b.v, ip) : '<span class="hint">Empty. Tap ✎ to write.</span>');
+    var cls = { warn: 'gwarn', tip: 'gtip', flag: 'gflag', list: 'glistb', p: 'gtext' }[b.t] || 'gtext';
+    return '<div class="gblk gpara ' + cls + (mine ? ' mine' : '') + '" data-bid="' + bid + '"><div class="gpara-c">' + inner + gBadge(b) + '</div>' + side + '</div>';
+  }
+  function gBlockEditor(b, ip) {
+    var val = b.t === 'list' ? b.v.map(function (x) { return guideFill(x, ip); }).join('\n') : guideFill(b.v, ip);
+    var hist = b.hist || [], one = ['p', 'tip', 'warn', 'flag'].indexOf(b.t) >= 0;
+    return '<div class="geditor" data-key="' + esc(String(b.id)) + '"><div class="gcode-bar"><span>Editing · ' + GTYPES[b.t] + (b.t === 'list' ? ' · one item per line' : '') + '</span>' +
+      (one ? '<select class="gtype" aria-label="Block type">' + ['p', 'tip', 'warn', 'flag'].map(function (t) { return '<option value="' + t + '"' + (t === b.t ? ' selected' : '') + '>' + GTYPES[t] + '</option>'; }).join('') + '</select>' : '') + '</div>' +
+      '<textarea class="gedit-box" id="gedit-ta" spellcheck="false" autocapitalize="off" autocorrect="off" rows="' + Math.min(18, Math.max(3, val.split('\n').length + 1)) + '">' + esc(val) + '</textarea>' +
+      '<div class="gedit-row">' + (hist.length ? '<button type="button" class="gedit" data-ghist>🕘 History (' + hist.length + ')</button>' : '') +
+      '<span class="gsp"></span><button type="button" class="gedit" data-gcancel>Cancel</button><button type="button" class="gcopy" data-gsave>Save</button></div>' +
+      (hist.length ? '<div class="ghist" hidden>' + hist.map(function (x, k) {
+        var pv = Array.isArray(x.v) ? x.v.join(' · ') : x.v;
+        return '<div class="ghist-row"><span><b>' + esc(fmtWhen(x.at)) + '</b><small>' + esc(guideFill(pv, ip).split('\n')[0].slice(0, 90)) + '</small></span><button type="button" class="gedit" data-grestore="' + k + '">Restore</button></div>';
+      }).join('') + '</div>' : '') + '</div>';
+  }
+  function gLineEditor(key, val, canReset) {
+    return '<div class="geditor gline" data-key="' + esc(key) + '"><input class="input" id="gedit-in" value="' + esc(val) + '" maxlength="300" spellcheck="false" autocomplete="off">' +
+      '<div class="gedit-row">' + (canReset ? '<button type="button" class="gedit" data-gtreset>Reset</button>' : '') +
+      '<span class="gsp"></span><button type="button" class="gedit" data-gcancel>Cancel</button><button type="button" class="gcopy" data-gsave>Save</button></div></div>';
+  }
+  function gChooser() {
+    return '<div class="gchoose"><span>Add a block:</span>' + ['code', 'out', 'tip', 'warn', 'p'].map(function (t) {
+      return '<button type="button" data-gnew="' + t + '">' + GTYPES[t] + '</button>';
+    }).join('') + '<button type="button" data-gaddx aria-label="Cancel">✕</button></div>';
+  }
+  function gBlockTools(bid, j, len) {
+    return '<div class="gtools" data-bid="' + esc(bid) + '">' +
+      '<button type="button" data-gmove="-1"' + (j === 0 ? ' disabled' : '') + ' aria-label="Move up">↑</button>' +
+      '<button type="button" data-gmove="1"' + (j === len - 1 ? ' disabled' : '') + ' aria-label="Move down">↓</button>' +
+      '<button type="button" data-gaddat="above">＋ Above</button><button type="button" data-gaddat="below">＋ Below</button>' +
+      '<button type="button" class="gdel" data-gdel aria-label="Delete block">🗑</button></div>';
+  }
+  function gBlockOut(b, j, len, ip) {
+    var bid = String(b.id), h = '';
+    if (gAdd && gAdd.bid === bid && gAdd.where === 'above') h += gChooser();
+    h += gEditing === bid ? gBlockEditor(b, ip) : gBlockHtml(b, ip);
+    if (gEditMode && gEditing !== bid) h += gBlockTools(bid, j, len);
+    if (gAdd && gAdd.bid === bid && gAdd.where === 'below') h += gChooser();
+    return h;
+  }
+  function gSecBlocks(sec, ip) { return sec.b.map(function (b, j) { return gBlockOut(b, j, sec.b.length, ip); }).join(''); }
+  function gStepHtml(g, s, i, st, ip) {
+    var sid = String(s.id), ok = gStepDone(st, s.id), editing = gEditing === 'h:' + sid, fix = (st.fx || {})[sid] || '';
+    var busy = editing || (gAdd && gAdd.step === sid) || s.b.some(function (b) { return gEditing === String(b.id) || (gAdd && gAdd.bid === String(b.id)); });
+    var open = !ok || gOpen[sid] || busy, titleMine = s.o !== undefined && s.o !== s.h;
+    return '<details class="gstep' + (ok ? ' ok' : '') + '" data-sid="' + esc(sid) + '"' + (open ? ' open' : '') + '><summary><span class="gnum">' + (ok ? '✓' : i + 1) + '</span><span class="gstep-h">' + esc(s.h) +
+      (titleMine || s.nw ? ' <em class="gmine">✏️</em>' : '') + '</span></summary>' +
+      (editing ? gLineEditor('h:' + sid, s.h, titleMine) : '') +
+      (gEditMode && !editing ? '<div class="gtools gsteptools" data-sid="' + esc(sid) + '"><button type="button" data-gstitle>✎ Title</button>' +
+        '<button type="button" data-gsmove="-1"' + (i === 0 ? ' disabled' : '') + ' aria-label="Move step up">↑</button>' +
+        '<button type="button" data-gsmove="1"' + (i === g.steps.length - 1 ? ' disabled' : '') + ' aria-label="Move step down">↓</button>' +
+        '<button type="button" data-gnewstep="above">＋ Step above</button><button type="button" data-gnewstep="below">＋ Step below</button>' +
+        '<button type="button" class="gdel" data-gsdel>🗑 Step</button></div>' : '') +
+      gSecBlocks(s, ip) +
+      (gAdd && gAdd.step === sid ? gChooser() : gEditMode ? '<button type="button" class="gadd-blk" data-gaddend>＋ Add a block</button>' : '') +
+      '<label class="gfix-l' + (fix.trim() ? ' has' : '') + '"><span>🛠 My run fixes</span><textarea class="input gfix" data-fix="' + esc(sid) + '" rows="' + (fix ? Math.min(10, Math.max(2, fix.split('\n').length + 1)) : 1) + '" placeholder="What you changed to make it work on your run…" spellcheck="false">' + esc(fix) + '</textarea></label>' +
+      '<button type="button" class="gdone" data-gstep="' + esc(sid) + '" aria-pressed="' + ok + '">' + (ok ? '✓ Done. Tap to undo' : 'Mark this step done') + '</button></details>';
+  }
+  function gStepsHtml(g, st, ip) {
+    var h = '';
+    if (g.setup) h += '<details class="gstep setup"' + (gOpen.s || (gEditing && /^s\./.test(gEditing)) ? ' open' : '') + ' data-sid="s"><summary><span class="gnum">📁</span>' + esc(g.setup.h) + '</summary>' + gSecBlocks(g.setup, ip) + '</details>';
+    h += g.steps.map(function (s, i) { return gStepHtml(g, s, i, st, ip); }).join('');
+    if (gEditMode) h += '<button type="button" class="gadd-step" data-gnewstep="end">＋ Add a step</button>';
+    if (g.backup) h += '<details class="gstep backup"' + (gOpen.b || (gEditing && /^b\./.test(gEditing)) ? ' open' : '') + ' data-sid="b"><summary><span class="gnum">🔁</span>' + esc(g.backup.h) + '</summary>' + gSecBlocks(g.backup, ip) + '</details>';
+    var tk = g.tk || { id: 'tk', t: 'list', v: [] };
+    if (tk.v.length || gEditMode || gEditing === 'tk') h += '<div class="gtake"><b>🧠 Exam takeaways</b>' + (gEditing === 'tk' ? gBlockEditor(tk, ip) : gBlockHtml(tk, ip)) + '</div>';
+    return h;
+  }
+  function gImportPanel() {
+    return '<div class="gpanel"><b>⬇ Import from Markdown</b><p class="hint">Paste a walkthrough. <code>### 1. Title</code> starts a step, <code>```bash</code> fences become commands, a fence after a <b>OUTPUT</b> line becomes output, lines starting ⚠️ 💡 🏁 become warning, tip and flag, and bullets under <b>🧠 Exam takeaways</b> become takeaways. Kali and Target IPs in the header fill the fields. This replaces the lab\'s walkthrough.</p>' +
+      '<textarea class="input" id="g-md" rows="10" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="### 1. Recon&#10;```bash&#10;nmap -p- 10.10.10.10&#10;```"></textarea>' +
+      '<div class="gedit-row"><span class="gsp"></span><button type="button" class="gedit" data-gpanelx>Cancel</button><button type="button" class="gcopy" data-gimport>Import</button></div></div>';
+  }
+  function gExportPanel(md) {
+    return '<div class="gpanel"><b>⬆ Export to Markdown</b><p class="hint">The same format Import reads, with your values filled in.</p>' +
+      '<textarea class="input" id="g-md-out" rows="12" readonly spellcheck="false">' + esc(md) + '</textarea>' +
+      '<div class="gedit-row"><button type="button" class="gedit" data-gpanelx>Close</button><span class="gsp"></span><button type="button" class="gedit" data-gdownload>Download .md</button><button type="button" class="gcopy" data-gexpcopy>Copy</button></div></div>';
   }
   function guideHtml(id, st) {
-    var g = window.OSCP_GUIDES && window.OSCP_GUIDES[id];
-    if (!g) return '';
-    var ip = guideIps(g), done = st.g || [], n = g.steps.length;
-    return '<div class="section-label lab-group">Walkthrough <span>' + done.length + ' / ' + n + ' steps</span></div>' +
-      '<div class="card guide"><p class="guide-sub">' + esc(g.title) + '</p>' +
-      '<div class="guide-ips"><label>Kali IP<input class="input" id="g-ip-k" inputmode="decimal" value="' + esc(ip.K) + '" spellcheck="false"></label>' +
-      '<label>Target IP<input class="input" id="g-ip-t" inputmode="decimal" value="' + esc(ip.T) + '" spellcheck="false"></label></div>' +
-      '<p class="hint">Change the IPs and every command below updates. Output shown is what this box normally prints.</p>' +
-      '<div class="gbar"><i style="width:' + Math.round(done.length / n * 100) + '%"></i></div>' +
-      g.steps.map(function (s2, i) {
-        var ok = done.indexOf(i) >= 0;
-        return '<details class="gstep' + (ok ? ' ok' : '') + '"' + (ok ? '' : ' open') + '><summary><span class="gnum">' + (ok ? '✓' : i + 1) + '</span>' + esc(s2.h) + '</summary>' +
-          guideBlocks(s2.b, ip) + '<button type="button" class="gdone" data-gstep="' + i + '" aria-pressed="' + ok + '">' + (ok ? '✓ Done. Tap to undo' : 'Mark this step done') + '</button></details>';
-      }).join('') +
-      (g.backup ? '<details class="gstep backup"><summary><span class="gnum">🔁</span>' + esc(g.backup.h) + '</summary>' + guideBlocks(g.backup.b, ip) + '</details>' : '') +
-      (g.takeaways ? '<div class="gtake"><b>🧠 Exam takeaways</b><ul class="glist">' + g.takeaways.map(function (x) { return '<li>' + guideInline(x, ip) + '</li>'; }).join('') + '</ul></div>' : '') +
+    if (gLabSeen !== id) { gLabSeen = id; gEditMode = false; gEditing = null; gAdd = null; gPanel = null; gOpen = {}; }
+    var g = effGuide(id);
+    if (!g) {
+      return '<div class="section-label lab-group">Walkthrough</div><div class="card guide gempty"><p>No walkthrough for this lab yet. Paste your notes as Markdown, or start a blank one and fill it in.</p>' +
+        '<div class="gtoolbar"><button type="button" class="gedit" data-gpanel="import">⬇ Import from Markdown</button><button type="button" class="gedit" data-gblank>＋ Start blank</button></div>' +
+        (gPanel === 'import' ? gImportPanel() : '') + '</div>';
+    }
+    var ip = guideVars(g), n = g.steps.length, done = g.steps.filter(function (s) { return gStepDone(st, s.id); }).length;
+    var custom = !!(st.cg || (st.ce && Object.keys(st.ce).length));
+    return '<div class="section-label lab-group">Walkthrough <span>' + done + ' / ' + n + ' steps</span></div>' +
+      '<div class="card guide' + (gEditMode ? ' gmode' : '') + '">' +
+      (gEditing === 'title' ? gLineEditor('title', g.title || '', false)
+        : '<p class="guide-sub">' + esc(g.title || 'Untitled walkthrough') + (gEditMode ? ' <button type="button" class="gpen" data-gtitle aria-label="Edit title">✎</button>' : '') + '</p>') +
+      '<div class="gtoolbar">' +
+      '<button type="button" class="gedit' + (gEditMode ? ' on' : '') + '" data-gmode aria-pressed="' + gEditMode + '">✏️ ' + (gEditMode ? 'Done editing' : 'Edit layout') + '</button>' +
+      '<button type="button" class="gedit" data-gpanel="import">⬇ Import</button><button type="button" class="gedit" data-gpanel="export">⬆ Export</button>' +
+      '<button type="button" class="gedit" data-gcopyall>Copy all</button>' +
+      (custom ? '<button type="button" class="gedit" data-greseta>↺ Reset all</button>' : '') + '</div>' +
+      (gPanel === 'import' ? gImportPanel() : gPanel === 'export' ? gExportPanel(gExportMd(LAB_BY_ID[id], g, ip)) : '') +
+      '<div class="guide-ips">' + GVARS.map(function (x) {
+        return '<label>' + esc(x.label) + '<input class="input gvar" data-var="' + x.k + '" inputmode="' + x.mode + '" value="' + esc(ip[x.k]) + '" placeholder="' + esc(x.tok) + '" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"></label>';
+      }).join('') + '</div>' +
+      '<p class="hint">Change a field and every command updates. When you leave a field, text in commands that matches it becomes that field.</p>' +
+      '<div class="gbar"><i style="width:' + (n ? Math.round(done / n * 100) : 0) + '%"></i></div>' +
+      '<div id="gsteps">' + gStepsHtml(g, st, ip) + '</div></div>';
+  }
+  // Typing in a field: redraw only the steps, so the field keeps its focus.
+  function guideRefresh() {
+    var g = effGuide(oscpLab), box = $('#gsteps');
+    if (!g || !box || gEditing) return;
+    box.innerHTML = gStepsHtml(g, labState(oscpLab), guideVars(g));
+  }
+
+  /* --- Markdown in and out --- */
+  function gExportMd(l, g, ip) {
+    var L = [], fx = labState(l.id).fx || {};
+    L.push('# ' + l.name, '');
+    if (g.title) L.push('**' + g.title + '**', '');
+    var meta = [];
+    if (ip.K) meta.push('Kali IP: `' + ip.K + '`');
+    if (ip.T) meta.push('Target IP: `' + ip.T + '`');
+    if (meta.length) L.push(meta.join(' · '), '');
+    function blocks(bs) {
+      bs.forEach(function (b) {
+        if (b.t === 'list') { b.v.forEach(function (x) { L.push('- ' + guideFill(x, ip)); }); L.push(''); return; }
+        var v = guideFill(b.v, ip);
+        if (b.t === 'code') L.push('```' + (b.lang || 'bash'), v, '```', '');
+        else if (b.t === 'out') L.push('**OUTPUT**', '```', v, '```', '');
+        else if (b.t === 'warn') L.push('⚠️ ' + v, '');
+        else if (b.t === 'tip') L.push('💡 ' + v, '');
+        else if (b.t === 'flag') L.push('🏁 ' + v, '');
+        else L.push(v, '');
+      });
+    }
+    g.steps.forEach(function (s, i) {
+      L.push('### ' + (i + 1) + '. ' + s.h, '');
+      blocks(s.b);
+      var f = fx[String(s.id)];
+      if (f && f.trim()) L.push('**My run fixes**', '```text', f.trim(), '```', '');
+    });
+    if (g.backup) { L.push('### 🔁 ' + g.backup.h, ''); blocks(g.backup.b); }
+    if (g.tk && g.tk.v.length) { L.push('### 🧠 Exam takeaways'); g.tk.v.forEach(function (x) { L.push('- ' + guideFill(x, ip)); }); }
+    return L.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+  }
+  function gParseMd(md) {
+    var lines = String(md || '').replace(/\r\n?/g, '\n').split('\n');
+    var g = { title: '', steps: [], tk: { id: 'tk', t: 'list', v: [] } }, res = { g: g, ips: {}, vars: {}, fx: {} };
+    var cur = null, pre = [], listB = null, inTk = false, label = '', started = false;
+    var IP = '(\\d{1,3}(?:\\.\\d{1,3}){3})';
+    function target() { return cur ? cur.b : pre; }
+    function push(b) { b.id = gid(); target().push(b); listB = null; }
+    function item(x) { if (!listB) { listB = { id: gid(), t: 'list', v: [] }; target().push(listB); } listB.v.push(x); }
+    function section(h, backup) {
+      var s = backup ? { h: h, b: [] } : { id: gid(), h: h, b: [] };
+      if (backup) g.backup = s; else g.steps.push(s);
+      if (!started && !backup) { s.b = pre.splice(0); started = true; }
+      cur = s; listB = null; inTk = false; label = '';
+    }
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim().replace(/^>\s?/, '').trim();
+      var fm = /^(`{3,}|~{3,})\s*([\w+#.-]*)/.exec(line);
+      if (fm) {
+        var fence = fm[1], lang = (fm[2] || '').toLowerCase(), body = [];
+        for (i++; i < lines.length && lines[i].trim().indexOf(fence) !== 0; i++) body.push(lines[i]);
+        var txt = body.join('\n').replace(/\s+$/, '').replace(/^\n+/, '');
+        if (/^my run fix/i.test(label) && cur && cur.id !== undefined) {
+          var k0 = String(cur.id);
+          res.fx[k0] = (res.fx[k0] ? res.fx[k0] + '\n' : '') + txt;
+        } else if (/^(outputs?|results?)\b/i.test(label) || /^(text|txt|output|plain)$/.test(lang)) push({ t: 'out', v: txt });
+        else push({ t: 'code', lang: lang || 'bash', v: txt });
+        label = '';
+        continue;
+      }
+      if (!line) { listB = null; continue; }
+      if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) continue;
+      var hm = /^(#{1,6})\s+(.*)$/.exec(line);
+      if (hm) {
+        var ht = hm[2].replace(/\*\*/g, '').trim();
+        label = '';
+        if (/exam takeaways|^🧠/i.test(ht)) { inTk = true; listB = null; continue; }
+        if (hm[1].length === 1 && !started) { res.name = ht; continue; }
+        if (/^🔁/.test(ht)) { section(ht.replace(/^🔁\s*/, ''), true); continue; }
+        section(ht.replace(/^(?:step\s*)?\d+\s*[.):-]\s*/i, '') || 'Step');
+        continue;
+      }
+      var plain = line.replace(/\*\*/g, '').replace(/:$/, '').trim(), bold = /^\*\*([^*]+)\*\*:?$/.exec(line);
+      if ((bold || line.length <= 40) && /^(outputs?|results?|my run fix(es)?)\b/i.test(plain)) { label = plain; continue; }
+      label = '';
+      if (inTk) {
+        var tm = /^([-*+]|\d+[.)])\s+(.*)$/.exec(line);
+        if (tm) { g.tk.v.push(tm[2].trim()); continue; }
+        inTk = false;
+      }
+      if (!started) {
+        var kip = new RegExp('kali[^0-9|]*\\|?[^0-9]{0,12}' + IP, 'i').exec(line), tip = new RegExp('target[^0-9|]*\\|?[^0-9]{0,12}' + IP, 'i').exec(line);
+        var dom = /domain\**\s*\|?\s*`?([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i.exec(line);
+        if (kip) res.ips.K = kip[1];
+        if (tip) res.ips.T = tip[1];
+        if (dom) res.vars.D = dom[1];
+        if (kip || tip) continue;
+        if (bold && !g.title) { g.title = bold[1].trim(); continue; }
+      }
+      if (line.charAt(0) === '|') {
+        if (/^\|?[\s:|-]+\|?$/.test(line)) continue;
+        var c = line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (x) { return x.replace(/\*\*/g, '').trim(); }), parts = [];
+        for (var k = 0; k < c.length; k += 2) if (c[k] || c[k + 1]) parts.push(c[k + 1] ? c[k] + ': ' + c[k + 1] : c[k]);
+        if (parts.length) item(parts.join(' · '));
+        continue;
+      }
+      var em = /^(⚠️|⚠|💡|🏁)\s*(.*)$/.exec(line);
+      if (em) { push({ t: em[1] === '💡' ? 'tip' : em[1] === '🏁' ? 'flag' : 'warn', v: em[2].trim() }); continue; }
+      var lm = /^([-*+]|\d+[.)])\s+(.*)$/.exec(line);
+      if (lm) { item(lm[2].trim()); continue; }
+      push({ t: 'p', v: line });
+    }
+    if (!started && pre.length) g.steps.push({ id: gid(), h: 'Notes', b: pre });
+    return res;
+  }
+  function gTokenizeAll(g, ip) {
+    gEachBlock(g, function (b) {
+      var kinds = b.t === 'code' ? null : ['K', 'T'];
+      if (b.t === 'list') b.v = b.v.map(function (x) { return guideUnfill(x, ip, kinds); });
+      else b.v = guideUnfill(b.v, ip, kinds);
+    });
+  }
+  function gImport(md) {
+    var lab = oscpLab, res = gParseMd(md);
+    if (!res.g.steps.length) { toast('No steps found. Start each step with "### 1. Title".'); return; }
+    var cur = effGuide(lab) && effGuide(lab).steps.length;
+    (cur ? askConfirm({ title: 'Replace this walkthrough?', body: 'The pasted notes replace every step, your edits and your run fixes for this lab, and the ticked steps are cleared. Export first if you want a copy.', yes: 'Replace' }) : Promise.resolve(true)).then(function (ok) {
+      if (!ok) return;
+      var old = effGuide(lab), g = res.g, st = labState(lab);
+      g.setup = old && old.setup ? gClone(old.setup) : genericSetup(lab);
+      g.ips = { K: res.ips.K || '', T: res.ips.T || '' };
+      gTokenizeAll(g, { K: res.ips.K, T: res.ips.T, D: res.vars.D });   // the note's own values
+      gTokenizeAll(g, guideVars(g));                                     // and yours
+      var vr = gClone(st.vr || {});
+      if (res.vars.D && !vr.D) vr.D = res.vars.D;
+      gPanel = null; gEditing = null; gAdd = null; gOpen = {};
+      saveLabNotes().then(function () {
+        return setLab(lab, { cg: g, ce: undefined, g: undefined, fx: Object.keys(res.fx).length ? res.fx : undefined, vr: Object.keys(vr).length ? vr : undefined });
+      }).then(function () { gRe(); toast('Imported ' + g.steps.length + (g.steps.length === 1 ? ' step' : ' steps')); });
+    });
+  }
+  // Leaving a field: commands that contain its value now use the field instead.
+  function gTokenizeVar(k) {
+    var g0 = effGuide(oscpLab);
+    if (!g0) return;
+    var ip = guideVars(g0), x = GVARS.filter(function (v) { return v.k === k; })[0], count = 0;
+    if (!ip[k]) return;
+    gMutate(function (g) {
+      gEachBlock(g, function (b) {
+        if (b.t !== 'code' && k !== 'K' && k !== 'T') return;
+        var before = JSON.stringify(b.v), f = function (v) { return Array.isArray(v) ? v.map(function (y) { return guideUnfill(y, ip, [k]); }) : guideUnfill(v, ip, [k]); };
+        b.v = f(b.v);
+        if (b.o !== undefined) b.o = f(b.o);
+        if (JSON.stringify(b.v) !== before) count++;
+      });
+      if (!count) return false;
+    }).then(function () { if (count) toast(count + (count === 1 ? ' block now uses ' : ' blocks now use ') + x.label); });
+  }
+
+  /* --- flags, source, tags (top of the lab page) --- */
+  function labTrackHtml(l, st) {
+    var fl = st.fl || {}, tg = st.tg || [];
+    function flag(k, name) {
+      return '<div class="lflag"><label><input type="checkbox" data-flag="' + k + '"' + (fl[k] ? ' checked' : '') + '><b>' + name + '</b></label>' +
+        '<input class="input" data-flagv="' + k + 'v" value="' + esc(fl[k + 'v'] || '') + '" placeholder="Paste the flag (optional)" spellcheck="false" autocomplete="off" autocapitalize="off"></div>';
+    }
+    return '<div class="card lab-track">' +
+      '<div><span class="label">🏁 Flags</span>' + flag('l', 'local.txt') + flag('p', 'proof.txt') + '</div>' +
+      '<div class="field"><label class="label" for="lab-src">Source</label><select class="input" id="lab-src"><option value="">Not set</option>' +
+      Object.keys(SRC_NAME).map(function (k) { return '<option value="' + k + '"' + (st.src === k ? ' selected' : '') + '>' + SRC_NAME[k] + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><span class="label">Tags</span><div class="ltags">' +
+      tg.map(function (t) { return '<button type="button" class="ltag" data-tagdel="' + esc(t) + '" aria-label="Remove ' + esc(t) + '">#' + esc(t) + ' ✕</button>'; }).join('') +
+      '<input class="input ltag-in" id="lab-tag-in" placeholder="Add a tag, then Enter" maxlength="30" spellcheck="false" autocomplete="off"></div>' +
+      '<div class="ltag-sugg">' + TAG_SUGGEST.filter(function (t) { return tg.indexOf(t) < 0; }).map(function (t) { return '<button type="button" data-tagadd="' + esc(t) + '">+ ' + esc(t) + '</button>'; }).join('') + '</div></div>' +
       '</div>';
   }
-  function guideRefresh() {
-    var g = window.OSCP_GUIDES && window.OSCP_GUIDES[oscpLab];
-    if (!g) return;
-    var ip = guideIps(g);
-    // rewrite the commands in place, so typing in the IP boxes keeps its focus
-    var all = [];
-    g.steps.forEach(function (s2) { all.push(s2.b); });
-    if (g.backup) all.push(g.backup.b);
-    var pres = $('#lab-body').querySelectorAll('.guide pre'), k = 0;
-    all.forEach(function (bs) { bs.forEach(function (b) { if ((b.t === 'code' || b.t === 'out') && pres[k]) pres[k++].textContent = guideFill(b.v, ip); }); });
+  function addLabTag(t) {
+    t = String(t || '').replace(/^#/, '').trim().slice(0, 30);
+    var tg = (labState(oscpLab).tg || []).slice();
+    if (!t || tg.some(function (x) { return x.toLowerCase() === t.toLowerCase(); }) || tg.length >= 20) return;
+    tg.push(t);
+    saveLabNotes().then(function () { return setLab(oscpLab, { tg: tg }); }).then(function () { gRe(); var i = $('#lab-tag-in'); if (i) i.focus(); });
   }
+
   function saveLabNotes() {
     clearTimeout(oscpNoteTimer);
     var box = $('#lab-n');
@@ -8981,30 +9655,343 @@ body {
       if (s2) s2.textContent = 'Saved ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' on this phone.';
     });
   }
+  function saveFixes() {
+    clearTimeout(gFixTimer);
+    var lab = oscpLab, fx = gClone(labState(lab).fx || {});
+    $('#lab-body').querySelectorAll('.gfix').forEach(function (t) { var v = t.value.replace(/\s+$/, ''); if (v) fx[t.dataset.fix] = v; else delete fx[t.dataset.fix]; });
+    return setLab(lab, { fx: Object.keys(fx).length ? fx : undefined });
+  }
+  function saveFlagText() {
+    clearTimeout(gFlagTimer);
+    var fl = gClone(labState(oscpLab).fl || {});
+    $('#lab-body').querySelectorAll('[data-flagv]').forEach(function (i) { var v = i.value.trim().slice(0, 300); if (v) fl[i.dataset.flagv] = v; else delete fl[i.dataset.flagv]; });
+    return setLab(oscpLab, { fl: Object.keys(fl).length ? fl : undefined });
+  }
   $('#lab-body').addEventListener('input', function (ev) {
-    if (ev.target.id === 'lab-n') { clearTimeout(oscpNoteTimer); oscpNoteTimer = setTimeout(saveLabNotes, 700); }
-    if (ev.target.id === 'g-ip-k' || ev.target.id === 'g-ip-t') {
-      var o = {};
-      try { o = JSON.parse(localStorage.getItem(GIP_KEY) || '{}') || {}; } catch (e) {}
-      var v = ev.target.value.trim().slice(0, 60);
-      if (ev.target.id === 'g-ip-k') o.K = v; else { o.T = o.T || {}; o.T[oscpLab] = v; }
-      try { localStorage.setItem(GIP_KEY, JSON.stringify(o)); } catch (e) {}
-      guideRefresh();
+    var t = ev.target;
+    if (t.id === 'lab-n') { clearTimeout(oscpNoteTimer); oscpNoteTimer = setTimeout(saveLabNotes, 700); return; }
+    if (t.classList.contains('gfix')) {
+      t.closest('.gfix-l').classList.toggle('has', !!t.value.trim());
+      t.rows = t.value ? Math.min(10, Math.max(2, t.value.split('\n').length + 1)) : 1;
+      clearTimeout(gFixTimer); gFixTimer = setTimeout(saveFixes, 700); return;
+    }
+    if (t.dataset.flagv) { clearTimeout(gFlagTimer); gFlagTimer = setTimeout(saveFlagText, 700); return; }
+    if (t.classList.contains('gvar')) {
+      var k = t.dataset.var, v = t.value.trim().slice(0, 200);
+      if (k === 'K' || k === 'T') {
+        var o = {};
+        try { o = JSON.parse(localStorage.getItem(GIP_KEY) || '{}') || {}; } catch (e) {}
+        if (k === 'K') o.K = v; else { o.T = o.T || {}; o.T[oscpLab] = v; }
+        try { localStorage.setItem(GIP_KEY, JSON.stringify(o)); } catch (e) {}
+        guideRefresh();
+      } else {
+        var vr = gClone(labState(oscpLab).vr || {});
+        if (v) vr[k] = v; else delete vr[k];
+        setLab(oscpLab, { vr: Object.keys(vr).length ? vr : undefined }).then(guideRefresh);
+      }
     }
   });
   $('#lab-body').addEventListener('change', function (ev) {
-    if (ev.target.id === 'lab-diff') setLab(oscpLab, { diff: ev.target.value }).then(renderLab);
+    var t = ev.target;
+    if (t.id === 'lab-diff') { setLab(oscpLab, { diff: t.value }).then(renderLab); return; }
+    if (t.id === 'lab-src') { saveLabNotes().then(function () { return setLab(oscpLab, { src: t.value }); }).then(gRe); return; }
+    if (t.classList.contains('gvar')) { gTokenizeVar(t.dataset.var); return; }
+    if (t.dataset.flag) {
+      var fl = gClone(labState(oscpLab).fl || {}), k = t.dataset.flag, patch = {};
+      if (t.checked) fl[k] = true; else delete fl[k];
+      patch.fl = Object.keys(fl).length ? fl : undefined;
+      var rooted = k === 'p' && t.checked && labStatus(oscpLab) !== 'done';
+      if (rooted) { patch.s = 'done'; patch.d = labState(oscpLab).d || toYmd(new Date()); }
+      saveLabNotes().then(saveFlagText).then(function () { return setLab(oscpLab, patch); }).then(function () {
+        gRe();
+        if (rooted) toast('proof.txt ✓ · ' + LAB_BY_ID[oscpLab].name + ' set to Rooted 👑');
+      });
+    }
   });
-  $('#lab-body').addEventListener('click', function (ev) {
-    var cp = ev.target.closest('[data-gcopy]');
-    if (cp) {
-      var txt = cp.closest('.gcode').querySelector('pre').textContent;
-      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () {
-        cp.textContent = 'Copied ✓'; setTimeout(function () { cp.textContent = 'Copy'; }, 1500);
-      }, function () { toast('Could not copy. Long-press the command instead.'); });
+  $('#lab-body').addEventListener('keydown', function (ev) {
+    var t = ev.target;
+    if (t.id === 'lab-tag-in' && ev.key === 'Enter') { ev.preventDefault(); addLabTag(t.value); return; }
+    if (t.id === 'gedit-in' && ev.key === 'Enter') { ev.preventDefault(); gSaveEditor(); return; }
+    if ((t.id === 'gedit-in' || t.id === 'gedit-ta') && ev.key === 'Escape') { gCancelEditor(); }
+  });
+  // Steps you open or close yourself stay that way while you edit.
+  $('#lab-body').addEventListener('toggle', function (ev) {
+    var d = ev.target;
+    if (d && d.matches && d.matches('details.gstep[data-sid]')) gOpen[d.dataset.sid] = d.open;
+  }, true);
+
+  function gSaveEditor() {
+    var ed = $('#lab-body .geditor');
+    if (!ed) return;
+    var key = ed.dataset.key, ip = guideVars(effGuide(oscpLab));
+    if (key === 'title' || key.indexOf('h:') === 0) {
+      var val = ed.querySelector('input').value.trim().slice(0, 300);
+      return gMutate(function (g) {
+        if (key === 'title') g.title = val;
+        else {
+          var s = gStep(g, key.slice(2));
+          if (!s) return false;
+          if (s.s.o === undefined && !s.s.nw) s.s.o = s.s.h;
+          s.s.h = val || 'Untitled step';
+        }
+        gEditing = null;
+      }, 'Saved');
+    }
+    var raw = ed.querySelector('textarea').value.replace(/\s+$/, ''), sel = ed.querySelector('.gtype');
+    return gMutate(function (g) {
+      var loc = gLoc(g, key);
+      if (!loc) return false;
+      var b = loc.b, kinds = b.t === 'code' ? null : ['K', 'T'];
+      var nv = b.t === 'list'
+        ? raw.split('\n').map(function (s) { return s.replace(/^\s*[-*•]\s+/, '').trim(); }).filter(Boolean).map(function (x) { return guideUnfill(x, ip, kinds); })
+        : guideUnfill(raw, ip, kinds);
+      if (sel && GTYPES[sel.value]) b.t = sel.value;
+      gEditing = null;
+      if (JSON.stringify(nv) === JSON.stringify(b.v)) return;
+      var empty = Array.isArray(b.v) ? !b.v.length : !b.v;
+      if (!empty) b.hist = [{ v: b.v, at: Date.now() }].concat(b.hist || []).slice(0, 10);
+      if (b.o === undefined && !b.nw) b.o = b.v;
+      b.v = nv;
+    }, 'Saved');
+  }
+  function gCancelEditor() {
+    var ed = $('#lab-body .geditor'), key = ed && ed.dataset.key, g = effGuide(oscpLab), loc = key && g && gLoc(g, key);
+    gEditing = null;
+    // a block you just added and left empty goes away again
+    if (loc && loc.b.nw && loc.arr && (Array.isArray(loc.b.v) ? !loc.b.v.length : !loc.b.v)) {
+      gMutate(function (g2) { var l2 = gLoc(g2, key); if (l2 && l2.arr) l2.arr.splice(l2.j, 1); });
       return;
     }
-    if (ev.target.closest('[data-fadd]')) {
+    gRe();
+  }
+  function gCopy(text, btn) {
+    function ok() { if (!btn) return; var o = btn.dataset.label || btn.textContent; btn.dataset.label = o; btn.textContent = 'Copied ✓'; setTimeout(function () { btn.textContent = o; }, 1500); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '-1000px';
+      document.body.appendChild(ta); ta.select();
+      var done = false;
+      try { done = document.execCommand('copy'); } catch (e) {}
+      ta.remove();
+      if (done) ok(); else toast('Could not copy. Long-press the text instead.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback); else fallback();
+  }
+
+  // The PDF is the page as it stands: your values, your edited blocks (or the
+  // defaults), ticked steps, run fixes, flags and notes. Built here, printed by
+  // the browser ("Save as PDF"), and wiped again straight after.
+  function labPrintHtml(l) {
+    var st = labState(l.id), status = labStatus(l.id), d = labDiff(l), g = effGuide(l.id);
+    var ip = guideVars(g), fx = st.fx || {}, fl = st.fl || {};
+    function blocks(bs) {
+      return bs.map(function (b) {
+        var mine = gMine(b) || b.nw;
+        if (b.t === 'code') return '<div class="ps-box' + (mine ? ' mine' : '') + '"><div class="ps-lbl">' + esc(b.lang || 'command') + (mine ? ' · edited by you' : '') +
+          (b.st ? ' · <span class="ps-st ' + b.st + '">' + esc(GST[b.st]) + '</span>' : '') + '</div><pre>' + esc(guideFill(b.v, ip)) + '</pre></div>';
+        if (b.t === 'out') return '<div class="ps-box out"><div class="ps-lbl">Output</div><pre>' + esc(guideFill(b.v, ip)) + '</pre></div>';
+        if (b.t === 'list') return '<ul>' + b.v.map(function (x) { return '<li>' + guideInline(x, ip) + '</li>'; }).join('') + '</ul>';
+        if (b.t === 'warn') return '<p class="ps-warn">⚠️ ' + guideInline(b.v, ip) + '</p>';
+        if (b.t === 'tip') return '<p class="ps-tip">💡 ' + guideInline(b.v, ip) + '</p>';
+        if (b.t === 'flag') return '<p class="ps-flag">🏁 ' + guideInline(b.v, ip) + '</p>';
+        return '<p>' + guideInline(b.v, ip) + '</p>';
+      }).join('');
+    }
+    var tone = { Easy: 'ok', Medium: 'warn', Hard: 'bad', Insane: 'bad' }[labBucket(l)] || '';
+    var chips = [[l.platform, ''], [l.os, ''], [d || 'Unrated', tone],
+      [STATUS_NAME[status] + (status === 'done' && st.d ? ' · ' + fmtDate(st.d) : ''), status === 'done' ? 'ok' : status === 'doing' ? 'warn' : ''],
+      [st.src ? SRC_NAME[st.src] : '', 'gold'],
+      [(fl.l || fl.p) ? '🏁 ' + ((fl.l ? 1 : 0) + (fl.p ? 1 : 0)) + ' / 2 flags' : '', 'ok']]
+      .concat((st.tg || []).map(function (t) { return ['#' + t, '']; }))
+      .filter(function (c) { return c[0]; });
+    var h = '<h1>' + esc(l.name) + '</h1>' + (g && g.title ? '<p class="ps-sub">' + esc(g.title) + '</p>' : '') + '<div class="ps-rule"></div>' +
+      '<div class="ps-meta">' + chips.map(function (c) { return '<span class="ps-chip ' + c[1] + '">' + esc(c[0]) + '</span>'; }).join('') + '</div>';
+    if (fl.lv || fl.pv) h += '<table class="ps-ips">' + (fl.lv ? '<tr><td>local.txt</td><td>' + esc(fl.lv) + '</td></tr>' : '') + (fl.pv ? '<tr><td>proof.txt</td><td>' + esc(fl.pv) + '</td></tr>' : '') + '</table>';
+    if (g) {
+      var done = g.steps.filter(function (s) { return gStepDone(st, s.id); }).length;
+      h += '<table class="ps-ips"><tr>' + GVARS.filter(function (x) { return ip[x.k]; }).map(function (x) { return '<td>' + esc(x.label) + '</td><td>' + esc(ip[x.k]) + '</td>'; }).join('') +
+        '<td>Steps done</td><td>' + done + ' / ' + g.steps.length + '</td></tr></table>';
+      if (g.setup) h += '<h2><span class="ps-n">📁</span>' + esc(g.setup.h) + '</h2>' + blocks(g.setup.b);
+      g.steps.forEach(function (s, i) {
+        var ok = gStepDone(st, s.id), f = fx[String(s.id)];
+        h += '<h2' + (ok ? ' class="done"' : '') + '><span class="ps-n">' + (ok ? '✓' : i + 1) + '</span>' + esc(s.h) + (ok ? '<span class="ps-done">done</span>' : '') + '</h2>' + blocks(s.b) +
+          (f && f.trim() ? '<div class="ps-fix"><b>🛠 My run fixes</b><div>' + esc(guideFill(f, ip)) + '</div></div>' : '');
+      });
+      if (g.backup) h += '<h2><span class="ps-n">🔁</span>' + esc(g.backup.h) + '</h2>' + blocks(g.backup.b);
+      if (g.tk && g.tk.v.length) h += '<div class="ps-take"><b>🧠 Exam takeaways</b><ul>' + g.tk.v.map(function (x) { return '<li>' + guideInline(x, ip) + '</li>'; }).join('') + '</ul></div>';
+    }
+    var notes = ($('#lab-n') && $('#lab-n').value) || st.n || '';
+    if (notes.trim()) h += '<h2>📝 Your notes</h2><div class="ps-notes">' + esc(notes) + '</div>';
+    if (st.files && st.files.length) h += '<h2>📎 Attached files</h2><ul>' + st.files.map(function (f) { return '<li>' + esc(f.name || 'file') + '</li>'; }).join('') + '</ul>';
+    h += '<p class="ps-foot">' + esc(l.name) + ' · ' + esc(l.platform) + ' · saved ' + esc(new Date().toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) + ' from Deposit Box</p>';
+    return h;
+  }
+  function clearPrintSheet() { var ps = $('#print-sheet'); if (ps) ps.innerHTML = ''; }
+  function printLab() {
+    var l = LAB_BY_ID[oscpLab];
+    if (!l) return;
+    saveLabNotes();
+    var ps = $('#print-sheet'), title = document.title;
+    ps.innerHTML = labPrintHtml(l);
+    document.title = l.name + ' - OSCP notes';   // becomes the PDF's file name
+    guardSheet();   // the print dialog hides the page for a moment; don't lock under it
+    var done = false;
+    function after() { if (done) return; done = true; document.title = title; clearPrintSheet(); }
+    window.addEventListener('afterprint', after, { once: true });
+    setTimeout(function () {
+      window.print();
+      setTimeout(after, 60000);   // in case the browser never sends afterprint
+    }, 50);
+  }
+
+  $('#lab-body').addEventListener('click', function (ev) {
+    var t = ev.target, el;
+    if (t.closest('[data-lprint]')) { printLab(); return; }
+    // walkthrough toolbar
+    if (t.closest('[data-gmode]')) { gEditMode = !gEditMode; gAdd = null; gRe(); return; }
+    if ((el = t.closest('[data-gpanel]'))) {
+      gPanel = gPanel === el.dataset.gpanel ? null : el.dataset.gpanel; gRe();
+      if (gPanel === 'import' && $('#g-md')) $('#g-md').focus();
+      return;
+    }
+    if (t.closest('[data-gpanelx]')) { gPanel = null; gRe(); return; }
+    if (t.closest('[data-gimport]')) { gImport($('#g-md') ? $('#g-md').value : ''); return; }
+    if (t.closest('[data-gblank]')) {
+      var lab0 = oscpLab;
+      gEditMode = true; gPanel = null;
+      setLab(lab0, { cg: { title: '', setup: genericSetup(lab0), steps: [{ id: gid(), h: 'Recon', b: [], nw: 1 }], tk: { id: 'tk', t: 'list', v: [] } } }).then(gRe);
+      return;
+    }
+    if ((el = t.closest('[data-gcopyall]')) || (el = t.closest('[data-gexpcopy]'))) {
+      var g1 = effGuide(oscpLab);
+      if (g1) gCopy(gExportMd(LAB_BY_ID[oscpLab], g1, guideVars(g1)), el);
+      return;
+    }
+    if (t.closest('[data-gdownload]')) {
+      var g2 = effGuide(oscpLab), l2 = LAB_BY_ID[oscpLab];
+      if (!g2) return;
+      var url = URL.createObjectURL(new Blob([gExportMd(l2, g2, guideVars(g2))], { type: 'text/markdown' })), a = document.createElement('a');
+      a.href = url; a.download = l2.name.replace(/[^\w.-]+/g, '_') + '_OSCP_notes.md';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      return;
+    }
+    if (t.closest('[data-greseta]')) {
+      askConfirm({ title: 'Reset the whole walkthrough?', body: 'Every edit, added or moved block and imported note for this lab goes, and the default walkthrough comes back (or none, if this lab has no built-in one). Your run fixes, flags, notes and ticked steps stay.', yes: 'Reset' }).then(function (ok) {
+        if (!ok) return;
+        gEditing = null; gAdd = null;
+        saveLabNotes().then(function () { return setLab(oscpLab, { cg: undefined, ce: undefined }); }).then(function () { gRe(); toast('Default walkthrough restored'); });
+      });
+      return;
+    }
+    if (t.closest('[data-gtitle]')) { gEditing = 'title'; gRe(); if ($('#gedit-in')) $('#gedit-in').focus(); return; }
+    // editors
+    if (t.closest('[data-gsave]')) { gSaveEditor(); return; }
+    if (t.closest('[data-gcancel]')) { gCancelEditor(); return; }
+    if (t.closest('[data-ghist]')) { var hl = t.closest('.geditor').querySelector('.ghist'); if (hl) hl.hidden = !hl.hidden; return; }
+    if ((el = t.closest('[data-grestore]'))) {
+      var rk = +el.dataset.grestore, rkey = el.closest('.geditor').dataset.key;
+      gMutate(function (g) {
+        var loc = gLoc(g, rkey);
+        if (!loc || !loc.b.hist || !loc.b.hist[rk]) return false;
+        var pick = loc.b.hist[rk];
+        if (loc.b.o === undefined && !loc.b.nw) loc.b.o = loc.b.v;
+        loc.b.hist = [{ v: loc.b.v, at: Date.now() }].concat(loc.b.hist.filter(function (x, i) { return i !== rk; })).slice(0, 10);
+        loc.b.v = pick.v;
+        gEditing = null;
+      }, 'Older version restored');
+      return;
+    }
+    if (t.closest('[data-gtreset]')) {
+      var tkey = t.closest('.geditor').dataset.key;
+      gMutate(function (g) { var s = gStep(g, tkey.slice(2)); if (!s || s.s.o === undefined) return false; s.s.h = s.s.o; gEditing = null; }, 'Original title restored');
+      return;
+    }
+    // one block
+    var blk = t.closest('[data-bid]'), bid = blk && blk.dataset.bid;
+    if (bid && t.closest('[data-gedit]')) {
+      gEditing = bid; gAdd = null; gRe();
+      var ta0 = $('#gedit-ta');
+      if (ta0) { ta0.focus(); ta0.scrollIntoView({ block: 'center' }); }
+      return;
+    }
+    if (bid && (el = t.closest('[data-gcopy]'))) {
+      var g3 = effGuide(oscpLab), loc3 = g3 && gLoc(g3, bid);
+      if (loc3) gCopy(guideFill(loc3.b.v, guideVars(g3)), el);   // the exact text, never the screen's line wraps
+      return;
+    }
+    if (bid && t.closest('[data-gstat]')) {
+      gMutate(function (g) { var l3 = gLoc(g, bid); if (!l3) return false; var n2 = GST_NEXT[l3.b.st || '']; if (n2) l3.b.st = n2; else delete l3.b.st; });
+      return;
+    }
+    if (bid && t.closest('[data-greset]')) {
+      askConfirm({ title: 'Put back the original?', body: 'This block goes back to how it was before your edits. Your edited version stays in its history.', yes: 'Reset' }).then(function (ok) {
+        if (!ok) return;
+        gMutate(function (g) {
+          var l4 = gLoc(g, bid);
+          if (!l4 || l4.b.o === undefined) return false;
+          l4.b.hist = [{ v: l4.b.v, at: Date.now() }].concat(l4.b.hist || []).slice(0, 10);
+          l4.b.v = l4.b.o;
+        }, 'Original restored');
+      });
+      return;
+    }
+    if (bid && (el = t.closest('[data-gmove]'))) {
+      var dir = +el.dataset.gmove;
+      gMutate(function (g) { var l5 = gLoc(g, bid); if (!l5 || !l5.arr) return false; var to = l5.j + dir; if (to < 0 || to >= l5.arr.length) return false; l5.arr.splice(to, 0, l5.arr.splice(l5.j, 1)[0]); });
+      return;
+    }
+    if (bid && t.closest('[data-gdel]')) {
+      askConfirm({ title: 'Delete this block?', body: 'It is removed from this lab\'s walkthrough. "Reset all" brings the default walkthrough back.', yes: 'Delete' }).then(function (ok) {
+        if (ok) gMutate(function (g) { var l6 = gLoc(g, bid); if (!l6 || !l6.arr) return false; l6.arr.splice(l6.j, 1); }, 'Block deleted');
+      });
+      return;
+    }
+    if (bid && (el = t.closest('[data-gaddat]'))) { gAdd = { bid: bid, where: el.dataset.gaddat }; gRe(); return; }
+    if (t.closest('[data-gaddx]')) { gAdd = null; gRe(); return; }
+    var stepEl = t.closest('[data-sid]'), sid = stepEl && stepEl.dataset.sid;
+    if (sid && t.closest('[data-gaddend]')) { gAdd = { step: sid, where: 'end' }; gRe(); return; }
+    if ((el = t.closest('[data-gnew]')) && gAdd) {
+      var add = gAdd, nb = { id: gid(), t: el.dataset.gnew, v: '', nw: 1 };
+      if (nb.t === 'code') nb.lang = 'bash';
+      gMutate(function (g) {
+        if (add.where === 'end') { var s7 = gStep(g, add.step); if (!s7) return false; s7.s.b.push(nb); }
+        else { var l7 = gLoc(g, add.bid); if (!l7 || !l7.arr) return false; l7.arr.splice(l7.j + (add.where === 'below' ? 1 : 0), 0, nb); }
+        gAdd = null; gEditing = nb.id;
+      }).then(function () { var ta1 = $('#gedit-ta'); if (ta1) { ta1.focus(); ta1.scrollIntoView({ block: 'center' }); } });
+      return;
+    }
+    // whole steps
+    if (sid && t.closest('[data-gstitle]')) { gEditing = 'h:' + sid; gRe(); if ($('#gedit-in')) $('#gedit-in').focus(); return; }
+    if (sid && (el = t.closest('[data-gsmove]'))) {
+      var sd = +el.dataset.gsmove;
+      gMutate(function (g) { var s8 = gStep(g, sid); if (!s8) return false; var to = s8.i + sd; if (to < 0 || to >= g.steps.length) return false; g.steps.splice(to, 0, g.steps.splice(s8.i, 1)[0]); });
+      return;
+    }
+    if (sid && t.closest('[data-gsdel]')) {
+      askConfirm({ title: 'Delete this step?', body: 'The step and every block in it are removed from this lab\'s walkthrough. "Reset all" brings the default walkthrough back.', yes: 'Delete' }).then(function (ok) {
+        if (ok) gMutate(function (g) { var s9 = gStep(g, sid); if (!s9) return false; g.steps.splice(s9.i, 1); }, 'Step deleted');
+      });
+      return;
+    }
+    if ((el = t.closest('[data-gnewstep]'))) {
+      var where = el.dataset.gnewstep, ns = { id: gid(), h: 'New step', b: [], nw: 1 };
+      gMutate(function (g) {
+        var s10 = sid ? gStep(g, sid) : null;
+        if (where === 'end' || !s10) g.steps.push(ns); else g.steps.splice(s10.i + (where === 'below' ? 1 : 0), 0, ns);
+        gEditing = 'h:' + ns.id;
+      }).then(function () { var i1 = $('#gedit-in'); if (i1) { i1.focus(); i1.select(); } });
+      return;
+    }
+    // tags
+    if ((el = t.closest('[data-tagadd]'))) { addLabTag(el.dataset.tagadd); return; }
+    if ((el = t.closest('[data-tagdel]'))) {
+      var drop = el.dataset.tagdel;
+      saveLabNotes().then(function () { return setLab(oscpLab, { tg: (labState(oscpLab).tg || []).filter(function (x) { return x !== drop; }) }); }).then(gRe);
+      return;
+    }
+    // files
+    if (t.closest('[data-fadd]')) {
       if (!S.key) { toast('Unlock your box first to add files'); return; }
       if (!idb) { toast('This browser can’t store files. Try Safari or Chrome.'); return; }
       saveLabNotes();
@@ -9014,27 +10001,29 @@ body {
       li.click();
       return;
     }
-    var fo = ev.target.closest('[data-fopen]');
+    var fo = t.closest('[data-fopen]');
     if (fo) {
       if (!S.key) { toast('Unlock your box first to open files'); return; }
       openAttachment({ files: labState(oscpLab).files }, fo.dataset.fopen);
       return;
     }
-    var fd = ev.target.closest('[data-fdel]');
+    var fd = t.closest('[data-fdel]');
     if (fd) { removeLabFile(oscpLab, fd.dataset.fdel); return; }
-    var gs = ev.target.closest('[data-gstep]');
+    // ticking a step
+    var gs = t.closest('[data-gstep]');
     if (gs) {
-      var i = +gs.dataset.gstep, have = (labState(oscpLab).g || []).slice(), at = have.indexOf(i);
-      if (at >= 0) have.splice(at, 1); else have.push(i);
-      var y = window.scrollY;
-      saveLabNotes().then(function () { return setLab(oscpLab, { g: have.length ? have.sort(function (a, c) { return a - c; }) : undefined }); }).then(function () {
-        renderLab(); window.scrollTo(0, y);
-        var gd = window.OSCP_GUIDES[oscpLab];
-        if (at < 0 && have.length === gd.steps.length) toast('All steps done. Rooted? Set the status to Rooted above 👑');
+      var id = gSidVal(gs.dataset.gstep), have = (labState(oscpLab).g || []).slice();
+      var at = -1;
+      have.forEach(function (x, i) { if (String(x) === String(id)) at = i; });
+      if (at >= 0) have.splice(at, 1); else { have.push(id); delete gOpen[String(id)]; }
+      saveLabNotes().then(saveFixes).then(function () { return setLab(oscpLab, { g: have.length ? have : undefined }); }).then(function () {
+        gRe();
+        var gd = effGuide(oscpLab), st2 = labState(oscpLab);
+        if (at < 0 && gd && gd.steps.every(function (s) { return gStepDone(st2, s.id); })) toast('All steps done. Rooted? Tick proof.txt above 👑');
       });
       return;
     }
-    var b = ev.target.closest('[data-setst]');
+    var b = t.closest('[data-setst]');
     if (!b) return;
     var k = b.dataset.setst;
     saveLabNotes().then(function () {
@@ -12869,6 +13858,23 @@ body {
       if (list.length) out.x[bid] = list;
     });
     if (typeof o.exam === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.exam)) out.exam = o.exam;
+    var kIn = o.k && typeof o.k === 'object' ? o.k : {}, kOut = {};
+    Object.keys(kIn).slice(0, 120).forEach(function (id) {
+      var v = kIn[id];
+      if (!/^(n[a-z0-9]{2,12}|k[a-z0-9]{4,16})$/.test(id) || !v || typeof v !== 'object') return;
+      var u = typeof v.u === 'number' ? v.u : 0;
+      if (v.del === true) { kOut[id] = { del: true, u: u }; return; }
+      if (typeof v.md !== 'string' || !v.md.trim() || !/^\d{1,2}$/.test(String(v.c)) || !IAS_SNAME[v.s]) return;
+      kOut[id] = { c: String(v.c), s: v.s, t: typeof v.t === 'string' ? v.t.slice(0, 120) : '', md: v.md.slice(0, 200000), u: u };
+    });
+    if (Object.keys(kOut).length) out.k = kOut;
+    var krIn = o.kr && typeof o.kr === 'object' ? o.kr : {}, krOut = {};
+    Object.keys(krIn).slice(0, 120).forEach(function (id) {
+      if (!/^(n[a-z0-9]{2,12}|k[a-z0-9]{4,16})$/.test(id) || !Array.isArray(krIn[id])) return;
+      var l = krIn[id].filter(function (x, i, a) { return typeof x === 'string' && /^[a-z0-9-]{1,60}$/.test(x) && a.indexOf(x) === i; }).slice(0, 150);
+      if (l.length) krOut[id] = l;
+    });
+    if (Object.keys(krOut).length) out.kr = krOut;
     return out;
   }
   function mergeIas(mine, theirs) {
@@ -12882,6 +13888,16 @@ body {
         });
       });
     });
+    var mk = mergeOscp(mine.k, theirs.k);
+    if (Object.keys(mk).length) out.k = mk;
+    var mr = {};
+    [mine.kr || {}, theirs.kr || {}].forEach(function (src) {
+      Object.keys(src).forEach(function (id) {
+        var have = mr[id] = mr[id] || [];
+        src[id].forEach(function (x) { if (have.indexOf(x) < 0) have.push(x); });
+      });
+    });
+    if (Object.keys(mr).length) out.kr = mr;
     if (mine.exam || theirs.exam) out.exam = mine.exam || theirs.exam;
     return out;
   }
@@ -12975,7 +13991,7 @@ body {
             ? '<span>Prelims on <b>' + esc(fmtDate(exam)) + '</b>' + (days !== null && days >= 0 ? ' · ' + (days === 0 ? 'today' : days + (days === 1 ? ' day' : ' days') + ' to go') : ' · done') + '</span>' +
               '<button type="button" class="linkish" id="ias-exam-edit">Change</button>'
             : '<span>Add your prelims date for a countdown.</span><button type="button" class="linkish" id="ias-exam-edit">Set date</button>') + '</div>') +
-      '</div>' + iasPlanHtml() +
+      '</div>' + iasPlanHtml() + ncModeSwitch() + (iasMode === 'cls' ? ncClassCards() : (
       '<div class="search oscp-search">' + lu('search') +
       '<input class="input" id="ias-q" type="search" placeholder="Search chapters and your notes" value="' + esc(iasView.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search chapters"></div>' +
       iasChips('Subject', 'subj', IAS_SUBJ.map(function (s) { return [s.id, s.name]; })) +
@@ -12986,7 +14002,7 @@ body {
       (groups || '<div class="empty"><h2>Nothing matches</h2><p>Try fewer filters.</p></div>') +
       '<p class="hint oscp-src">Chapter names follow the full NCERT editions UPSC aspirants read, checked against ncert.nic.in. ' +
       'Current NCERT reprints dropped some chapters in 2022–23 and replaced the Class 6 and 9 books; the older printings still have them. ' +
-      'Tap a book to open it, the circle to mark a chapter, and a chapter for notes. Your progress and notes open without the passphrase (nothing secret belongs here).</p>';
+      'Tap a book to open it, the circle to mark a chapter, and a chapter for notes. Your progress and notes open without the passphrase (nothing secret belongs here).</p>'));
   }
 
   function cycleChap(id) {
@@ -13015,6 +14031,10 @@ body {
   $('#ias-body').addEventListener('click', function (ev) {
     var f = ev.target.closest('[data-if]');
     if (f) { iasView[f.dataset.if] = f.dataset.v; iasRerender(true); return; }
+    var im = ev.target.closest('[data-imode]');
+    if (im) { iasMode = im.dataset.imode; iasRerender(true); return; }
+    var ic = ev.target.closest('[data-icls]');
+    if (ic) { iasClass = ic.dataset.icls; iasScroll = window.scrollY; iasCV = { q: '', s: 'all' }; show('icls'); return; }
     if (ev.target.closest('#ias-clear')) { iasView = { q: '', subj: 'all', status: 'all', src: 'all' }; renderIas(); return; }
     if (ev.target.closest('#ias-exam-edit')) { iasExamEdit = true; iasRerender(true); return; }
     if (ev.target.closest('#ias-exam-save') || ev.target.closest('#ias-exam-clear')) {
@@ -13044,7 +14064,7 @@ body {
       return;
     }
     var op = ev.target.closest('[data-ichap]');
-    if (op) { iasChap = op.dataset.ichap; iasScroll = window.scrollY; show('chap'); return; }
+    if (op) { iasChap = op.dataset.ichap; iasFrom = null; iasScroll = window.scrollY; show('chap'); return; }
     var ad = ev.target.closest('[data-iadd]');
     if (ad) { iasAdding = ad.dataset.iadd; iasRerender(true); var i = $('#iadd-in'); if (i) i.focus(); return; }
     if (ev.target.closest('[data-iaddcancel]')) { iasAdding = null; iasRerender(true); return; }
@@ -13134,13 +14154,385 @@ body {
         d.x[bid] = (d.x[bid] || []).filter(function (it) { return it.id !== xid; });
         if (!d.x[bid].length) delete d.x[bid];
         delete d.c[hit.c.id];
-        saveOpen().then(function () { iasChap = null; toast('Chapter deleted'); show('ias'); window.scrollTo(0, iasScroll); });
+        saveOpen().then(function () { iasChap = null; toast('Chapter deleted'); iasBackFromChap(); });
       });
     }
   });
+  function iasBackFromChap() {
+    if (iasFrom === 'icls' && iasClass) { iasFrom = null; show('icls'); window.scrollTo(0, iasCScroll); }
+    else { iasFrom = null; show('ias'); window.scrollTo(0, iasScroll); }
+  }
   $('#btn-chap-back').addEventListener('click', function () {
-    saveChapNotes().then(function () { show('ias'); window.scrollTo(0, iasScroll); });
+    saveChapNotes().then(iasBackFromChap);
   });
+
+  /* ============ class notes ============
+     "By class" in the reading list: every note for one class in one place.
+     Two kinds sit together: note sets (Markdown with figures - the ones that
+     ship in lib/ncert-notes.js, plus any you paste or upload) and the notes
+     you wrote inside that class's chapters. Edits, added sets and which
+     sections you've read live in S.data.ias (k, kr) like the rest of the
+     reading list. */
+  var NC_DOCS = window.NCERT_NOTES || [], NC_FIGS = window.NCERT_FIGS || {};
+  var NC_HUES = ['#c99a2e', '#5fae7e', '#e39446', '#5b9bd5', '#b07cc6', '#d9655c'];
+  var iasMode = 'subj', iasClass = null, iasCV = { q: '', s: 'all' }, iasCOpen = {}, iasCEdit = null, iasFrom = null, iasCScroll = 0;
+  var NC_ICON = null;
+  try { NC_ICON = new RegExp('^((?:\\p{Regional_Indicator}{2})|(?:\\p{Extended_Pictographic}[\\uFE0F\\u200D\\p{Extended_Pictographic}]*))\\s*', 'u'); } catch (e) {}
+
+  function kData() { return iasData().k || {}; }
+  function kRead(id) { return (iasData().kr || {})[id] || []; }
+  function ncClasses() {
+    var set = {}, k = kData();
+    IAS_BOOKS.forEach(function (b) { if (b.c) set[b.c] = 1; });
+    NC_DOCS.forEach(function (d) { set[d.c] = 1; });
+    Object.keys(k).forEach(function (id) { if (!k[id].del && k[id].c) set[k[id].c] = 1; });
+    return Object.keys(set).sort(function (a, b) { return +a - +b; });
+  }
+  // The note sets for one class: built-in ones (or your edited copy of them) and the ones you added.
+  function noteDocs(c) {
+    var k = kData(), out = [], seen = {};
+    NC_DOCS.forEach(function (d) {
+      var o = k[d.id]; seen[d.id] = 1;
+      if (o && !o.del && typeof o.md === 'string') out.push({ id: d.id, c: d.c, s: o.s || d.s, t: o.t || d.t, md: o.md, builtin: true, edited: true });
+      else out.push({ id: d.id, c: d.c, s: d.s, t: d.t, md: d.md, builtin: true });
+    });
+    Object.keys(k).forEach(function (id) {
+      var o = k[id];
+      if (!seen[id] && !o.del && typeof o.md === 'string') out.push({ id: id, c: o.c, s: o.s, t: o.t, md: o.md, user: true });
+    });
+    return out.filter(function (d) { return d.c === c; });
+  }
+  function ncDoc(id) { return noteDocs(iasClass).filter(function (d) { return d.id === id; })[0]; }
+
+  /* --- Markdown -> HTML (everything is escaped first; only figures from the
+         built-in set can bring in markup) --- */
+  function ncInline(t) {
+    var s = esc(t);
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    s = s.replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?![*\w])/g, '$1<i>$2</i>');
+    return s;
+  }
+  function ncMd(md) {
+    var lines = String(md || '').replace(/\r\n?/g, '\n').split('\n'), out = [], i = 0;
+    function tableAt(n) { return /^\s*\|.*\|\s*$/.test(lines[n] || '') && /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[n + 1] || '') && /-/.test(lines[n + 1] || ''); }
+    function cells(l) { return l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (x) { return x.trim(); }); }
+    function starter(n) {
+      var t = (lines[n] || '').trim();
+      return !t || /^(\{\{fig:|#{3,6}\s|>|-{3,}$|\*{3,}$)/.test(t) || /^([-*+]|\d+[.)])\s/.test(t) || tableAt(n);
+    }
+    while (i < lines.length) {
+      var t = lines[i].trim();
+      if (!t) { i++; continue; }
+      var fm = /^\{\{fig:([a-z0-9-]+)\}\}$/.exec(t);
+      if (fm) {
+        var f = NC_FIGS[fm[1]];
+        if (f) out.push('<figure class="nfig">' + f.svg + '<figcaption>' + esc(f.cap) + '</figcaption></figure>');
+        i++; continue;
+      }
+      if (/^(-{3,}|\*{3,}|_{3,})$/.test(t)) { out.push('<hr>'); i++; continue; }
+      var hm = /^#{3,6}\s+(.*)$/.exec(t);
+      if (hm) { out.push('<h4 class="nh4">' + ncInline(hm[1]) + '</h4>'); i++; continue; }
+      if (t.charAt(0) === '>') {
+        var q = [];
+        while (i < lines.length && lines[i].trim().charAt(0) === '>') { q.push(lines[i].trim().replace(/^>\s?/, '')); i++; }
+        var first = q.join(' '), kind = /^💡/.test(first) ? 'tip' : /^(⚠|❗)/.test(first) ? 'warn' : /^🧠/.test(first) ? 'mem' : '';
+        out.push('<div class="ncall ' + kind + '">' + q.map(ncInline).join('<br>') + '</div>');
+        continue;
+      }
+      if (tableAt(i)) {
+        var head = cells(lines[i]), rows = [];
+        i += 2;
+        while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) { rows.push(cells(lines[i])); i++; }
+        out.push('<div class="ntable"><table><thead><tr>' + head.map(function (c) { return '<th>' + ncInline(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td' + (c.length <= 16 ? ' class="nw"' : '') + '>' + ncInline(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>');
+        continue;
+      }
+      if (/^\s*([-*+]|\d+[.)])\s+/.test(lines[i])) {
+        var html = '', stack = [];
+        while (i < lines.length) {
+          var lm = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/.exec(lines[i]);
+          if (!lm) break;
+          var ind = lm[1].replace(/\t/g, '    ').length, tag = /\d/.test(lm[2].charAt(0)) ? 'ol' : 'ul';
+          while (stack.length && ind < stack[stack.length - 1].ind) html += '</li></' + stack.pop().tag + '>';
+          if (!stack.length || ind > stack[stack.length - 1].ind) { html += '<' + tag + ' class="nlist"><li>'; stack.push({ ind: ind, tag: tag }); }
+          else html += '</li><li>';
+          html += ncInline(lm[3]);
+          i++;
+        }
+        while (stack.length) html += '</li></' + stack.pop().tag + '>';
+        out.push(html);
+        continue;
+      }
+      var para = [];
+      while (i < lines.length && lines[i].trim() && (para.length === 0 || !starter(i))) { para.push(lines[i].trim()); i++; }
+      var text = para.join(' ');
+      if ((text.match(/ • /g) || []).length >= 3) {
+        var pm = /^(\*\*[^*]+\*\*:?)\s*(.*)$/.exec(text), label = pm ? pm[1] : '', rest = pm ? pm[2] : text;
+        out.push((label ? '<p class="nchips-l">' + ncInline(label) + '</p>' : '') + '<div class="nchips">' + rest.split(' • ').map(function (it) {
+          var j = it.indexOf('-'), nm = j > 0 ? it.slice(0, j) : it, cap = j > 0 ? it.slice(j + 1) : '';
+          return '<span class="nchip"><b>' + esc(nm.trim()) + '</b>' + (cap ? '<em>' + esc(cap.trim()) + '</em>' : '') + '</span>';
+        }).join('') + '</div>');
+      } else out.push('<p>' + para.map(ncInline).join('<br>') + '</p>');
+    }
+    return out.join('');
+  }
+  // Split a note into its sections ("## Title"; or "### " if the note has no "## ").
+  function ncSplit(md) {
+    var lines = String(md || '').replace(/\r\n?/g, '\n').split('\n');
+    var two = lines.some(function (l) { return /^##\s+\S/.test(l) && !/^###/.test(l); }), re = two ? /^##\s+(.*)$/ : /^###\s+(.*)$/;
+    var intro = [], secs = [], cur = null;
+    lines.forEach(function (ln) {
+      var m = re.exec(ln);
+      if (m && (two ? !/^###/.test(ln) : !/^####/.test(ln))) { cur = { title: m[1].replace(/\*\*/g, '').trim(), lines: [] }; secs.push(cur); }
+      else if (!/^#\s/.test(ln)) (cur ? cur.lines : intro).push(ln);
+    });
+    var used = {};
+    return {
+      intro: intro.join('\n').trim(),
+      secs: secs.map(function (s, n) {
+        var m = NC_ICON ? NC_ICON.exec(s.title) : null, base = s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 's' + (n + 1), slug = base, k = 2;
+        while (used[slug]) slug = base + '-' + (k++);
+        used[slug] = 1;
+        return { title: s.title, icon: m ? m[1] : '', name: m ? s.title.slice(m[0].length) : s.title, slug: slug, md: s.lines.join('\n').trim(), n: n };
+      })
+    };
+  }
+
+  /* --- one note set --- */
+  function ncEditor(e) {
+    var subs = IAS_SUBJ.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === e.s ? ' selected' : '') + '>' + esc(s.name) + '</option>'; }).join('');
+    return '<div class="ned">' +
+      '<label class="ned-l">Title<input class="input" id="ned-t" maxlength="120" value="' + esc(e.t) + '" placeholder="e.g. Geography: short notes" autocomplete="off"></label>' +
+      '<label class="ned-l">Subject<select class="input" id="ned-s">' + subs + '</select></label>' +
+      '<label class="ned-l">Notes (Markdown)<textarea class="input" id="ned-md" rows="14" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="## 🌙 First topic&#10;- a point&#10;- another point&#10;&#10;## 🌍 Second topic">' + esc(e.md) + '</textarea></label>' +
+      '<p class="hint"><code>## Title</code> starts a section. Tables, <code>- bullets</code>, <code>**bold**</code> and <code>&gt; 💡 tips</code> work. Put <code>' + '{{fig:moon}}' + '</code> on its own line to add a built-in picture (' + esc(Object.keys(NC_FIGS).join(', ')) + ').</p>' +
+      '<div class="ned-row"><input type="file" id="ned-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>' +
+      '<button type="button" class="nbtn" data-nfile>📂 Choose a .md or .txt file</button><span class="gsp"></span>' +
+      (e.edited ? '<button type="button" class="nbtn" data-nreset>↺ Original</button>' : '') +
+      (e.user ? '<button type="button" class="nbtn danger" data-ndel>Delete</button>' : '') +
+      '<button type="button" class="nbtn" data-ncancel>Cancel</button><button type="button" class="nbtn pri" data-nsave>Save</button></div></div>';
+  }
+  function ncDocHtml(d, solo) {
+    var parsed = ncSplit(d.md), words = iasCV.q ? iasCV.q.split(/\s+/) : [], read = kRead(d.id);
+    function match(text) { var h = text.toLowerCase(); return words.every(function (w) { return h.indexOf(w) >= 0; }); }
+    var editing = iasCEdit && iasCEdit.id === d.id;
+    var secs = words.length ? parsed.secs.filter(function (s) { return match(s.title + ' ' + s.md); }) : parsed.secs;
+    var introHit = parsed.intro && (!words.length || match(parsed.intro));
+    if (words.length && !secs.length && !introHit && !match(d.t)) return '';
+    var open = editing || (iasCOpen[d.id] !== undefined ? iasCOpen[d.id] : (solo || words.length > 0));
+    var done = parsed.secs.filter(function (s) { return read.indexOf(s.slug) >= 0; }).length, n = parsed.secs.length;
+    var body = '';
+    if (open) {
+      if (editing) body = ncEditor(iasCEdit);
+      else {
+        body = '<div class="nbar"><button type="button" class="nbtn" data-nexp="' + esc(d.id) + '">⇕ Expand / collapse all</button>' +
+          '<button type="button" class="nbtn" data-ncopy="' + esc(d.id) + '">Copy Markdown</button><button type="button" class="nbtn" data-nedit="' + esc(d.id) + '">✏️ Edit</button></div>';
+        if (parsed.secs.length > 1) {
+          body += '<div class="ntoc" aria-label="Jump to a section">' + secs.map(function (s, i) {
+            return '<button type="button" data-njump="' + esc(d.id + '|' + s.slug) + '" style="--nh:' + NC_HUES[s.n % NC_HUES.length] + '">' + esc(s.icon || String(s.n + 1)) + ' <span>' + esc(s.name.slice(0, 22)) + '</span></button>';
+          }).join('') + '</div>';
+        }
+        if (introHit) body += '<div class="nsec-b nintro">' + ncMd(parsed.intro) + '</div>';
+        body += secs.map(function (s) {
+          var key = d.id + '|' + s.slug, isRead = read.indexOf(s.slug) >= 0, sopen = words.length > 0 ? true : !!iasCOpen[key];
+          return '<details class="nsec' + (isRead ? ' read' : '') + '" data-k="' + esc(key) + '" id="nsec-' + esc(s.slug) + '" style="--nh:' + NC_HUES[s.n % NC_HUES.length] + '"' + (sopen ? ' open' : '') + '>' +
+            '<summary><span class="nsec-i">' + esc(s.icon || String(s.n + 1)) + '</span><span class="nsec-t">' + esc(s.name) + '</span><span class="nsec-ok" aria-label="Read">✓</span></summary>' +
+            '<div class="nsec-b">' + ncMd(s.md) + '</div>' +
+            '<button type="button" class="gdone nsec-done" data-nread="' + esc(key) + '" aria-pressed="' + isRead + '">' + (isRead ? '✓ Read. Tap to undo' : 'Mark this section as read') + '</button></details>';
+        }).join('');
+      }
+    }
+    return '<div class="ibook ndoc' + (open ? ' open' : '') + '">' +
+      '<button class="ibook-head" data-ndoc="' + esc(d.id) + '" aria-expanded="' + !!open + '"><span class="ibook-text"><small>' + esc(IAS_SNAME[d.s] || '') + (d.edited ? ' · edited by you' : d.user ? ' · added by you' : '') + '</small><b>' + esc(d.t) + '</b></span>' +
+      '<span class="ibook-n' + (n && done === n ? ' full' : '') + '">' + done + ' / ' + n + '</span><span class="chev" aria-hidden="true">' + lu('chevron-right') + '</span></button>' +
+      (n ? '<div class="ibook-bar"><i style="width:' + Math.round(done / n * 100) + '%"></i></div>' : '') + body + '</div>';
+  }
+
+  /* --- the class page --- */
+  function renderIcls() {
+    var el = $('#icls-body'), c = iasClass;
+    if (!el || !c) { show('ias'); return; }
+    $('#icls-bar-title').textContent = 'Class ' + c + ' notes';
+    var books = IAS_BOOKS.filter(function (b) { return b.c === c; }), all = noteDocs(c), t = iasTotals(books);
+    var sub = [];
+    books.forEach(function (b) { if (sub.indexOf(b.s) < 0) sub.push(b.s); });
+    all.forEach(function (d) { if (sub.indexOf(d.s) < 0) sub.push(d.s); });
+    sub = IAS_SUBJ.map(function (s) { return s.id; }).filter(function (id) { return sub.indexOf(id) >= 0; });
+    if (iasCV.s !== 'all' && sub.indexOf(iasCV.s) < 0) iasCV.s = 'all';
+    var words = iasCV.q ? iasCV.q.split(/\s+/) : [];
+    var docs = all.filter(function (d) { return iasCV.s === 'all' || d.s === iasCV.s; });
+    var docHtml = docs.map(function (d) { return ncDocHtml(d, all.length === 1); }).join('');
+    var cn = [];
+    books.forEach(function (b) {
+      if (iasCV.s !== 'all' && b.s !== iasCV.s) return;
+      iasChapters(b).forEach(function (ch) {
+        var n = chState(ch.id).n;
+        if (!n) return;
+        if (words.length && !words.every(function (w) { return (ch.t + ' ' + b.t + ' ' + n).toLowerCase().indexOf(w) >= 0; })) return;
+        cn.push({ b: b, c: ch, n: n });
+      });
+    });
+    var pct = t.all ? Math.round(t.done / t.all * 100) : 0;
+    var adding = iasCEdit && iasCEdit.id === null;
+    el.innerHTML =
+      '<div class="lab-hero"><p class="chap-where">NCERT · all notes together</p><h2>Class ' + esc(c) + '</h2>' +
+      '<p>' + books.length + (books.length === 1 ? ' book' : ' books') + ' · ' + all.length + (all.length === 1 ? ' note set' : ' note sets') + ' · ' + cn.length + (cn.length === 1 ? ' chapter note' : ' chapter notes') + '</p></div>' +
+      (t.all ? '<div class="oscp-bar" role="img" aria-label="' + pct + ' percent of chapters done"><i style="width:' + pct + '%"></i></div><p class="hint" style="margin-top:6px">' + t.done + ' of ' + t.all + ' chapters done</p>' : '') +
+      '<div class="search oscp-search">' + lu('search') + '<input class="input" id="icls-q" type="search" placeholder="Search all Class ' + esc(c) + ' notes" value="' + esc(iasCV.q) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search notes"></div>' +
+      (sub.length > 1 ? '<div class="fgroup"><span class="label">Subject</span><div class="tabs fchips">' + [['all', 'All']].concat(sub.map(function (id) { return [id, IAS_SNAME[id]]; })).map(function (o) {
+        return '<button class="tab" data-ics="' + esc(o[0]) + '" aria-pressed="' + (iasCV.s === o[0]) + '">' + esc(o[1]) + '</button>';
+      }).join('') + '</div></div>' : '') +
+      '<div class="section-label lab-group">📘 Note sets <span>' + docs.length + '</span></div>' +
+      (docHtml || (!adding ? '<p class="hint ncempty">' + (words.length ? 'No note set matches that search.' : 'No note sets for this class yet. Add one below: paste or upload Markdown.') + '</p>' : '')) +
+      (adding ? '<div class="ibook open"><div class="ibook-head" style="cursor:default"><span class="ibook-text"><small>New</small><b>Add notes to Class ' + esc(c) + '</b></span></div>' + ncEditor(iasCEdit) + '</div>'
+        : '<button type="button" class="iadd-open" data-nadd>＋ Add notes (paste or upload Markdown)</button>') +
+      '<div class="section-label lab-group">✍️ Chapter notes <span>' + cn.length + '</span></div>' +
+      (cn.length ? cn.map(function (x) {
+        return '<div class="cnote"><div class="cnote-h"><small>' + esc(IAS_SNAME[x.b.s] + ' · ' + x.b.t) + '</small><button type="button" data-ichap="' + esc(x.c.id) + '">' + (x.c.no ? x.c.no + '. ' : '') + esc(x.c.t) + ' ›</button></div><div class="cnote-b">' + ncMd(x.n) + '</div></div>';
+      }).join('') : '<p class="hint ncempty">' + (words.length ? 'No chapter note matches.' : 'Notes you write inside this class\'s chapters appear here automatically.') + '</p>') +
+      '<p class="hint oscp-src">Tap a note set to open it, a section to read it, and "Mark as read" to track your revision. Edit changes only your copy; "Original" brings the built-in one back.</p>';
+  }
+  function icRe() { var y = window.scrollY; renderIcls(); window.scrollTo(0, y); }
+  function ncReadToggle(key) {
+    var p = key.split('|'), d = iasEnsure();
+    d.kr = d.kr || {};
+    var list = (d.kr[p[0]] || []).slice(), at = list.indexOf(p[1]);
+    if (at >= 0) list.splice(at, 1); else list.push(p[1]);
+    if (list.length) d.kr[p[0]] = list; else delete d.kr[p[0]];
+    if (!Object.keys(d.kr).length) delete d.kr;
+    return saveOpen().then(icRe);
+  }
+  function ncSave() {
+    var e = iasCEdit;
+    if (!e) return;
+    var t = ($('#ned-t').value || '').trim().slice(0, 120), s = $('#ned-s').value, md = ($('#ned-md').value || '').replace(/\s+$/, '');
+    if (!md.trim()) { toast('Write or paste some notes first'); return; }
+    if (!IAS_SNAME[s]) s = IAS_SUBJ[0].id;
+    var d = iasEnsure(), id = e.id, base = NC_DOCS.filter(function (x) { return x.id === id; })[0];
+    d.k = d.k || {};
+    if (!id) id = 'k' + uid().slice(0, 9);
+    t = t || 'Class ' + iasClass + ' notes';
+    if (base && md === base.md && t === base.t && s === base.s) d.k[id] = { del: true, u: Date.now() };
+    else d.k[id] = { c: iasClass, s: s, t: t, md: md, u: Date.now() };
+    iasCEdit = null; iasCOpen[id] = true;
+    return saveOpen().then(function () { icRe(); toast('Saved'); });
+  }
+  function ncDrop(id, msg, forgetRead) {
+    var d = iasEnsure();
+    d.k = d.k || {};
+    d.k[id] = { del: true, u: Date.now() };
+    if (forgetRead && d.kr) { delete d.kr[id]; if (!Object.keys(d.kr).length) delete d.kr; }
+    iasCEdit = null;
+    return saveOpen().then(function () { icRe(); toast(msg); });
+  }
+
+  /* --- the "By class" list on the reading-list page --- */
+  function ncModeSwitch() {
+    return '<div class="seg seg2" role="radiogroup" aria-label="How to browse">' +
+      [['subj', '📚 By subject'], ['cls', '🎓 By class']].map(function (o) {
+        return '<button type="button" role="radio" data-imode="' + o[0] + '" aria-checked="' + (iasMode === o[0]) + '">' + o[1] + '</button>';
+      }).join('') + '</div>';
+  }
+  function ncClassCards() {
+    var cards = ncClasses().map(function (c) {
+      var books = IAS_BOOKS.filter(function (b) { return b.c === c; }), t = iasTotals(books), docs = noteDocs(c), subs = [], cn = 0;
+      books.forEach(function (b) {
+        if (subs.indexOf(IAS_SNAME[b.s]) < 0) subs.push(IAS_SNAME[b.s]);
+        iasChapters(b).forEach(function (ch) { if (chState(ch.id).n) cn++; });
+      });
+      docs.forEach(function (d) { if (subs.indexOf(IAS_SNAME[d.s]) < 0) subs.push(IAS_SNAME[d.s]); });
+      var meta = [docs.length ? '📘 ' + docs.length + (docs.length === 1 ? ' note set' : ' note sets') : '', cn ? '✍️ ' + cn + (cn === 1 ? ' chapter note' : ' chapter notes') : ''].filter(Boolean).join(' · ');
+      return '<div class="ibook"><button class="ibook-head" data-icls="' + esc(c) + '"><span class="ibook-text"><small>NCERT</small><b>Class ' + esc(c) + '</b>' +
+        '<span class="icls-s">' + esc(subs.join(' · ')) + '</span>' + (meta ? '<span class="icls-m">' + esc(meta) + '</span>' : '') + '</span>' +
+        '<span class="ibook-n' + (t.all && t.done === t.all ? ' full' : '') + '">' + t.done + ' / ' + t.all + '</span><span class="chev" aria-hidden="true">' + lu('chevron-right') + '</span></button>' +
+        (t.all ? '<div class="ibook-bar"><i style="width:' + Math.round(t.done / t.all * 100) + '%"></i></div>' : '') + '</div>';
+    }).join('');
+    return '<div class="section-label lab-group">Classes</div><div class="ibooks">' + cards + '</div>' +
+      '<p class="hint oscp-src">Open a class to read all its notes in one place: the note sets (with pictures) and anything you wrote inside its chapters.</p>';
+  }
+
+  $('#icls-body').addEventListener('click', function (ev) {
+    var t = ev.target, el;
+    if ((el = t.closest('[data-ics]'))) { iasCV.s = el.dataset.ics; icRe(); return; }
+    if ((el = t.closest('[data-ndoc]'))) {
+      var id = el.dataset.ndoc, cur = iasCOpen[id] !== undefined ? iasCOpen[id] : (noteDocs(iasClass).length === 1 || !!iasCV.q);
+      if (iasCEdit && iasCEdit.id === id) return;
+      iasCOpen[id] = !cur; icRe(); return;
+    }
+    if ((el = t.closest('[data-nread]'))) { ncReadToggle(el.dataset.nread); return; }
+    if ((el = t.closest('[data-njump]'))) {
+      var key = el.dataset.njump;
+      iasCOpen[key] = true;
+      var sec = document.querySelector('details.nsec[data-k="' + key.replace(/"/g, '') + '"]');
+      if (sec) { sec.open = true; sec.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+      return;
+    }
+    if ((el = t.closest('[data-nexp]'))) {
+      var d = ncDoc(el.dataset.nexp);
+      if (!d) return;
+      var keys = ncSplit(d.md).secs.map(function (s) { return d.id + '|' + s.slug; }), allOpen = keys.every(function (k) { return iasCOpen[k]; });
+      keys.forEach(function (k) { iasCOpen[k] = !allOpen; });
+      icRe(); return;
+    }
+    if ((el = t.closest('[data-ncopy]'))) { var d2 = ncDoc(el.dataset.ncopy); if (d2) gCopy(d2.md, el); return; }
+    if ((el = t.closest('[data-nedit]'))) {
+      var d3 = ncDoc(el.dataset.nedit);
+      if (d3) { iasCEdit = { id: d3.id, t: d3.t, s: d3.s, md: d3.md, edited: !!d3.edited, user: !!d3.user }; iasCOpen[d3.id] = true; icRe(); var ta = $('#ned-md'); if (ta) ta.focus(); }
+      return;
+    }
+    if (t.closest('[data-nadd]')) {
+      var first = iasCV.s !== 'all' ? iasCV.s : (IAS_BOOKS.filter(function (b) { return b.c === iasClass; })[0] || { s: IAS_SUBJ[0].id }).s;
+      iasCEdit = { id: null, t: '', s: first, md: '' }; icRe();
+      var ti = $('#ned-t'); if (ti) ti.focus();
+      return;
+    }
+    if (t.closest('[data-ncancel]')) { iasCEdit = null; icRe(); return; }
+    if (t.closest('[data-nsave]')) { ncSave(); return; }
+    if (t.closest('[data-nfile]')) { guardSheet(); $('#ned-file').value = ''; $('#ned-file').click(); return; }
+    if (t.closest('[data-nreset]')) {
+      var rid = iasCEdit && iasCEdit.id;
+      if (!rid) return;
+      askConfirm({ title: 'Back to the original?', body: 'Your edited version of this note set is removed and the built-in one comes back.', yes: 'Restore' }).then(function (ok) { if (ok) ncDrop(rid, 'Original restored'); });
+      return;
+    }
+    if (t.closest('[data-ndel]')) {
+      var did = iasCEdit && iasCEdit.id;
+      if (!did) return;
+      askConfirm({ title: 'Delete this note set?', body: 'It is removed from this class' + (S.data && S.data.sync ? ' and from your other devices' : '') + '. Export it first if you want a copy.', yes: 'Delete' }).then(function (ok) { if (ok) ncDrop(did, 'Deleted', true); });
+      return;
+    }
+    if ((el = t.closest('[data-ichap]'))) { iasChap = el.dataset.ichap; iasFrom = 'icls'; iasCScroll = window.scrollY; show('chap'); return; }
+  });
+  $('#icls-body').addEventListener('input', function (ev) {
+    if (ev.target.id !== 'icls-q') return;
+    iasCV.q = ev.target.value.trim().toLowerCase();
+    var pos = ev.target.selectionStart;
+    renderIcls();
+    var q = $('#icls-q');
+    if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (e) {} }
+  });
+  $('#icls-body').addEventListener('change', function (ev) {
+    if (ev.target.id !== 'ned-file') return;
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    if (f.size > 1500000) { toast('That file is over 1.5 MB. Split it into parts.'); return; }
+    var r = new FileReader();
+    r.onload = function () {
+      var ta = $('#ned-md'), ti = $('#ned-t');
+      if (ta) ta.value = String(r.result || '');
+      if (ti && !ti.value.trim()) ti.value = f.name.replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').slice(0, 120);
+      toast('File loaded. Check it, then Save.');
+    };
+    r.onerror = function () { toast('Could not read that file'); };
+    r.readAsText(f);
+  });
+  // sections you open or close yourself stay that way
+  $('#icls-body').addEventListener('toggle', function (ev) {
+    var d = ev.target;
+    if (d && d.matches && d.matches('details.nsec[data-k]')) iasCOpen[d.dataset.k] = d.open;
+  }, true);
+  $('#btn-icls-back').addEventListener('click', function () { iasCEdit = null; show('ias'); window.scrollTo(0, iasScroll); });
 
   /* ============ share one item safely ============
      The chosen fields are sealed with a fresh random password (Argon2id, the
@@ -13413,7 +14805,7 @@ body {
   /* Updates: a Home Screen app can stay in memory for days, so look for a
      new version whenever it comes back to the front, and switch to it at the
      lock screen, where nothing is open or half typed. */
-  var APP_VER = 60;
+  var APP_VER = 70;
   $('#app-ver').textContent = 'App version ' + APP_VER;
   // The spotlight on cards follows the pointer (mouse or trackpad only).
   if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {

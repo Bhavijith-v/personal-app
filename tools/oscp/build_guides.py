@@ -264,9 +264,29 @@ kevin = {
 
 import os
 exec(io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'guides_batch2.py'), encoding='utf-8').read())
+exec(io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'guides_batch3.py'), encoding='utf-8').read())
+
+ALL = {'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav, 'pgp-kevin': kevin, **BATCH2, **BATCH3}
+
+# Every guide opens with the same setup step: one folder per lab, and a log of
+# the whole terminal session, so scans, creds and output are kept for the report.
+def setup_step(name):
+  return {'h': 'Setup: lab folder + session log', 'b': [
+    P('Do this first, in every new terminal, so everything you run is **saved for later**:'),
+    C('mkdir -p ~/oscp/' + name + '/{scans,loot,exploits} && cd ~/oscp/' + name + '\n'
+      'script -a -q session_$(date +%F_%H%M).log      # records everything you type and see\n'
+      'export T={T}; echo "T=$T" >> notes.txt'),
+    L('`script` keeps recording until you type `exit`. Replay it later with `cat session_*.log`.',
+      'Save every login the moment you find it: `echo \'user:pass  (where)\' >> loot/creds.txt`',
+      'Keep the output files of nmap (`-oN`), ffuf (`-o`) and anything piped through `| tee file.txt`.',
+      'Take a screenshot of `whoami`, `ipconfig`/`ip a` and each flag: the exam report needs them.')]}
+
+# Kept apart from 'steps' so the step numbers (and the steps you ticked as done) don't shift.
+for k, g in ALL.items():
+  g['setup'] = setup_step(k.split('-', 1)[1])
 
 out = ('/* Step-by-step walkthroughs for labs, shown on the lab page.\n'
        '   Built by build_guides.py. {K} is your Kali IP and {T} the target IP. */\n'
-       'window.OSCP_GUIDES = ' + json.dumps({'pgp-jacko': jacko, 'pgp-nibbles': nibbles, 'pgp-bratarina': bratarina, 'pgp-clamav': clamav, 'pgp-kevin': kevin, **BATCH2}, ensure_ascii=False, indent=1) + ';\n')
+       'window.OSCP_GUIDES = ' + json.dumps(ALL, ensure_ascii=False, indent=1) + ';\n')
 io.open(r'C:\Users\bhavi\Desktop\Personal_App\lib\oscp-guides.js', 'w', encoding='utf-8', newline='\n').write(out)
 print(len(out))

